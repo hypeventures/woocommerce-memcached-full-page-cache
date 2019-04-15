@@ -1,0 +1,19 @@
+{
+  "name": "agaleski/woocommerce-memcached-full-page-cache",
+  "type": "wordpress-plugin",
+  "homepage": "https://github.com/agaleski/woocommerce-memcached-full-page-cache",
+  "license": "GPLv3",
+  "description": "Woocommerce full page cache plugin utilizing Memcached and php-memcached.",
+  "keywords": ["plugin", "cache", "page cache", "full page cache", "nginx", "memcached", "speed"],
+  "authors": [
+    {
+      "name": "Achim Galeski",
+      "email": "achim@invinciblebrands.com"
+    }
+  ],
+  "autoload": {
+    "classmap": [
+      "src"
+    ]
+  }
+}

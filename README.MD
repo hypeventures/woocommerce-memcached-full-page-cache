@@ -1,0 +1,1 @@
+* WooCommerce Memcached Full Page Cache

@@ -1,0 +1,735 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"Project-Id-Version: WP-FFPC\n"
+"POT-Creation-Date: 2016-04-21 17:14+0200\n"
+"PO-Revision-Date: 2016-04-21 15:44+0200\n"
+"Last-Translator: Gabriele Lauricella <gab.lau@gmail.com>\n"
+"Language-Team: Gabriele Lauricella <gab.lau@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.4\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-WPHeader: wp-ffpc.php\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.js\n"
+
+#: wp-ffpc-abstract.php:381
+msgid "Default : "
+msgstr ""
+
+#: wp-ffpc-abstract.php:464
+msgid ""
+"This plugin helped your business? I'd appreciate a coffee in return :) "
+"Please!"
+msgstr ""
+
+#: wp-ffpc-abstract.php:479
+msgid "Donation for "
+msgstr ""
+
+#: wp-ffpc-abstract.php:481
+msgid "Donate via PayPal"
+msgstr ""
+
+#: wp-ffpc-abstract.php:501
+#, php-format
+msgid " – updating network option %s"
+msgstr ""
+
+#: wp-ffpc-abstract.php:505
+#, php-format
+msgid "- updating option %s"
+msgstr ""
+
+#: wp-ffpc-abstract.php:516
+#, php-format
+msgid "- getting network option %s"
+msgstr ""
+
+#: wp-ffpc-abstract.php:520
+#, php-format
+msgid " – getting option %s"
+msgstr ""
+
+#: wp-ffpc-abstract.php:533
+#, php-format
+msgid " – deleting network option %s"
+msgstr ""
+
+#: wp-ffpc-abstract.php:537
+#, php-format
+msgid " – deleting option %s"
+msgstr ""
+
+#: wp-ffpc-abstract.php:614
+#, php-format
+msgid "%s"
+msgstr ""
+
+#: wp-ffpc-class.php:126
+#, php-format
+msgid ""
+"Domain mismatch: the site domain configuration (%s) does not match the "
+"HTTP_HOST (%s) variable in PHP. Please fix the incorrect one, otherwise the "
+"plugin may not work as expected."
+msgstr ""
+
+#: wp-ffpc-class.php:134
+msgid "APC"
+msgstr ""
+
+#: wp-ffpc-class.php:135
+msgid "APCu"
+msgstr ""
+
+#: wp-ffpc-class.php:136
+msgid "PHP Memcache"
+msgstr ""
+
+#: wp-ffpc-class.php:137
+msgid "PHP Memcached"
+msgstr ""
+
+#: wp-ffpc-class.php:138
+msgid "Redis (experimental, it will break!)"
+msgstr ""
+
+#: wp-ffpc-class.php:152
+msgid "flush cache"
+msgstr ""
+
+#: wp-ffpc-class.php:153
+msgid "only modified post"
+msgstr ""
+
+#: wp-ffpc-class.php:154
+msgid "modified post and all related taxonomies"
+msgstr ""
+
+#: wp-ffpc-class.php:159
+msgid "The HTTP scheme (i.e. http, https)."
+msgstr ""
+
+#: wp-ffpc-class.php:160
+msgid ""
+"Host in the header of request or name of the server processing the request "
+"if the Host header is not available."
+msgstr ""
+
+#: wp-ffpc-class.php:161
+msgid ""
+"The *original* request URI as received from the client including the args"
+msgstr ""
+
+#: wp-ffpc-class.php:162
+msgid "Name of user, authenticated by the Auth Basic Module"
+msgstr ""
+
+#: wp-ffpc-class.php:163
+msgid "PHP Session Cookie ID, if set ( empty if not )"
+msgstr ""
+
+#: wp-ffpc-class.php:164
+msgid "First HTTP Accept Lang set in the HTTP request"
+msgstr ""
+
+#: wp-ffpc-class.php:174
+msgid "do not use timed precache"
+msgstr ""
+
+#: wp-ffpc-class.php:221
+msgid "WP-FFPC Settings"
+msgstr ""
+
+#: wp-ffpc-class.php:226
+msgid ""
+"WP_CACHE is disabled. Without that, cache plugins, like this, will not work. "
+"Please add `define ( 'WP_CACHE', true );` to the beginning of wp-config.php."
+msgstr ""
+
+#: wp-ffpc-class.php:230
+#, php-format
+msgid ""
+"This site was reached as %s ( according to PHP HTTP_HOST ) and there are no "
+"settings present for this domain in the WP-FFPC configuration yet. Please "
+"save the %s for the domain or fix the webserver configuration!"
+msgstr ""
+
+#: wp-ffpc-class.php:234
+#, php-format
+msgid ""
+"Advanced cache file (%s) is not writeable!<br />Please change the "
+"permissions on the file."
+msgstr ""
+
+#: wp-ffpc-class.php:238
+#, php-format
+msgid "Advanced cache file is yet to be generated, please save %s"
+msgstr ""
+
+#: wp-ffpc-class.php:243
+#, php-format
+msgid ""
+"%s cache backend activated but no PHP %s extension was found.<br />Please "
+"either use different backend or activate the module!"
+msgstr ""
+
+#: wp-ffpc-class.php:254
+msgid ""
+"WARNING: Memcache extension is configured to use binary mode. This is very "
+"buggy and the plugin will most probably not work correctly. <br />Please "
+"consider to change either to ASCII mode or to Memcached extension."
+msgstr ""
+
+#: wp-ffpc-class.php:307
+msgid ""
+"WP-FFPC settings were upgraded; please double check if everything is still "
+"working correctly."
+msgstr ""
+
+#: wp-ffpc-class.php:362
+msgid ""
+"<p>Please visit <a href=\"http://wordpress.org/support/plugin/wp-ffpc\">the "
+"official support forum of the plugin</a> for help.</p>"
+msgstr ""
+
+#: wp-ffpc-class.php:386
+msgid "<h3>Sample config for nginx to utilize the data entries</h3>"
+msgstr ""
+
+#: wp-ffpc-class.php:387
+msgid ""
+"<div class=\"update-nag\">This is not meant to be a copy-paste "
+"configuration; you most probably have to tailor it to your needs.</div>"
+msgstr ""
+
+#: wp-ffpc-class.php:388
+msgid ""
+"<div class=\"update-nag\"><strong>In case you are about to use nginx to "
+"fetch memcached entries directly and to use SHA1 hash keys, you will need an "
+"nginx version compiled with <a href=\"http://wiki.nginx.org/HttpSetMiscModule"
+"\">HttpSetMiscModule</a>. Otherwise set_sha1 function is not available in "
+"nginx.</strong></div>"
+msgstr ""
+
+#: wp-ffpc-class.php:393
+msgid "nginx example"
+msgstr ""
+
+#: wp-ffpc-class.php:443
+msgid "Settings saved."
+msgstr ""
+
+#: wp-ffpc-class.php:450
+msgid "Plugin options deleted."
+msgstr ""
+
+#: wp-ffpc-class.php:457
+msgid "Cache flushed."
+msgstr ""
+
+#: wp-ffpc-class.php:464
+msgid ""
+"Precache process was started, it is now running in the background, please be "
+"patient, it may take a very long time to finish."
+msgstr ""
+
+#: wp-ffpc-class.php:472
+msgid " settings"
+msgstr ""
+
+#: wp-ffpc-class.php:475
+msgid "Driver: "
+msgstr ""
+
+#: wp-ffpc-class.php:480
+msgid "<strong>Backend status:</strong><br />"
+msgstr ""
+
+#: wp-ffpc-class.php:490
+msgid "<span class=\"error-msg\">down</span><br />"
+msgstr ""
+
+#: wp-ffpc-class.php:492
+msgid "<span class=\"ok-msg\">up & running</span><br />"
+msgstr ""
+
+#: wp-ffpc-class.php:494
+msgid ""
+"<span class=\"error-msg\">unknown, please try re-saving settings!</span><br /"
+">"
+msgstr ""
+
+#: wp-ffpc-class.php:513
+msgid "Set cache type"
+msgstr ""
+
+#: wp-ffpc-class.php:516
+msgid "Select backend"
+msgstr ""
+
+#: wp-ffpc-class.php:522
+msgid "Select backend storage driver"
+msgstr ""
+
+#: wp-ffpc-class.php:526
+msgid "Expiration time for posts"
+msgstr ""
+
+#: wp-ffpc-class.php:530
+msgid ""
+"Sets validity time of post entry in seconds, including custom post types and "
+"pages."
+msgstr ""
+
+#: wp-ffpc-class.php:534
+msgid "Browser cache expiration time of posts"
+msgstr ""
+
+#: wp-ffpc-class.php:538
+msgid "Sets validity time of posts/pages/singles for the browser cache."
+msgstr ""
+
+#: wp-ffpc-class.php:542
+msgid "Expiration time for taxonomy"
+msgstr ""
+
+#: wp-ffpc-class.php:546
+msgid ""
+"Sets validity time of taxonomy entry in seconds, including custom taxonomy."
+msgstr ""
+
+#: wp-ffpc-class.php:550
+msgid "Browser cache expiration time of taxonomy"
+msgstr ""
+
+#: wp-ffpc-class.php:554
+msgid "Sets validity time of taxonomy for the browser cache."
+msgstr ""
+
+#: wp-ffpc-class.php:558
+msgid "Expiration time for home"
+msgstr ""
+
+#: wp-ffpc-class.php:562
+msgid "Sets validity time of home on server side."
+msgstr ""
+
+#: wp-ffpc-class.php:566
+msgid "Browser cache expiration time of home"
+msgstr ""
+
+#: wp-ffpc-class.php:570
+msgid "Sets validity time of home for the browser cache."
+msgstr ""
+
+#: wp-ffpc-class.php:574
+msgid "Charset"
+msgstr ""
+
+#: wp-ffpc-class.php:578
+msgid "Charset of HTML and XML (pages and feeds) data."
+msgstr ""
+
+#: wp-ffpc-class.php:582
+msgid "Cache invalidation method"
+msgstr ""
+
+#: wp-ffpc-class.php:588
+msgid "Select cache invalidation method."
+msgstr ""
+
+#: wp-ffpc-class.php:604
+msgid "Invalidate on comment actions"
+msgstr ""
+
+#: wp-ffpc-class.php:608
+msgid "Trigger cache invalidation when a comments is posted, edited, trashed. "
+msgstr ""
+
+#: wp-ffpc-class.php:612
+msgid "Data prefix"
+msgstr ""
+
+#: wp-ffpc-class.php:616
+msgid ""
+"Prefix for HTML content keys, can be used in nginx.<br /><strong>WARNING</"
+"strong>: changing this will result the previous cache to becomes invalid!"
+"<br />If you are caching with nginx, you should update your nginx "
+"configuration and reload nginx after changing this value."
+msgstr ""
+
+#: wp-ffpc-class.php:620
+msgid "Meta prefix"
+msgstr ""
+
+#: wp-ffpc-class.php:624
+msgid ""
+"Prefix for meta content keys, used only with PHP processing.<br /"
+"><strong>WARNING</strong>: changing this will result the previous cache to "
+"becomes invalid!"
+msgstr ""
+
+#: wp-ffpc-class.php:628
+msgid "Key scheme"
+msgstr ""
+
+#: wp-ffpc-class.php:632
+msgid ""
+"Key layout; <strong>use the guide below to change it</strong>.<br /"
+"><strong>WARNING</strong>: changing this will result the previous cache to "
+"becomes invalid!<br />If you are caching with nginx, you should update your "
+"nginx configuration and reload nginx after changing this value."
+msgstr ""
+
+#: wp-ffpc-class.php:641
+msgid "SHA1 hash key"
+msgstr ""
+
+#: wp-ffpc-class.php:645
+msgid ""
+"Occasionally URL can be too long to be used as key for the backend storage, "
+"especially with memcached. Turn on this feature to use SHA1 hash of the URL "
+"as key instead. Please be aware that you have to add ( or uncomment ) a line "
+"and a <strong>module</strong> in nginx if you want nginx to fetch the data "
+"directly; for details, please see the nginx example tab."
+msgstr ""
+
+#: wp-ffpc-class.php:654
+msgid "Debug & in-depth settings"
+msgstr ""
+
+#: wp-ffpc-class.php:655
+msgid "Notes"
+msgstr ""
+
+#: wp-ffpc-class.php:656
+msgid ""
+"The former method of debug logging flag has been removed. In case you need "
+"debug log from WP-FFPC please set both the <a href=\"http://codex.wordpress."
+"org/WP_DEBUG\">WP_DEBUG</a> and the WP_FFPC__DEBUG_MODE constants `true` in "
+"wp-config.php.<br /> This will enable NOTICE level messages apart from the "
+"WARNING level ones which are always displayed."
+msgstr ""
+
+#: wp-ffpc-class.php:660
+msgid "Enable X-Pingback header preservation"
+msgstr ""
+
+#: wp-ffpc-class.php:664
+msgid "Preserve X-Pingback URL in response header."
+msgstr ""
+
+#: wp-ffpc-class.php:668
+msgid "Add X-Cache-Engine header"
+msgstr ""
+
+#: wp-ffpc-class.php:672
+msgid "Add X-Cache-Engine HTTP header to HTTP responses."
+msgstr ""
+
+#: wp-ffpc-class.php:676
+msgid "Add HTML debug comment"
+msgstr ""
+
+#: wp-ffpc-class.php:680
+msgid ""
+"Adds comment string including plugin name, cache engine and page generation "
+"time to every generated entry before closing <body> tag."
+msgstr ""
+
+#: wp-ffpc-class.php:688
+msgid "Set cache additions/excepions"
+msgstr ""
+
+#: wp-ffpc-class.php:691
+msgid "Enable cache for logged in users"
+msgstr ""
+
+#: wp-ffpc-class.php:695
+msgid "Cache pages even if user is logged in."
+msgstr ""
+
+#: wp-ffpc-class.php:699
+msgid "Excludes"
+msgstr ""
+
+#: wp-ffpc-class.php:704
+msgid "Exclude home"
+msgstr ""
+
+#: wp-ffpc-class.php:705
+msgid "Exclude feeds"
+msgstr ""
+
+#: wp-ffpc-class.php:706
+msgid "Exclude archives"
+msgstr ""
+
+#: wp-ffpc-class.php:707
+msgid "Exclude pages"
+msgstr ""
+
+#: wp-ffpc-class.php:708
+msgid "Exclude singulars"
+msgstr ""
+
+#: wp-ffpc-class.php:709
+msgid "Dynamic requests"
+msgstr ""
+
+#: wp-ffpc-class.php:710
+msgid "WooCommerce"
+msgstr ""
+
+#: wp-ffpc-class.php:717
+msgid "Never cache home."
+msgstr ""
+
+#: wp-ffpc-class.php:721
+msgid "Never cache feeds."
+msgstr ""
+
+#: wp-ffpc-class.php:725
+msgid "Never cache archives."
+msgstr ""
+
+#: wp-ffpc-class.php:729
+msgid "Never cache pages."
+msgstr ""
+
+#: wp-ffpc-class.php:733
+msgid "Never cache singulars."
+msgstr ""
+
+#: wp-ffpc-class.php:737
+msgid "Exclude every URL with \"?\" in it."
+msgstr ""
+
+#: wp-ffpc-class.php:742
+msgid "Exclude dynamic WooCommerce page."
+msgstr ""
+
+#: wp-ffpc-class.php:750
+msgid "Exclude based on cookies"
+msgstr ""
+
+#: wp-ffpc-class.php:754
+msgid ""
+"Exclude content based on cookies names starting with this from caching. "
+"Separate multiple cookies names with commas.<br />If you are caching with "
+"nginx, you should update your nginx configuration and reload nginx after "
+"changing this value."
+msgstr ""
+
+#: wp-ffpc-class.php:758
+msgid "Don't cache following URL paths - use with caution!"
+msgstr ""
+
+#: wp-ffpc-class.php:766
+msgid "Regular expressions use you must! e.g. <em>pattern1|pattern2|etc</em>"
+msgstr ""
+
+#: wp-ffpc-class.php:770
+msgid "Exclude from cache based on content"
+msgstr ""
+
+#: wp-ffpc-class.php:774
+msgid ""
+"Enter a regex pattern that will trigger excluding content from caching. Eg. "
+"<!--nocache-->. Regular expressions use you must! e.g. <em>pattern1|pattern2|"
+"etc</em><br />\n"
+"\t\t\t\t\t<strong>WARNING:</strong> be careful where you display this, "
+"because it will apply to any content, including archives, collection pages, "
+"singles, anything. If empty, this setting will be ignored."
+msgstr ""
+
+#: wp-ffpc-class.php:782
+msgid "Backend server settings"
+msgstr ""
+
+#: wp-ffpc-class.php:785
+msgid "Hosts"
+msgstr ""
+
+#: wp-ffpc-class.php:790
+msgid ""
+"List of backends, with the following syntax: <br />- in case of TCP based "
+"connections, list the servers as host1:port1,host2:port2,... . Do not add "
+"trailing , and always separate host and port with : .<br />- for a unix "
+"socket enter: unix://[socket_path]"
+msgstr ""
+
+#: wp-ffpc-class.php:793
+msgid "Authentication ( only for SASL enabled Memcached or Redis)"
+msgstr ""
+
+#: wp-ffpc-class.php:796
+msgid ""
+"WARNING: you've entered username and/or password for memcached "
+"authentication ( or your browser's autocomplete did ) which will not work "
+"unless you enable memcached sasl in the PHP settings: add `memcached."
+"use_sasl=1` to php.ini"
+msgstr ""
+
+#: wp-ffpc-class.php:799
+msgid "Authentication: username"
+msgstr ""
+
+#: wp-ffpc-class.php:804
+msgid "Username for authentication with backends"
+msgstr ""
+
+#: wp-ffpc-class.php:808
+msgid "Authentication: password"
+msgstr ""
+
+#: wp-ffpc-class.php:813
+msgid ""
+"Password for authentication with for backends - WARNING, the password will "
+"be stored in an unsecure format!"
+msgstr ""
+
+#: wp-ffpc-class.php:816
+msgid "Memcached specific settings"
+msgstr ""
+
+#: wp-ffpc-class.php:818
+msgid "Enable memcached binary mode"
+msgstr ""
+
+#: wp-ffpc-class.php:822
+msgid ""
+"Some memcached proxies and implementations only support the ASCII protocol."
+msgstr ""
+
+#: wp-ffpc-class.php:830
+msgid "Precache settings & log from previous pre-cache generation"
+msgstr ""
+
+#: wp-ffpc-class.php:833
+msgid "Precache schedule"
+msgstr ""
+
+#: wp-ffpc-class.php:839
+msgid "Schedule autorun for precache with WP-Cron"
+msgstr ""
+
+#: wp-ffpc-class.php:860
+msgid "No precache log was found!"
+msgstr ""
+
+#: wp-ffpc-class.php:863
+msgid "Time of run: "
+msgstr ""
+
+#: wp-ffpc-class.php:887
+msgid "Save Changes"
+msgstr ""
+
+#: wp-ffpc-class.php:897 wp-ffpc-class.php:903 wp-ffpc-class.php:919
+#: wp-ffpc-class.php:930
+msgid "Precache"
+msgstr ""
+
+#: wp-ffpc-class.php:898
+msgid "Empty cache"
+msgstr ""
+
+#: wp-ffpc-class.php:899
+msgid "Reset settings"
+msgstr ""
+
+#: wp-ffpc-class.php:907
+msgid ""
+"Precache functionality is disabled due to unavailable system call function. "
+"<br />Since precaching may take a very long time, it's done through a "
+"background CLI process in order not to run out of max execution time of PHP. "
+"Please enable one of the following functions if you whish to use precaching: "
+msgstr ""
+
+#: wp-ffpc-class.php:910
+msgid "Pre-cache"
+msgstr ""
+
+#: wp-ffpc-class.php:914
+msgid ""
+"Start a background process that visits all permalinks of all blogs it can "
+"found thus forces WordPress to generate cached version of all the pages.<br /"
+">The plugin tries to visit links of taxonomy terms without the taxonomy name "
+"as well. This may generate 404 hits, please be prepared for these in your "
+"logfiles if you plan to pre-cache."
+msgstr ""
+
+#: wp-ffpc-class.php:922
+msgid "Clear cache"
+msgstr ""
+
+#: wp-ffpc-class.php:925
+msgid ""
+"Clear all entries in the storage, including the ones that were set by other "
+"processes."
+msgstr ""
+
+#: wp-ffpc-class.php:933
+msgid "Reset options"
+msgstr ""
+
+#: wp-ffpc-class.php:936
+msgid "Reset settings to defaults."
+msgstr ""
+
+#: wp-ffpc-class.php:947
+msgid "Cache type"
+msgstr ""
+
+#: wp-ffpc-class.php:948
+msgid "Debug & in-depth"
+msgstr ""
+
+#: wp-ffpc-class.php:949
+msgid "Cache exceptions"
+msgstr ""
+
+#: wp-ffpc-class.php:950
+msgid "Backend settings"
+msgstr ""
+
+#: wp-ffpc-class.php:951
+msgid "Precache & precache log"
+msgstr ""
+
+#: wp-ffpc-class.php:968
+msgid "Scheduling WP-CRON event"
+msgstr ""
+
+#: wp-ffpc-class.php:972
+msgid "Clearing WP-CRON scheduled hook "
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "WP-FFPC"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://github.com/petermolnar/wp-ffpc"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "WordPress in-memory full page cache plugin"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Peter Molnar <hello@petermolnar.eu>"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://petermolnar.eu/"
+msgstr ""
