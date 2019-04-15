@@ -15,14 +15,7 @@ if (! defined('ABSPATH')) { exit; }
 abstract class MemcachedAbstract
 {
 
-    /**
-     * @var string
-     */
     const host_separator = ',';
-
-    /**
-     * @var string
-     */
     const port_separator = ':';
 
     /**
