@@ -131,7 +131,7 @@ class WcMfpc extends WcMfpcAbstract
     private $shell_possibilities = [];
 
     /**
-     * @var null
+     * @var null|Memcached
      */
     private $backend = null;
 
