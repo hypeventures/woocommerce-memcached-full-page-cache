@@ -62,12 +62,12 @@ abstract class MemcachedAbstract
      */
     public function __construct($config = [])
     {
-
         /* no config, nothing is going to work */
         if (empty ($config)) {
+
             return false;
-            //die ( __translate__ ( 'WC-MFPC Backend class received empty configuration array, the plugin will not work this way', 'wc-mfpc') );
         }
+
         $this->options = $config;
         /* these are the list of the cookies to look for when looking for logged in user */
         $this->cookies = [ 'comment_author_', 'wordpressuser_', 'wp-postpass_', 'wordpress_logged_in_' ];
