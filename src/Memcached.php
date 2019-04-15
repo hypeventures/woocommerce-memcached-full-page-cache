@@ -161,56 +161,84 @@ class Memcached
     {
         /* Memcached class does not exist, Memcached extension is not available */
         if (! class_exists('Memcached')) {
+
             $this->log(' Memcached extension missing, wc-mfpc will not be able to function correctly!', LOG_WARNING);
 
             return false;
         }
+
         /* check for existing server list, otherwise we cannot add backends */
         if (empty ($this->options[ 'servers' ]) && ! $this->alive) {
+
             $this->log("Memcached servers list is empty, init failed", LOG_WARNING);
 
             return false;
         }
+
         /* check is there's no backend connection yet */
         if ($this->connection === null) {
-            $this->connection = new Memcached();
+
+            $this->connection = new \Memcached();
+
             /* use binary and not compressed format, good for nginx and still fast */
-            $this->connection->setOption(Memcached::OPT_COMPRESSION, false);
+            $this->connection->setOption(\Memcached::OPT_COMPRESSION, false);
+
             if ($this->options[ 'memcached_binary' ]) {
-                $this->connection->setOption(Memcached::OPT_BINARY_PROTOCOL, true);
+
+                $this->connection->setOption(\Memcached::OPT_BINARY_PROTOCOL, true);
+
             }
+
             if (version_compare(phpversion('memcached'), '2.0.0', '>=') && ini_get('memcached.use_sasl') == 1 && isset($this->options[ 'authpass' ]) && ! empty($this->options[ 'authpass' ]) && isset($this->options[ 'authuser' ]) && ! empty($this->options[ 'authuser' ])) {
+
                 $this->connection->setSaslAuthData($this->options[ 'authuser' ], $this->options[ 'authpass' ]);
+
             }
+
         }
+
         /* check if initialization was success or not */
         if ($this->connection === null) {
+
             $this->log('error initializing Memcached PHP extension, exiting');
 
             return false;
         }
+
         /* check if we already have list of servers, only add server(s) if it's not already connected */
         $servers_alive = [];
+
         if (! empty ($this->status)) {
+
             $servers_alive = $this->connection->getServerList();
+
             /* create check array if backend servers are already connected */
             if (! empty ($servers)) {
+
                 foreach ($servers_alive as $skey => $server) {
+
                     $skey                   = $server[ 'host' ] . ":" . $server[ 'port' ];
                     $servers_alive[ $skey ] = true;
+
                 }
+
             }
+
         }
+
         /* adding servers */
         foreach ($this->options[ 'servers' ] as $server_id => $server) {
-            /* reset server status to unknown */
-            //$this->status[$server_id] = -1;
+
             /* only add servers that does not exists already  in connection pool */
             if (! @array_key_exists($server_id, $servers_alive)) {
+
                 $this->connection->addServer($server[ 'host' ], $server[ 'port' ]);
                 $this->log(sprintf('%s added', $server_id));
+
             }
+
         }
+
         /* backend is now alive */
         $this->alive = true;
         $this->_status();

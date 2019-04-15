@@ -153,7 +153,7 @@ class WcMfpc extends WcMfpcAbstract
         $this->plugin_url = plugin_dir_url(__FILE__);
         $this->plugin_dir = plugin_dir_path(dirname(__FILE__));
         $this->admin_css_handle = $this->plugin_constant . '-admin-css';
-        $this->admin_css_url    = $this->plugin_url . 'wp-admin.css';
+        $this->admin_css_url    = $this->plugin_url . 'assets/admin.css';
     }
 
     /**
@@ -344,24 +344,6 @@ class WcMfpc extends WcMfpcAbstract
 
             }
 
-        }
-
-        /* get the current runtime configuration for memcache in PHP because Memcache in binary mode is really problematic */
-        if (extension_loaded('memcache')) {
-
-            $memcache_settings = ini_get_all('memcache');
-
-            if (! empty ($memcache_settings) && $this->options[ 'cache_type' ] == 'memcache' && isset($memcache_settings[ 'memcache.protocol' ])) {
-
-                $memcache_protocol = strtolower($memcache_settings[ 'memcache.protocol' ][ 'local_value' ]);
-
-                if ($memcache_protocol == 'binary') {
-
-                    $this->errors[ 'memcached_binary' ] = __('WARNING: Memcache extension is configured to use binary mode. This is very buggy and the plugin will most probably not work correctly. <br />Please consider to change either to ASCII mode or to Memcached extension.', 'wc-mfpc');
-
-                }
-
-            }
         }
 
         $filtered_errors = apply_filters('wc_mfpc_post_init_errors_array', $this->errors);
