@@ -7,10 +7,9 @@ namespace Composer\Autoload;
 class ComposerStaticInit9042dda03b2c5b78aa2a92d82f443d22
 {
     public static $classMap = array (
+        'InvincibleBrands\\WcMfpc\\Admin\\Admin' => __DIR__ . '/../..' . '/src/Admin/Admin.php',
         'InvincibleBrands\\WcMfpc\\Memcached' => __DIR__ . '/../..' . '/src/Memcached.php',
-        'InvincibleBrands\\WcMfpc\\MemcachedAbstract' => __DIR__ . '/../..' . '/src/MemcachedAbstract.php',
         'InvincibleBrands\\WcMfpc\\WcMfpc' => __DIR__ . '/../..' . '/src/WcMfpc.php',
-        'InvincibleBrands\\WcMfpc\\WcMfpcAbstract' => __DIR__ . '/../..' . '/src/WcMfpcAbstract.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
