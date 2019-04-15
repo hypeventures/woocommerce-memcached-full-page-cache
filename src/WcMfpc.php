@@ -16,7 +16,7 @@ class WcMfpc extends WcMfpcAbstract
     const host_separator         = ',';
     const port_separator         = ':';
     const donation_id_key        = 'hosted_button_id=';
-    const global_config_var      = 'WC_MFPC_CONFIG';
+    const global_config_var      = 'wcMfpcConfig';
     const key_save               = 'saved';
     const key_delete             = 'deleted';
     const key_flush              = 'flushed';
@@ -268,8 +268,7 @@ class WcMfpc extends WcMfpcAbstract
     public function plugin_post_init()
     {
         /* initiate backend */
-        $backend_class = 'WC_MFPC_Backend_' . $this->options[ 'cache_type' ];
-        $this->backend = new $backend_class ($this->options);
+        $this->backend = new Memcached($this->options);
 
         /* re-save settings after update */
         add_action('upgrader_process_complete', [ &$this->plugin_upgrade ], 10, 2);
