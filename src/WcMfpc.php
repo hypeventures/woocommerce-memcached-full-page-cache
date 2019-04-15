@@ -142,10 +142,6 @@ class WcMfpc extends WcMfpcAbstract
 			'$remote_user' => __('Name of user, authenticated by the Auth Basic Module', 'wc-mfpc'),
 			'$cookie_PHPSESSID' => __('PHP Session Cookie ID, if set ( empty if not )', 'wc-mfpc'),
 			'$accept_lang' => __('First HTTP Accept Lang set in the HTTP request', 'wc-mfpc'),
-			//'$cookie_COOKnginy IE' => __('Value of COOKIE', 'wc-mfpc'),
-			//'$http_HEADER' => __('Value of HTTP request header HEADER ( lowercase, dashes converted to underscore )', 'wc-mfpc'),
-			//'$query_string' => __('Full request URI after rewrites', 'wc-mfpc'),
-			//'' => __('', 'wc-mfpc'),
 		);
 
 		/* get current wp_cron schedules */
@@ -339,17 +335,8 @@ class WcMfpc extends WcMfpcAbstract
 
 		/* add our page only if the screenid is correct */
 		if ( strpos( $screen_id, $this->plugin_settings_page ) ) {
-			$contextual_help = __('<p>Please visit <a href="http://wordpress.org/support/plugin/wc-mfpc">the official support forum of the plugin</a> for help.</p>', 'wc-mfpc');
 
-			/* [TODO] give detailed information on errors & troubleshooting
-			get_current_screen()->add_help_tab( array(
-					'id'		=> $this->plugin_constant . '-issues',
-					'title'		=> __( 'Troubleshooting' ),
-					'content'	=> __( '<p>List of errors, possible reasons and solutions</p><dl>
-						<dt>E#</dt><dd></dd>
-					</ol>' )
-			) );
-			*/
+			$contextual_help = __('<p>Please visit <a href="http://wordpress.org/support/plugin/wc-mfpc">the official support forum of the plugin</a> for help.</p>', 'wc-mfpc');
 
 		}
 
@@ -461,7 +448,7 @@ class WcMfpc extends WcMfpcAbstract
 
 				/* we need to go through all servers */
 				$servers = $this->backend->status();
-				error_log(__CLASS__ . ':' .json_encode($servers));
+
 				if ( is_array( $servers ) && !empty ( $servers ) ) {
 					foreach ( $servers as $server_string => $status ) {
 						echo $server_string ." => ";
@@ -1211,24 +1198,16 @@ class WcMfpc extends WcMfpcAbstract
    * @return bool
    */
 	private function precache_running () {
-		$return = false;
+      $return = false;
 
-		/* if the precache file exists, it did not finish running as it should delete itself on finish */
-		if ( file_exists ( $this->precache_phpfile )) {
-			$return = true;
-		}
-		/*
-		 [TODO] cross-platform process check; this is *nix only
-		else {
-			$shellfunction = $this->shell_function;
-			$running = $shellfunction( "ps aux | grep \"". $this->precache_phpfile ."\" | grep -v grep | awk '{print $2}'" );
-			if ( is_int( $running ) && $running != 0 ) {
-				$return = true;
-			}
-		}
-		*/
+      /* if the precache file exists, it did not finish running as it should delete itself on finish */
+      if ( file_exists ( $this->precache_phpfile )) {
 
-		return $return;
+          $return = true;
+
+      }
+
+      return $return;
 	}
 
 	/**
@@ -1264,10 +1243,12 @@ class WcMfpc extends WcMfpcAbstract
 		}
 	}
 
-	/**
-	 * gets all post-like entry permalinks for a site, returns values in passed-by-reference array
-	 *
-	 */
+  /**
+   * gets all post-like entry permalinks for a site, returns values in passed-by-reference array
+   *
+   * @param      $links
+   * @param bool $site
+   */
 	private function precache_list_permalinks ( &$links, $site = false ) {
 		/* $post will be populated when running throught the posts */
 		global $post;
@@ -1341,6 +1322,9 @@ class WcMfpc extends WcMfpcAbstract
 		}
 	}
 
+  /**
+   * @return null
+   */
 	public function getBackend() {
 		  return $this->backend;
 	}
