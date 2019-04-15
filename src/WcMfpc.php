@@ -61,6 +61,86 @@ class WcMfpc
     /**
      * @var string
      */
+    protected $settings_link = '';
+
+    /**
+     * @var string
+     */
+    protected $settings_slug = '';
+
+    /**
+     * @var
+     */
+    protected $plugin_url;
+
+    /**
+     * @var
+     */
+    protected $plugin_dir;
+
+    /**
+     * @var
+     */
+    protected $common_url;
+
+    /**
+     * @var
+     */
+    protected $common_dir;
+
+    /**
+     * @var string
+     */
+    protected $plugin_file;
+
+    /**
+     * @var string
+     */
+    protected $plugin_name;
+
+    /**
+     * @var string
+     */
+    protected $plugin_version;
+
+    /**
+     * @var string
+     */
+    protected $plugin_settings_page;
+
+    /**
+     * @var string
+     */
+    protected $button_save;
+
+    /**
+     * @var string
+     */
+    protected $button_delete;
+
+    /**
+     * @var string
+     */
+    protected $capability = 'manage_options';
+
+    /**
+     * @var
+     */
+    protected $admin_css_handle;
+
+    /**
+     * @var
+     */
+    protected $admin_css_url;
+
+    /**
+     * @var null
+     */
+    protected $utils = null;
+
+    /**
+     * @var string
+     */
     private $precache_message = '';
 
     /**
@@ -173,87 +253,6 @@ class WcMfpc
      */
     private $errors = [];
 
-
-    /**
-     * @var string
-     */
-    protected $settings_link = '';
-
-    /**
-     * @var string
-     */
-    protected $settings_slug = '';
-
-    /**
-     * @var
-     */
-    protected $plugin_url;
-
-    /**
-     * @var
-     */
-    protected $plugin_dir;
-
-    /**
-     * @var
-     */
-    protected $common_url;
-
-    /**
-     * @var
-     */
-    protected $common_dir;
-
-    /**
-     * @var string
-     */
-    protected $plugin_file;
-
-    /**
-     * @var string
-     */
-    protected $plugin_name;
-
-    /**
-     * @var string
-     */
-    protected $plugin_version;
-
-    /**
-     * @var string
-     */
-    protected $plugin_settings_page;
-
-    /**
-     * @var string
-     */
-    protected $button_save;
-
-    /**
-     * @var string
-     */
-    protected $button_delete;
-
-    /**
-     * @var string
-     */
-    protected $capability = 'manage_options';
-
-    /**
-     * @var
-     */
-    protected $admin_css_handle;
-
-    /**
-     * @var
-     */
-    protected $admin_css_url;
-
-    /**
-     * @var null
-     */
-    protected $utils = null;
-
     /**
      * WcMfpc constructor.
      *
@@ -307,6 +306,24 @@ class WcMfpc
         $this->admin_css_url    = $this->plugin_url . 'assets/admin.css';
     }
 
+    /**
+     * replaces http:// with https:// in an url if server is currently running on https
+     *
+     * @param string $url URL to check
+     *
+     * @return string URL with correct protocol
+     */
+    public static function replace_if_ssl($url)
+    {
+        if (isset($_SERVER[ 'HTTP_X_FORWARDED_PROTO' ]) && $_SERVER[ 'HTTP_X_FORWARDED_PROTO' ] == 'https') {
+            $_SERVER[ 'HTTPS' ] = 'on';
+        }
+        if (isset($_SERVER[ 'HTTPS' ]) && ((strtolower($_SERVER[ 'HTTPS' ]) == 'on') || ($_SERVER[ 'HTTPS' ] == '1'))) {
+            $url = str_replace('http://', 'https://', $url);
+        }
+
+        return $url;
+    }
 
     /**
      * @return void
@@ -443,6 +460,63 @@ class WcMfpc
     }
 
     /**
+     * reads options stored in database and reads merges them with default values
+     */
+    protected function plugin_options_read()
+    {
+        $options = static::_get_option($this->plugin_constant, $this->network);
+        /* map missing values from default */
+        foreach ($this->defaults as $key => $default) {
+            if (! @array_key_exists($key, $options)) {
+                $options[ $key ] = $default;
+            }
+        }
+        /* removed unused keys, rare, but possible */
+        foreach (@array_keys($options) as $key) {
+            if (! @array_key_exists($key, $this->defaults)) {
+                unset ($options[ $key ]);
+            }
+        }
+        /* any additional read hook */
+        $this->plugin_extend_options_read($options);
+        $this->options = $options;
+    }
+
+    /**
+     * read option; will handle network wide or standalone site options
+     */
+    public static function _get_option($optionID, $network = false)
+    {
+        if ($network) {
+            $options = get_site_option($optionID);
+        } else {
+            $options = get_option($optionID);
+        }
+
+        return $options;
+    }
+
+    /**
+     * read hook; needs to be implemented
+     *
+     * @param $options
+     */
+    public function plugin_extend_options_read(&$options)
+    {
+        /* read the global options, network compatibility */
+        $this->global_config = get_site_option($this->global_option);
+
+        /* check if current site present in global config */
+        if (! empty ($this->global_config[ $this->global_config_key ])) {
+
+            $this->global_saved = true;
+
+        }
+
+        $this->global_config[ $this->global_config_key ] = $options;
+    }
+
+    /**
      * additional init, steps that needs the plugin options
      */
     public function plugin_post_init()
@@ -543,40 +617,6 @@ class WcMfpc
         }
     }
 
-
-    /**
-     * read option; will handle network wide or standalone site options
-     */
-    public static function _site_url($site = '', $network = false)
-    {
-        if ($network && ! empty($site)) {
-            $url = get_blog_option($site, 'siteurl');
-        } else {
-            $url = get_bloginfo('url');
-        }
-
-        return $url;
-    }
-
-    /**
-     * replaces http:// with https:// in an url if server is currently running on https
-     *
-     * @param string $url URL to check
-     *
-     * @return string URL with correct protocol
-     */
-    public static function replace_if_ssl($url)
-    {
-        if (isset($_SERVER[ 'HTTP_X_FORWARDED_PROTO' ]) && $_SERVER[ 'HTTP_X_FORWARDED_PROTO' ] == 'https') {
-            $_SERVER[ 'HTTPS' ] = 'on';
-        }
-        if (isset($_SERVER[ 'HTTPS' ]) && ((strtolower($_SERVER[ 'HTTPS' ]) == 'on') || ($_SERVER[ 'HTTPS' ] == '1'))) {
-            $url = str_replace('http://', 'https://', $url);
-        }
-
-        return $url;
-    }
-
     /**
      * display formatted alert message
      *
@@ -629,43 +669,6 @@ class WcMfpc
     {
         /* remove current site config from global config */
         $this->update_global_config(true);
-    }
-
-    /**
-     * reads options stored in database and reads merges them with default values
-     */
-    protected function plugin_options_read()
-    {
-        $options = static::_get_option($this->plugin_constant, $this->network);
-        /* map missing values from default */
-        foreach ($this->defaults as $key => $default) {
-            if (! @array_key_exists($key, $options)) {
-                $options[ $key ] = $default;
-            }
-        }
-        /* removed unused keys, rare, but possible */
-        foreach (@array_keys($options) as $key) {
-            if (! @array_key_exists($key, $this->defaults)) {
-                unset ($options[ $key ]);
-            }
-        }
-        /* any additional read hook */
-        $this->plugin_extend_options_read($options);
-        $this->options = $options;
-    }
-
-    /**
-     * read option; will handle network wide or standalone site options
-     */
-    public static function _get_option($optionID, $network = false)
-    {
-        if ($network) {
-            $options = get_site_option($optionID);
-        } else {
-            $options = get_option($optionID);
-        }
-
-        return $options;
     }
 
     /**
@@ -739,6 +742,39 @@ class WcMfpc
     }
 
     /**
+     * deletes saved options from database
+     */
+    protected function plugin_options_delete()
+    {
+        static::_delete_option($this->plugin_constant, $this->network);
+        /* additional moves */
+        $this->plugin_extend_options_delete();
+    }
+
+    /**
+     * clear option; will handle network wide or standalone site options
+     *
+     * @param      $optionID
+     * @param bool $network
+     */
+    public static function _delete_option($optionID, $network = false)
+    {
+        if ($network) {
+            delete_site_option($optionID);
+        } else {
+            delete_option($optionID);
+        }
+    }
+
+    /**
+     * options delete hook; needs to be implemented
+     */
+    public function plugin_extend_options_delete()
+    {
+        delete_site_option($this->global_option);
+    }
+
+    /**
      * once upgrade is finished, deploy advanced cache and save the new settings, just in case
      */
     public function plugin_upgrade($upgrader_object, $hook_extra)
@@ -754,55 +790,103 @@ class WcMfpc
     }
 
     /**
-     * extending admin init
+     * used on update and to save current options to database
+     *
+     * @param boolean $activating [optional] true on activation hook
      */
-    public function plugin_extend_admin_init()
+    protected function plugin_options_save($activating = false)
     {
-        /* save parameter updates, if there are any */
-        if (isset($_POST[ $this->button_flush ]) && check_admin_referer('wc-mfpc')) {
 
-            /* remove precache log entry */
-            static::_delete_option(self::precache_log);
-            /* remove precache timestamp entry */
-            static::_delete_option(self::precache_timestamp);
-            /* remove precache logfile */
-
-            if (@file_exists($this->precache_logfile)) {
-
-                unlink($this->precache_logfile);
-
+        /* only try to update defaults if it's not activation hook, $_POST is not empty and the post
+           is ours */
+        if (! $activating && ! empty ($_POST) && isset($_POST[ $this->button_save ])) {
+            /* we'll only update those that exist in the defaults array */
+            $options = $this->defaults;
+            foreach ($options as $key => $default) {
+                /* $_POST element is available */
+                if (! empty($_POST[ $key ])) {
+                    $update = $_POST[ $key ];
+                    /* get rid of slashes in strings, just in case */
+                    if (is_string($update)) {
+                        $update = stripslashes($update);
+                    }
+                    $options[ $key ] = $update;
+                } /* empty $_POST element: when HTML form posted, empty checkboxes a 0 input
+             values will not be part of the $_POST array, thus we need to check
+             if this is the situation by checking the types of the elements,
+             since a missing value means update from an integer to 0
+          */
+                elseif (empty($_POST[ $key ]) && (is_bool($default) || is_int($default))) {
+                    $options[ $key ] = 0;
+                } elseif (empty($_POST[ $key ]) && is_array($default)) {
+                    $options[ $key ] = [];
+                }
             }
+            /* update the options array */
+            $this->options = $options;
+        }
+        /* set plugin version */
+        $this->options[ 'version' ] = $this->plugin_version;
+        /* call hook function for additional moves before saving the values */
+        $this->plugin_extend_options_save($activating);
+        /* save options to database */
+        static::_update_option($this->plugin_constant, $this->options, $this->network);
+    }
 
-            /* remove precache PHP worker */
-            if (@file_exists($this->precache_phpfile)) {
+    /**
+     * extending options_save
+     */
+    public function plugin_extend_options_save($activating)
+    {
+        /* schedule cron if posted */
+        $schedule = wp_get_schedule(self::precache_id);
 
-                unlink($this->precache_phpfile);
+        if ($this->options[ 'precache_schedule' ] != 'null') {
 
-            }
+            /* clear all other schedules before adding a new in order to replace */
+            wp_clear_scheduled_hook(self::precache_id);
+            $this->scheduled = wp_schedule_event(time(), $this->options[ 'precache_schedule' ], self::precache_id);
 
-            /* flush backend */
-            $this->backend->clear(false, true);
-            $this->status = 3;
-            header("Location: " . $this->settings_link . self::slug_flush);
+        } elseif ((! isset($this->options[ 'precache_schedule' ]) || $this->options[ 'precache_schedule' ] == 'null') && ! empty($schedule)) {
+
+            wp_clear_scheduled_hook(self::precache_id);
 
         }
 
-        /* save parameter updates, if there are any */
-        if (isset($_POST[ $this->button_precache ]) && check_admin_referer('wc-mfpc')) {
+        /* flush the cache when new options are saved, not needed on activation */
+        if (! $activating) {
 
-            /* is no shell function is possible, fail */
-            if ($this->shell_function == false) {
+            $this->backend->clear(null, true);
 
-                $this->status = 5;
-                header("Location: " . $this->settings_link . self::slug_precache_disabled);
+        }
 
-            } else {
+        /* create the to-be-included configuration for advanced-cache.php */
+        $this->update_global_config();
 
-                $this->precache_message = $this->precache_coldrun();
-                $this->status           = 4;
-                header("Location: " . $this->settings_link . self::slug_precache);
+        /* create advanced cache file, needed only once or on activation, because there could be lefover advanced-cache.php from different plugins */
+        if (! $activating) {
 
-            }
+            $this->deploy_advanced_cache();
+
+        }
+    }
+
+    /**
+     * option update; will handle network wide or standalone site options
+     *
+     * @param      $optionID
+     * @param      $data
+     * @param bool $network
+     */
+    public static function _update_option($optionID, $data, $network = false)
+    {
+        if ($network) {
+
+            update_site_option($optionID, $data);
+
+        } else {
+
+            update_option($optionID, $data);
 
         }
     }
@@ -813,204 +897,6 @@ class WcMfpc
     public function plugin_load_textdomain()
     {
         load_plugin_textdomain('wc-mfpc', false, dirname(plugin_basename(__FILE__)) . '/languages/');
-    }
-
-    /**
-     * run full-site precache
-     */
-    public function precache_coldrun()
-    {
-        /* container for links to precache, well be accessed by reference */
-        $links = [];
-
-        /* when plugin is  network wide active, we need to pre-cache for all link of all blogs */
-        if ($this->network) {
-
-            /* list all blogs */
-            global $wpdb;
-
-            $pfix      = empty ($wpdb->base_prefix) ? 'wp_' : $wpdb->base_prefix;
-            $blog_list = $wpdb->get_results($wpdb->prepare("SELECT * FROM " . $pfix . "blogs ORDER BY blog_id", ''));
-
-            foreach ($blog_list as $blog) {
-
-                if ($blog->archived != 1 && $blog->spam != 1 && $blog->deleted != 1) {
-
-                    /* get permalinks for this blog */
-                    $this->precache_list_permalinks($links, $blog->blog_id);
-
-                }
-
-            }
-
-        } else {
-
-            /* no network, better */
-            $this->precache_list_permalinks($links, false);
-
-        }
-
-        /* double check if we do have any links to pre-cache */
-        if (! empty ($links)) {
-
-            $this->precache($links);
-
-        }
-    }
-
-    /**
-     * gets all post-like entry permalinks for a site, returns values in passed-by-reference array
-     *
-     * @param      $links
-     * @param bool $site
-     */
-    private function precache_list_permalinks(&$links, $site = false)
-    {
-        /* $post will be populated when running throught the posts */
-        global $post;
-
-        include_once(ABSPATH . "wp-load.php");
-        /* if a site id was provided, save current blog and change to the other site */
-
-        if ($site !== false) {
-
-            $current_blog = get_current_blog_id();
-            switch_to_blog($site);
-            $url = $this->_site_url($site);
-            //$url = get_blog_option ( $site, 'siteurl' );
-            if (substr($url, -1) !== '/') {
-
-                $url = $url . '/';
-
-            }
-            $links[ $url ] = true;
-
-        }
-
-        /* get all published posts */
-        $args  = [
-            'post_type'      => 'any',
-            'posts_per_page' => -1,
-            'post_status'    => 'publish',
-        ];
-        $posts = new \WP_Query($args);
-
-        /* get all the posts, one by one  */
-        while ($posts->have_posts()) {
-
-            $posts->the_post();
-
-            /* get the permalink for currently selected post */
-            switch ($post->post_type) {
-
-                case 'revision':
-                case 'nav_menu_item':
-                    break;
-                case 'page':
-                    $permalink = get_page_link($post->ID);
-                    break;
-                /*
-                         * case 'post':
-                            $permalink = get_permalink( $post->ID );
-                            break;
-                        */
-                case 'attachment':
-                    $permalink = get_attachment_link($post->ID);
-                    break;
-                default:
-                    $permalink = get_permalink($post->ID);
-                    break;
-
-            }
-
-            /* in case the bloglinks are relative links add the base url, site specific */
-            $baseurl = empty($url) ? static::_site_url() : $url;
-
-            if (! strstr($permalink, $baseurl)) {
-
-                $permalink = $baseurl . $permalink;
-
-            }
-
-            /* collect permalinks */
-            $links[ $permalink ] = true;
-        }
-
-        $this->backend->taxonomy_links($links);
-        /* just in case, reset $post */
-        wp_reset_postdata();
-
-        /* switch back to original site if we navigated away */
-        if ($site !== false) {
-
-            switch_to_blog($current_blog);
-
-        }
-    }
-
-    /**
-     * generate cache entry for every available permalink, might be very-very slow,
-     * therefore it starts a background process
-     *
-     * @param $links
-     *
-     * @return void
-     */
-    private function precache(&$links)
-    {
-        /* double check if we do have any links to pre-cache */
-        if (! empty ($links) && ! $this->precache_running()) {
-
-            $out = '<?php
-                $links = ' . var_export($links, true) . ';
-
-                echo "permalink\tgeneration time (s)\tsize ( kbyte )\n";
-                
-                foreach ( $links as $permalink => $dummy ) {
-                
-                    $starttime = explode ( " ", microtime() );
-                    $starttime = $starttime[1] + $starttime[0];
-    
-                    $page = file_get_contents( $permalink );
-                    $size = round ( ( strlen ( $page ) / 1024 ), 2 );
-    
-                    $endtime = explode ( " ", microtime() );
-                    $endtime = round( ( $endtime[1] + $endtime[0] ) - $starttime, 2 );
-    
-                    echo $permalink . "\t" .  $endtime . "\t" . $size . "\n";
-                    unset ( $page, $size, $starttime, $endtime );
-                    sleep( 1 );
-                    
-                }
-                
-                unlink ( "' . $this->precache_phpfile . '" );
-            ?>';
-
-            file_put_contents($this->precache_phpfile, $out);
-            /* call the precache worker file in the background */
-            $shellfunction = $this->shell_function;
-            $shellfunction('php ' . $this->precache_phpfile . ' >' . $this->precache_logfile . ' 2>&1 &');
-
-        }
-    }
-
-    /**
-     * check is precache is still ongoing
-     *
-     * @return bool
-     */
-    private function precache_running()
-    {
-        $return = false;
-
-        /* if the precache file exists, it did not finish running as it should delete itself on finish */
-        if (file_exists($this->precache_phpfile)) {
-
-            $return = true;
-
-        }
-
-        return $return;
     }
 
     /**
@@ -1619,6 +1505,45 @@ class WcMfpc
         return apply_filters('wc_mfpc_admin_panel_tabs', $default_tabs);
     }
 
+    /**
+     * select options field processor
+     *
+     * @param elements
+     *  array to build <option> values of
+     * @param $current
+     *  the current active element
+     * @param $print
+     *  boolean: is true, the options will be printed, otherwise the string will be returned
+     *
+     * @return mixed $opt prints or returns the options string
+     */
+    protected function print_select_options($elements, $current, $valid = false, $print = true)
+    {
+
+        if (is_array($valid)) {
+            $check_disabled = true;
+        } else {
+            $check_disabled = false;
+        }
+        $opt = '';
+        foreach ($elements as $value => $name) {
+            //$disabled .= ( @array_key_exists( $valid[ $value ] ) && $valid[ $value ] == false ) ? ' disabled="disabled"' : '';
+            $opt .= '<option value="' . $value . '" ';
+            $opt .= selected($value, $current);
+            // ugly tree level valid check to prevent array warning messages
+            if (is_array($valid) && isset ($valid [ $value ]) && $valid [ $value ] == false) {
+                $opt .= ' disabled="disabled"';
+            }
+            $opt .= '>';
+            $opt .= $name;
+            $opt .= "</option>\n";
+        }
+        if ($print) {
+            echo $opt;
+        } else {
+            return $opt;
+        }
+    }
 
     /**
      * admin init called by WordPress add_action, needs to be public
@@ -1652,162 +1577,275 @@ class WcMfpc
         );
     }
 
-
     /**
-     * used on update and to save current options to database
-     *
-     * @param boolean $activating [optional] true on activation hook
+     * extending admin init
      */
-    protected function plugin_options_save($activating = false)
+    public function plugin_extend_admin_init()
     {
+        /* save parameter updates, if there are any */
+        if (isset($_POST[ $this->button_flush ]) && check_admin_referer('wc-mfpc')) {
 
-        /* only try to update defaults if it's not activation hook, $_POST is not empty and the post
-           is ours */
-        if (! $activating && ! empty ($_POST) && isset($_POST[ $this->button_save ])) {
-            /* we'll only update those that exist in the defaults array */
-            $options = $this->defaults;
-            foreach ($options as $key => $default) {
-                /* $_POST element is available */
-                if (! empty($_POST[ $key ])) {
-                    $update = $_POST[ $key ];
-                    /* get rid of slashes in strings, just in case */
-                    if (is_string($update)) {
-                        $update = stripslashes($update);
-                    }
-                    $options[ $key ] = $update;
-                } /* empty $_POST element: when HTML form posted, empty checkboxes a 0 input
-             values will not be part of the $_POST array, thus we need to check
-             if this is the situation by checking the types of the elements,
-             since a missing value means update from an integer to 0
-          */
-                elseif (empty($_POST[ $key ]) && (is_bool($default) || is_int($default))) {
-                    $options[ $key ] = 0;
-                } elseif (empty($_POST[ $key ]) && is_array($default)) {
-                    $options[ $key ] = [];
-                }
+            /* remove precache log entry */
+            static::_delete_option(self::precache_log);
+            /* remove precache timestamp entry */
+            static::_delete_option(self::precache_timestamp);
+            /* remove precache logfile */
+
+            if (@file_exists($this->precache_logfile)) {
+
+                unlink($this->precache_logfile);
+
             }
-            /* update the options array */
-            $this->options = $options;
-        }
-        /* set plugin version */
-        $this->options[ 'version' ] = $this->plugin_version;
-        /* call hook function for additional moves before saving the values */
-        $this->plugin_extend_options_save($activating);
-        /* save options to database */
-        static::_update_option($this->plugin_constant, $this->options, $this->network);
-    }
 
+            /* remove precache PHP worker */
+            if (@file_exists($this->precache_phpfile)) {
 
-    /**
-     * extending options_save
-     */
-    public function plugin_extend_options_save($activating)
-    {
-        /* schedule cron if posted */
-        $schedule = wp_get_schedule(self::precache_id);
+                unlink($this->precache_phpfile);
 
-        if ($this->options[ 'precache_schedule' ] != 'null') {
+            }
 
-            /* clear all other schedules before adding a new in order to replace */
-            wp_clear_scheduled_hook(self::precache_id);
-            $this->scheduled = wp_schedule_event(time(), $this->options[ 'precache_schedule' ], self::precache_id);
-
-        } elseif ((! isset($this->options[ 'precache_schedule' ]) || $this->options[ 'precache_schedule' ] == 'null') && ! empty($schedule)) {
-
-            wp_clear_scheduled_hook(self::precache_id);
+            /* flush backend */
+            $this->backend->clear(false, true);
+            $this->status = 3;
+            header("Location: " . $this->settings_link . self::slug_flush);
 
         }
 
-        /* flush the cache when new options are saved, not needed on activation */
-        if (! $activating) {
+        /* save parameter updates, if there are any */
+        if (isset($_POST[ $this->button_precache ]) && check_admin_referer('wc-mfpc')) {
 
-            $this->backend->clear(null, true);
+            /* is no shell function is possible, fail */
+            if ($this->shell_function == false) {
 
-        }
+                $this->status = 5;
+                header("Location: " . $this->settings_link . self::slug_precache_disabled);
 
-        /* create the to-be-included configuration for advanced-cache.php */
-        $this->update_global_config();
+            } else {
 
-        /* create advanced cache file, needed only once or on activation, because there could be lefover advanced-cache.php from different plugins */
-        if (! $activating) {
+                $this->precache_message = $this->precache_coldrun();
+                $this->status           = 4;
+                header("Location: " . $this->settings_link . self::slug_precache);
 
-            $this->deploy_advanced_cache();
+            }
 
         }
     }
 
     /**
-     * option update; will handle network wide or standalone site options
-     *
-     * @param      $optionID
-     * @param      $data
-     * @param bool $network
+     * run full-site precache
      */
-    public static function _update_option($optionID, $data, $network = false)
+    public function precache_coldrun()
     {
-        if ($network) {
+        /* container for links to precache, well be accessed by reference */
+        $links = [];
 
-            update_site_option($optionID, $data);
+        /* when plugin is  network wide active, we need to pre-cache for all link of all blogs */
+        if ($this->network) {
+
+            /* list all blogs */
+            global $wpdb;
+
+            $pfix      = empty ($wpdb->base_prefix) ? 'wp_' : $wpdb->base_prefix;
+            $blog_list = $wpdb->get_results($wpdb->prepare("SELECT * FROM " . $pfix . "blogs ORDER BY blog_id", ''));
+
+            foreach ($blog_list as $blog) {
+
+                if ($blog->archived != 1 && $blog->spam != 1 && $blog->deleted != 1) {
+
+                    /* get permalinks for this blog */
+                    $this->precache_list_permalinks($links, $blog->blog_id);
+
+                }
+
+            }
 
         } else {
 
-            update_option($optionID, $data);
+            /* no network, better */
+            $this->precache_list_permalinks($links, false);
+
+        }
+
+        /* double check if we do have any links to pre-cache */
+        if (! empty ($links)) {
+
+            $this->precache($links);
 
         }
     }
 
     /**
-     * deletes saved options from database
-     */
-    protected function plugin_options_delete()
-    {
-        static::_delete_option($this->plugin_constant, $this->network);
-        /* additional moves */
-        $this->plugin_extend_options_delete();
-    }
-
-    /**
-     * read hook; needs to be implemented
+     * gets all post-like entry permalinks for a site, returns values in passed-by-reference array
      *
-     * @param $options
+     * @param      $links
+     * @param bool $site
      */
-    public function plugin_extend_options_read(&$options)
+    private function precache_list_permalinks(&$links, $site = false)
     {
-        /* read the global options, network compatibility */
-        $this->global_config = get_site_option($this->global_option);
+        /* $post will be populated when running throught the posts */
+        global $post;
 
-        /* check if current site present in global config */
-        if (! empty ($this->global_config[ $this->global_config_key ])) {
+        include_once(ABSPATH . "wp-load.php");
+        /* if a site id was provided, save current blog and change to the other site */
 
-            $this->global_saved = true;
+        if ($site !== false) {
+
+            $current_blog = get_current_blog_id();
+            switch_to_blog($site);
+            $url = $this->_site_url($site);
+            //$url = get_blog_option ( $site, 'siteurl' );
+            if (substr($url, -1) !== '/') {
+
+                $url = $url . '/';
+
+            }
+            $links[ $url ] = true;
 
         }
 
-        $this->global_config[ $this->global_config_key ] = $options;
+        /* get all published posts */
+        $args  = [
+            'post_type'      => 'any',
+            'posts_per_page' => -1,
+            'post_status'    => 'publish',
+        ];
+        $posts = new \WP_Query($args);
+
+        /* get all the posts, one by one  */
+        while ($posts->have_posts()) {
+
+            $posts->the_post();
+
+            /* get the permalink for currently selected post */
+            switch ($post->post_type) {
+
+                case 'revision':
+                case 'nav_menu_item':
+                    break;
+                case 'page':
+                    $permalink = get_page_link($post->ID);
+                    break;
+                /*
+                         * case 'post':
+                            $permalink = get_permalink( $post->ID );
+                            break;
+                        */
+                case 'attachment':
+                    $permalink = get_attachment_link($post->ID);
+                    break;
+                default:
+                    $permalink = get_permalink($post->ID);
+                    break;
+
+            }
+
+            /* in case the bloglinks are relative links add the base url, site specific */
+            $baseurl = empty($url) ? static::_site_url() : $url;
+
+            if (! strstr($permalink, $baseurl)) {
+
+                $permalink = $baseurl . $permalink;
+
+            }
+
+            /* collect permalinks */
+            $links[ $permalink ] = true;
+        }
+
+        $this->backend->taxonomy_links($links);
+        /* just in case, reset $post */
+        wp_reset_postdata();
+
+        /* switch back to original site if we navigated away */
+        if ($site !== false) {
+
+            switch_to_blog($current_blog);
+
+        }
     }
 
     /**
-     * clear option; will handle network wide or standalone site options
-     *
-     * @param      $optionID
-     * @param bool $network
+     * read option; will handle network wide or standalone site options
      */
-    public static function _delete_option($optionID, $network = false)
+    public static function _site_url($site = '', $network = false)
     {
-        if ($network) {
-            delete_site_option($optionID);
+        if ($network && ! empty($site)) {
+            $url = get_blog_option($site, 'siteurl');
         } else {
-            delete_option($optionID);
+            $url = get_bloginfo('url');
+        }
+
+        return $url;
+    }
+
+    /**
+     * generate cache entry for every available permalink, might be very-very slow,
+     * therefore it starts a background process
+     *
+     * @param $links
+     *
+     * @return void
+     */
+    private function precache(&$links)
+    {
+        /* double check if we do have any links to pre-cache */
+        if (! empty ($links) && ! $this->precache_running()) {
+
+            $out = '<?php
+                $links = ' . var_export($links, true) . ';
+
+                echo "permalink\tgeneration time (s)\tsize ( kbyte )\n";
+                
+                foreach ( $links as $permalink => $dummy ) {
+                
+                    $starttime = explode ( " ", microtime() );
+                    $starttime = $starttime[1] + $starttime[0];
+    
+                    $page = file_get_contents( $permalink );
+                    $size = round ( ( strlen ( $page ) / 1024 ), 2 );
+    
+                    $endtime = explode ( " ", microtime() );
+                    $endtime = round( ( $endtime[1] + $endtime[0] ) - $starttime, 2 );
+    
+                    echo $permalink . "\t" .  $endtime . "\t" . $size . "\n";
+                    unset ( $page, $size, $starttime, $endtime );
+                    sleep( 1 );
+                    
+                }
+                
+                unlink ( "' . $this->precache_phpfile . '" );
+            ?>';
+
+            file_put_contents($this->precache_phpfile, $out);
+            /* call the precache worker file in the background */
+            $shellfunction = $this->shell_function;
+            $shellfunction('php ' . $this->precache_phpfile . ' >' . $this->precache_logfile . ' 2>&1 &');
+
         }
     }
 
     /**
-     * options delete hook; needs to be implemented
+     * check is precache is still ongoing
+     *
+     * @return bool
      */
-    public function plugin_extend_options_delete()
+    private function precache_running()
     {
-        delete_site_option($this->global_option);
+        $return = false;
+
+        /* if the precache file exists, it did not finish running as it should delete itself on finish */
+        if (file_exists($this->precache_phpfile)) {
+
+            $return = true;
+
+        }
+
+        return $return;
     }
+
+    /**
+     * UTILS
+     */
 
     /**
      * @return null|Memcached
@@ -1816,10 +1854,6 @@ class WcMfpc
     {
         return $this->backend;
     }
-
-    /**
-     * UTILS
-     */
 
     /**
      * callback function to add settings link to plugins page
@@ -1893,46 +1927,6 @@ class WcMfpc
             return $var;
         } else {
             echo $var;
-        }
-    }
-
-    /**
-     * select options field processor
-     *
-     * @param elements
-     *  array to build <option> values of
-     * @param $current
-     *  the current active element
-     * @param $print
-     *  boolean: is true, the options will be printed, otherwise the string will be returned
-     *
-     * @return mixed $opt prints or returns the options string
-     */
-    protected function print_select_options($elements, $current, $valid = false, $print = true)
-    {
-
-        if (is_array($valid)) {
-            $check_disabled = true;
-        } else {
-            $check_disabled = false;
-        }
-        $opt = '';
-        foreach ($elements as $value => $name) {
-            //$disabled .= ( @array_key_exists( $valid[ $value ] ) && $valid[ $value ] == false ) ? ' disabled="disabled"' : '';
-            $opt .= '<option value="' . $value . '" ';
-            $opt .= selected($value, $current);
-            // ugly tree level valid check to prevent array warning messages
-            if (is_array($valid) && isset ($valid [ $value ]) && $valid [ $value ] == false) {
-                $opt .= ' disabled="disabled"';
-            }
-            $opt .= '>';
-            $opt .= $name;
-            $opt .= "</option>\n";
-        }
-        if ($print) {
-            echo $opt;
-        } else {
-            return $opt;
         }
     }
 
