@@ -5,43 +5,6 @@ namespace InvincibleBrands\WcMfpc;
 
 if (! defined('ABSPATH')) { exit; }
 
-/* __ only availabe if we're running from the inside of wordpress, not in advanced-cache.php phase */
-if ( !function_exists ('__translate__') ) {
-
-    /* __ only availabe if we're running from the inside of wordpress, not in advanced-cache.php phase */
-    if ( function_exists ( '__' ) ) {
-
-        function __translate__ ( $text, $domain ) {
-
-            return __($text, $domain);
-        }
-
-    } else {
-
-        function __translate__ ( $text, $domain ) {
-
-            return $text;
-        }
-
-    }
-
-}
-
-if ( !function_exists ('__debug__') ) {
-
-    /* __ only availabe if we're running from the inside of wordpress, not in advanced-cache.php phase */
-    function __debug__ ( $text ) {
-
-        if ( defined('WC_MFPC__DEBUG_MODE') && WC_MFPC__DEBUG_MODE == true) {
-
-            error_log ( __FILE__ . ': ' . $text );
-
-        }
-
-    }
-
-}
-
 /**
  * Class WcMfpcAbstract
  *
@@ -82,15 +45,18 @@ abstract class WcMfpcAbstract
     protected $donation = false;
 
     /**
-    * constructor
-    *
-    * @param string $plugin_constant General plugin identifier, same as directory & base PHP file name
-    * @param string $plugin_version Version number of the parameter
-    * @param string $plugin_name Readable name of the plugin
-    * @param mixed $defaults Default value(s) for plugin option(s)
-    * @param string $donation_link Donation link of plugin
-    *
-    */
+     * WcMfpcAbstract constructor.
+     *
+     * @param string $plugin_constant         General plugin identifier, same as directory & base PHP file name
+     * @param string $plugin_version          Version number of the parameter
+     * @param string $plugin_name             Readable name of the plugin
+     * @param mixed  $defaults                Default value(s) for plugin option(s)
+     * @param mixed  $donation_business_name
+     * @param mixed  $donation_item_name
+     * @param mixed  $donation_business_id
+     *
+     * @return void
+     */
     public function __construct( $plugin_constant, $plugin_version, $plugin_name, $defaults, $donation_business_name = false, $donation_item_name = false, $donation_business_id = false ) {
 
       $this->plugin_constant = $plugin_constant;
@@ -186,8 +152,6 @@ abstract class WcMfpcAbstract
         add_action('network_admin_menu', array( &$this , 'plugin_admin_init') );
       else
         add_action('admin_menu', array( &$this , 'plugin_admin_init') );
-
-      add_filter('contextual_help', array( &$this, 'plugin_admin_help' ), 10, 2);
 
       /* setup plugin, plugin specific setup functions that need options */
       $this->plugin_post_init();
