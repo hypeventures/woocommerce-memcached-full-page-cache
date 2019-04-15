@@ -151,7 +151,7 @@ class WcMfpc extends WcMfpcAbstract
     public function plugin_post_construct()
     {
         $this->plugin_url = plugin_dir_url(__FILE__);
-        $this->plugin_dir = plugin_dir_path(__FILE__);
+        $this->plugin_dir = plugin_dir_path(dirname(__FILE__));
         $this->admin_css_handle = $this->plugin_constant . '-admin-css';
         $this->admin_css_url    = $this->plugin_url . 'wp-admin.css';
     }
@@ -166,7 +166,7 @@ class WcMfpc extends WcMfpcAbstract
         /* WordPress advanced-cache.php file location */
         $this->acache = WP_CONTENT_DIR . '/advanced-cache.php';
         /* nginx sample config file */
-        $this->nginx_sample = $this->plugin_dir . $this->plugin_constant . '-nginx-sample.conf';
+        $this->nginx_sample = $this->plugin_dir . 'nginx-sample.conf';
         /* backend driver file */
         $this->acache_backend = $this->plugin_dir . $this->plugin_constant . '-engine.php';
         /* flush button identifier */
@@ -771,8 +771,7 @@ class WcMfpc extends WcMfpcAbstract
                 'id'      => 'wc-mfpc-nginx-help',
                 'title'   => __('nginx example', 'wc-mfpc'),
                 'content' => $content,
-            ]
-            );
+            ]);
 
         }
 
@@ -1548,78 +1547,6 @@ class WcMfpc extends WcMfpcAbstract
     public function plugin_extend_options_delete()
     {
         delete_site_option($this->global_option);
-    }
-
-    /**
-     * need to do migrations from previous versions of the plugin
-     *
-     * @param $options
-     */
-    public function plugin_options_migrate(&$options)
-    {
-        if (version_compare($options[ 'version' ], $this->plugin_version, '<')) {
-
-            /* cleanup possible leftover files from previous versions */
-            $check = [ 'advanced-cache.php', 'nginx-sample.conf', 'wc-mfpc.admin.css', 'wc-mfpc-common.php' ];
-
-            foreach ($check as $fname) {
-
-                $fname = $this->plugin_dir . $fname;
-
-                if (file_exists($fname)) {
-
-                    unlink($fname);
-
-                }
-
-            }
-
-            /* look for previous config leftovers */
-            $try = get_site_option('wc-mfpc');
-
-            /* network option key changed, remove & migrate the leftovers if there's any */
-            if (! empty ($try) && $this->network) {
-
-                /* clean it up, we don't use it anymore */
-                delete_site_option('wc-mfpc');
-
-                if (empty ($options) && array_key_exists($this->global_config_key, $try)) {
-
-                    $options = $try [ $this->global_config_key ];
-
-                } elseif (empty ($options) && array_key_exists('host', $try)) {
-
-                    $options = $try;
-
-                }
-            }
-
-            /* updating from version <= 0.4.x */
-            if (! empty ($options[ 'host' ])) {
-
-                $options[ 'hosts' ] = $options[ 'host' ] . ':' . $options[ 'port' ];
-
-            /* migrating from version 0.6.x */
-            } elseif (is_array($options) && array_key_exists($this->global_config_key, $options)) {
-
-                $options = $options[ $this->global_config_key ];
-
-            }
-
-            /* renamed options */
-            if (isset ($options[ 'syslog' ])) {
-
-                $options[ 'log' ] = $options[ 'syslog' ];
-
-            }
-
-            if (isset ($options[ 'debug' ])) {
-
-                $options[ 'response_header' ] = $options[ 'debug' ];
-
-            }
-
-        }
     }
 
     /**

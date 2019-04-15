@@ -288,8 +288,6 @@ abstract class WcMfpcAbstract
     protected function plugin_options_read()
     {
         $options = static::_get_option($this->plugin_constant, $this->network);
-        /* this is the point to make any migrations from previous versions */
-        $this->plugin_options_migrate($options);
         /* map missing values from default */
         foreach ($this->defaults as $key => $default) {
             if (! @array_key_exists($key, $options)) {
@@ -320,11 +318,6 @@ abstract class WcMfpcAbstract
 
         return $options;
     }
-
-    /**
-     * hook for parameter migration, runs right after options read from DB
-     */
-    abstract function plugin_options_migrate(&$options);
 
     /* add admin styling */
 
