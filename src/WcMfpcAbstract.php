@@ -345,11 +345,6 @@ abstract class WcMfpcAbstract
     abstract function plugin_admin_panel();
 
     /**
-     * admin help menu
-     */
-    abstract function plugin_admin_help($contextual_help, $screen_id);
-
-    /**
      * admin init called by WordPress add_action, needs to be public
      */
     public function plugin_admin_init()
