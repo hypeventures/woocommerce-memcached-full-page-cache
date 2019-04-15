@@ -3,7 +3,9 @@
 namespace InvincibleBrands\WcMfpc;
 
 
-if (! defined('ABSPATH')) { exit; }
+if (! defined('ABSPATH')) {
+    exit;
+}
 
 /**
  * Class Memcached
@@ -15,6 +17,11 @@ class Memcached
 
     const host_separator = ',';
     const port_separator = ':';
+
+    /**
+     * @var array
+     */
+    public $cookies = [];
 
     /**
      * @var null|\Memcached
@@ -39,11 +46,6 @@ class Memcached
     /**
      * @var array
      */
-    public $cookies = [];
-
-    /**
-     * @var array
-     */
     protected $urimap = [];
 
     /**
@@ -58,7 +60,6 @@ class Memcached
 
             return false;
         }
-
         $this->options = $config;
         /* these are the list of the cookies to look for when looking for logged in user */
         $this->cookies = [ 'comment_author_', 'wordpressuser_', 'wp-postpass_', 'wordpress_logged_in_' ];
@@ -70,7 +71,7 @@ class Memcached
         if (isset($_SERVER[ 'HTTP_X_FORWARDED_PROTO' ]) && $_SERVER[ 'HTTP_X_FORWARDED_PROTO' ] == 'https') {
             $_SERVER[ 'HTTPS' ] = 'on';
         }
-        $scheme = (isset($_SERVER[ 'HTTPS' ]) && ((strtolower($_SERVER[ 'HTTPS' ]) == 'on') || ($_SERVER[ 'HTTPS' ] == '1'))) ? 'https://' : 'http://';
+        $scheme       = (isset($_SERVER[ 'HTTPS' ]) && ((strtolower($_SERVER[ 'HTTPS' ]) == 'on') || ($_SERVER[ 'HTTPS' ] == '1'))) ? 'https://' : 'http://';
         $this->urimap = [
             '$scheme'           => str_replace('://', '', $scheme),
             '$host'             => $rhost,
@@ -102,35 +103,137 @@ class Memcached
     }
 
     /**
-     * @param string $uri
-     * @param mixed  $default_urimap
-     *
-     * @return array
+     * split hosts string to backend servers
      */
-    public static function parse_urimap($uri, $default_urimap = null)
+    protected function set_servers()
     {
-        $uri_parts = parse_url($uri);
-        $uri_map = [
-            '$scheme'      => $uri_parts[ 'scheme' ],
-            '$host'        => $uri_parts[ 'host' ],
-            '$request_uri' => $uri_parts[ 'path' ]
-        ];
-        if (is_array($default_urimap)) {
-            $uri_map = array_merge($default_urimap, $uri_map);
+        if (empty ($this->options[ 'hosts' ])) {
+            return false;
         }
+        /* replace servers array in config according to hosts field */
+        $servers              = explode(self::host_separator, $this->options[ 'hosts' ]);
+        $options[ 'servers' ] = [];
+        foreach ($servers as $snum => $sstring) {
 
-        return $uri_map;
+            if (stristr($sstring, 'unix://')) {
+                $host = str_replace('unix:/', '', $sstring);
+                $port = 0;
+            } else {
+                $separator = strpos($sstring, self::port_separator);
+                $host      = substr($sstring, 0, $separator);
+                $port      = substr($sstring, $separator + 1);
+            }
+            $this->options[ 'servers' ][ $sstring ] = [
+                'host' => $host,
+                'port' => $port,
+            ];
+        }
     }
 
     /**
-     * @param array  $urimap
-     * @param string $subject
+     * log wrapper to include options
      *
-     * @return mixed
+     * @var mixed $message   Message to log
+     * @var int   $log_level Log level
      */
-    public static function map_urimap($urimap, $subject)
+    protected function log($message, $level = LOG_NOTICE)
     {
-        return str_replace(array_keys($urimap), $urimap, $subject);
+        if (@is_array($message) || @is_object($message)) {
+            $message = json_encode($message);
+        }
+        switch ($level) {
+            case LOG_ERR :
+                wp_die('<h1>Error:</h1>' . '<p>' . $message . '</p>');
+                exit;
+            default:
+                if (! defined('WP_DEBUG') || WP_DEBUG != true || ! defined('WC_MFPC__DEBUG_MODE') || WC_MFPC__DEBUG_MODE != true) {
+                    return;
+                }
+                break;
+        }
+        error_log(__CLASS__ . ": " . $message);
+    }
+
+    /**
+     * @return bool
+     */
+    protected function _init()
+    {
+        /* Memcached class does not exist, Memcached extension is not available */
+        if (! class_exists('Memcached')) {
+            $this->log(' Memcached extension missing, wc-mfpc will not be able to function correctly!', LOG_WARNING);
+
+            return false;
+        }
+        /* check for existing server list, otherwise we cannot add backends */
+        if (empty ($this->options[ 'servers' ]) && ! $this->alive) {
+            $this->log("Memcached servers list is empty, init failed", LOG_WARNING);
+
+            return false;
+        }
+        /* check is there's no backend connection yet */
+        if ($this->connection === null) {
+            $this->connection = new Memcached();
+            /* use binary and not compressed format, good for nginx and still fast */
+            $this->connection->setOption(Memcached::OPT_COMPRESSION, false);
+            if ($this->options[ 'memcached_binary' ]) {
+                $this->connection->setOption(Memcached::OPT_BINARY_PROTOCOL, true);
+            }
+            if (version_compare(phpversion('memcached'), '2.0.0', '>=') && ini_get('memcached.use_sasl') == 1 && isset($this->options[ 'authpass' ]) && ! empty($this->options[ 'authpass' ]) && isset($this->options[ 'authuser' ]) && ! empty($this->options[ 'authuser' ])) {
+                $this->connection->setSaslAuthData($this->options[ 'authuser' ], $this->options[ 'authpass' ]);
+            }
+        }
+        /* check if initialization was success or not */
+        if ($this->connection === null) {
+            $this->log('error initializing Memcached PHP extension, exiting');
+
+            return false;
+        }
+        /* check if we already have list of servers, only add server(s) if it's not already connected */
+        $servers_alive = [];
+        if (! empty ($this->status)) {
+            $servers_alive = $this->connection->getServerList();
+            /* create check array if backend servers are already connected */
+            if (! empty ($servers)) {
+                foreach ($servers_alive as $skey => $server) {
+                    $skey                   = $server[ 'host' ] . ":" . $server[ 'port' ];
+                    $servers_alive[ $skey ] = true;
+                }
+            }
+        }
+        /* adding servers */
+        foreach ($this->options[ 'servers' ] as $server_id => $server) {
+            /* reset server status to unknown */
+            //$this->status[$server_id] = -1;
+            /* only add servers that does not exists already  in connection pool */
+            if (! @array_key_exists($server_id, $servers_alive)) {
+                $this->connection->addServer($server[ 'host' ], $server[ 'port' ]);
+                $this->log(sprintf('%s added', $server_id));
+            }
+        }
+        /* backend is now alive */
+        $this->alive = true;
+        $this->_status();
+    }
+
+    /**
+     * sets current backend alive status for Memcached servers
+     */
+    protected function _status()
+    {
+        /* server status will be calculated by getting server stats */
+        $this->log("checking server statuses");
+        /* get server list from connection */
+        $servers = $this->connection->getServerList();
+        foreach ($servers as $server) {
+            $server_id = $server[ 'host' ] . self::port_separator . $server[ 'port' ];
+            /* reset server status to offline */
+            $this->status[ $server_id ] = 0;
+            if ($this->connection->set('wc-mfpc', time())) {
+                $this->log(sprintf('%s server is up & running', $server_id));
+                $this->status[ $server_id ] = 1;
+            }
+        }
     }
 
     /**
@@ -143,7 +246,7 @@ class Memcached
      */
     public function key($prefix, $customUrimap = null)
     {
-        $urimap = $customUrimap ?: $this->urimap;
+        $urimap   = $customUrimap ?: $this->urimap;
         $key_base = self::map_urimap($urimap, $this->options[ 'key' ]);
         if ((isset($this->options[ 'hashkey' ]) && $this->options[ 'hashkey' ] == true) || $this->options[ 'cache_type' ] == 'redis') {
             $key_base = sha1($key_base);
@@ -156,6 +259,16 @@ class Memcached
         return $key;
     }
 
+    /**
+     * @param array  $urimap
+     * @param string $subject
+     *
+     * @return mixed
+     */
+    public static function map_urimap($urimap, $subject)
+    {
+        return str_replace(array_keys($urimap), $urimap, $subject);
+    }
 
     /**
      * public get function, transparent proxy to internal function based on backend
@@ -180,6 +293,34 @@ class Memcached
         }
 
         return $result;
+    }
+
+    /**
+     * function to check backend aliveness
+     *
+     * @return boolean true if backend is alive, false if not
+     */
+    protected function is_alive()
+    {
+        if (! $this->alive) {
+            $this->log("backend is not active, exiting function " . __FUNCTION__, LOG_WARNING);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * get function for Memcached backend
+     *
+     * @param string $key Key to get values for
+     *
+     * @return mixed
+     */
+    protected function _get(&$key)
+    {
+        return $this->connection->get($key);
     }
 
     /**
@@ -215,6 +356,28 @@ class Memcached
         /* check result validity */
         if ($result === false || $result === null) {
             $this->log(sprintf('failed to set entry: %s', $key), LOG_WARNING);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Set function for Memcached backend
+     *
+     * @param string $key  Key to set with
+     * @param mixed  $data Data to set
+     *
+     * @return bool
+     */
+    protected function _set(&$key, &$data, &$expire)
+    {
+        $result = $this->connection->set($key, $data, $expire);
+        /* if storing failed, log the error code */
+        if ($result === false) {
+            $code = $this->connection->getResultCode();
+            $this->log(sprintf('unable to set entry: %s', $key));
+            $this->log(sprintf('Memcached error code: %s', $code));
+            //throw new Exception ( 'Unable to store Memcached entry ' . $key .  ', error code: ' . $code );
         }
 
         return $result;
@@ -307,11 +470,11 @@ class Memcached
             $current_page_id = '';
             do {
                 /* urimap */
-                $urimap                   = self::parse_urimap($permalink, $this->urimap);
-                $urimap[ '$request_uri' ] = $urimap[ '$request_uri' ] . ($current_page_id ? $current_page_id . '/' : '');
-                $clear_cache_key = self::map_urimap($urimap, $this->options[ 'key' ]);
+                $urimap                       = self::parse_urimap($permalink, $this->urimap);
+                $urimap[ '$request_uri' ]     = $urimap[ '$request_uri' ] . ($current_page_id ? $current_page_id . '/' : '');
+                $clear_cache_key              = self::map_urimap($urimap, $this->options[ 'key' ]);
                 $to_clear[ $clear_cache_key ] = true;
-                $current_page_id = 1 + (int) $current_page_id;
+                $current_page_id              = 1 + (int) $current_page_id;
             } while ($number_of_pages > 1 && $current_page_id <= $number_of_pages);
         }
         /* Hook to custom clearing array. */
@@ -321,36 +484,11 @@ class Memcached
     }
 
     /**
-     * unset entries by key
-     *
-     * @param array $keys
+     * Flush memcached entries
      */
-    public function clear_keys($keys)
+    protected function _flush()
     {
-        $to_clear = apply_filters('wc_mfpc_clear_keys_array', $keys, $this->options);
-        $this->_clear($to_clear);
-    }
-
-    /**
-     * clear cache triggered by new comment
-     *
-     * @param int              $comment_id        Comment ID
-     * @param null|\WP_Comment $comment_object    The whole comment object ?
-     *
-     * @return bool
-     */
-    public function clear_by_comment($comment_id = 0, $comment_object = null)
-    {
-        if (empty($comment_id)) {
-            return false;
-        }
-        $comment = get_comment($comment_id);
-        $post_id = $comment->comment_post_ID;
-        if (! empty($post_id)) {
-            $this->clear($post_id);
-        }
-        unset ($comment);
-        unset ($post_id);
+        return $this->connection->flush();
     }
 
     /**
@@ -416,6 +554,84 @@ class Memcached
     }
 
     /**
+     * @param string $uri
+     * @param mixed  $default_urimap
+     *
+     * @return array
+     */
+    public static function parse_urimap($uri, $default_urimap = null)
+    {
+        $uri_parts = parse_url($uri);
+        $uri_map   = [
+            '$scheme'      => $uri_parts[ 'scheme' ],
+            '$host'        => $uri_parts[ 'host' ],
+            '$request_uri' => $uri_parts[ 'path' ],
+        ];
+        if (is_array($default_urimap)) {
+            $uri_map = array_merge($default_urimap, $uri_map);
+        }
+
+        return $uri_map;
+    }
+
+    /**
+     * unset entries by key
+     *
+     * @param array $keys
+     */
+    public function clear_keys($keys)
+    {
+        $to_clear = apply_filters('wc_mfpc_clear_keys_array', $keys, $this->options);
+        $this->_clear($to_clear);
+    }
+
+    /**
+     * Removes entry from Memcached or flushes Memcached storage
+     *
+     * @param mixed $keys String / array of string of keys to delete entries with
+     */
+    protected function _clear(&$keys)
+    {
+
+        /* make an array if only one string is present, easier processing */
+        if (! is_array($keys)) {
+            $keys = [ $keys => true ];
+        }
+        foreach ($keys as $key => $dummy) {
+            $kresult = $this->connection->delete($key);
+            if ($kresult === false) {
+                $code = $this->connection->getResultCode();
+                $this->log(sprintf('unable to delete entry: %s', $key));
+                $this->log(sprintf('Memcached error code: %s', $code));
+            } else {
+                $this->log(sprintf('entry deleted: %s', $key));
+            }
+        }
+    }
+
+    /**
+     * clear cache triggered by new comment
+     *
+     * @param int              $comment_id     Comment ID
+     * @param null|\WP_Comment $comment_object The whole comment object ?
+     *
+     * @return bool
+     */
+    public function clear_by_comment($comment_id = 0, $comment_object = null)
+    {
+        if (empty($comment_id)) {
+            return false;
+        }
+        $comment = get_comment($comment_id);
+        $post_id = $comment->comment_post_ID;
+        if (! empty($post_id)) {
+            $this->clear($post_id);
+        }
+        unset ($comment);
+        unset ($post_id);
+    }
+
+    /**
      * get backend aliveness
      *
      * @return array Array of configured servers with aliveness value
@@ -433,50 +649,6 @@ class Memcached
     }
 
     /**
-     * function to check backend aliveness
-     *
-     * @return boolean true if backend is alive, false if not
-     */
-    protected function is_alive()
-    {
-        if (! $this->alive) {
-            $this->log("backend is not active, exiting function " . __FUNCTION__, LOG_WARNING);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * split hosts string to backend servers
-     */
-    protected function set_servers()
-    {
-        if (empty ($this->options[ 'hosts' ])) {
-            return false;
-        }
-        /* replace servers array in config according to hosts field */
-        $servers = explode(self::host_separator, $this->options[ 'hosts' ]);
-        $options[ 'servers' ] = [];
-        foreach ($servers as $snum => $sstring) {
-
-            if (stristr($sstring, 'unix://')) {
-                $host = str_replace('unix:/', '', $sstring);
-                $port = 0;
-            } else {
-                $separator = strpos($sstring, self::port_separator);
-                $host      = substr($sstring, 0, $separator);
-                $port      = substr($sstring, $separator + 1);
-            }
-            $this->options[ 'servers' ][ $sstring ] = [
-                'host' => $host,
-                'port' => $port
-            ];
-        }
-    }
-
-    /**
      * get current array of servers
      *
      * @return array Server list in current config
@@ -487,184 +659,5 @@ class Memcached
 
         return $r;
     }
-
-    /**
-     * log wrapper to include options
-     *
-     * @var mixed $message   Message to log
-     * @var int   $log_level Log level
-     */
-    protected function log($message, $level = LOG_NOTICE)
-    {
-        if (@is_array($message) || @is_object($message)) {
-            $message = json_encode($message);
-        }
-        switch ($level) {
-            case LOG_ERR :
-                wp_die('<h1>Error:</h1>' . '<p>' . $message . '</p>');
-                exit;
-            default:
-                if (! defined('WP_DEBUG') || WP_DEBUG != true || ! defined('WC_MFPC__DEBUG_MODE') || WC_MFPC__DEBUG_MODE != true) {
-                    return;
-                }
-                break;
-        }
-        error_log(__CLASS__ . ": " . $message);
-    }
-
-    /**
-     * @return bool
-     */
-	protected function _init () {
-		/* Memcached class does not exist, Memcached extension is not available */
-		if (!class_exists('Memcached')) {
-			$this->log (  ' Memcached extension missing, wc-mfpc will not be able to function correctly!', LOG_WARNING );
-			return false;
-		}
-
-		/* check for existing server list, otherwise we cannot add backends */
-		if ( empty ( $this->options['servers'] ) && ! $this->alive ) {
-			$this->log (  "Memcached servers list is empty, init failed", LOG_WARNING );
-			return false;
-		}
-
-		/* check is there's no backend connection yet */
-		if ( $this->connection === NULL ) {
-			$this->connection = new Memcached();
-
-			/* use binary and not compressed format, good for nginx and still fast */
-			$this->connection->setOption( Memcached::OPT_COMPRESSION , false );
-                        if ($this->options['memcached_binary']){
-                                $this->connection->setOption( Memcached::OPT_BINARY_PROTOCOL , true );
-                        }
-
-			if ( version_compare( phpversion( 'memcached' ) , '2.0.0', '>=' ) && ini_get( 'memcached.use_sasl' ) == 1 && isset($this->options['authpass']) && !empty($this->options['authpass']) && isset($this->options['authuser']) && !empty($this->options['authuser']) ) {
-				$this->connection->setSaslAuthData ( $this->options['authuser'], $this->options['authpass']);
-			}
-		}
-
-		/* check if initialization was success or not */
-		if ( $this->connection === NULL ) {
-			$this->log (   'error initializing Memcached PHP extension, exiting' );
-			return false;
-		}
-
-		/* check if we already have list of servers, only add server(s) if it's not already connected */
-		$servers_alive = array();
-		if ( !empty ( $this->status ) ) {
-			$servers_alive = $this->connection->getServerList();
-			/* create check array if backend servers are already connected */
-			if ( !empty ( $servers ) ) {
-				foreach ( $servers_alive as $skey => $server ) {
-					$skey =  $server['host'] . ":" . $server['port'];
-					$servers_alive[ $skey ] = true;
-				}
-			}
-		}
-
-		/* adding servers */
-		foreach ( $this->options['servers'] as $server_id => $server ) {
-			/* reset server status to unknown */
-			//$this->status[$server_id] = -1;
-
-			/* only add servers that does not exists already  in connection pool */
-			if ( !@array_key_exists($server_id , $servers_alive ) ) {
-				$this->connection->addServer( $server['host'], $server['port'] );
-				$this->log ( sprintf(  '%s added',  $server_id ) );
-			}
-		}
-
-		/* backend is now alive */
-		$this->alive = true;
-		$this->_status();
-	}
-
-	/**
-	 * sets current backend alive status for Memcached servers
-	 *
-	 */
-	protected function _status () {
-		/* server status will be calculated by getting server stats */
-		$this->log (  "checking server statuses");
-		/* get server list from connection */
-		$servers =  $this->connection->getServerList();
-
-		foreach ( $servers as $server ) {
-			$server_id = $server['host'] . self::port_separator . $server['port'];
-			/* reset server status to offline */
-			$this->status[$server_id] = 0;
-				if ($this->connection->set('wc-mfpc', time())) {
-					$this->log ( sprintf(  '%s server is up & running',  $server_id ) );
-				$this->status[$server_id] = 1;
-			}
-		}
-
-	}
-
-    /**
-     * get function for Memcached backend
-     *
-     * @param string $key Key to get values for
-     *
-     * @return mixed
-     */
-	protected function _get ( &$key ) {
-		return $this->connection->get($key);
-	}
-
-    /**
-     * Set function for Memcached backend
-     *
-     * @param string $key  Key to set with
-     * @param mixed  $data Data to set
-     *
-     * @return bool
-     */
-	protected function _set ( &$key, &$data, &$expire ) {
-		$result = $this->connection->set ( $key, $data , $expire  );
-
-		/* if storing failed, log the error code */
-		if ( $result === false ) {
-			$code = $this->connection->getResultCode();
-			$this->log ( sprintf(  'unable to set entry: %s',  $key ) );
-			$this->log ( sprintf(  'Memcached error code: %s',  $code ) );
-			//throw new Exception ( 'Unable to store Memcached entry ' . $key .  ', error code: ' . $code );
-		}
-
-		return $result;
-	}
-
-	/**
-	 * Flush memcached entries
-	 */
-	protected function _flush ( ) {
-		return $this->connection->flush();
-	}
-
-
-	/**
-	 * Removes entry from Memcached or flushes Memcached storage
-	 *
-	 * @param mixed $keys String / array of string of keys to delete entries with
-	*/
-	protected function _clear ( &$keys ) {
-
-		/* make an array if only one string is present, easier processing */
-		if ( !is_array ( $keys ) )
-			$keys = array ( $keys => true );
-
-		foreach ( $keys as $key => $dummy ) {
-			$kresult = $this->connection->delete( $key );
-
-			if ( $kresult === false ) {
-				$code = $this->connection->getResultCode();
-				$this->log ( sprintf(  'unable to delete entry: %s',  $key ) );
-				$this->log ( sprintf(  'Memcached error code: %s',  $code ) );
-			}
-			else {
-				$this->log ( sprintf(  'entry deleted: %s',  $key ) );
-			}
-		}
-	}
 
 }
