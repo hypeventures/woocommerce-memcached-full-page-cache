@@ -17,54 +17,129 @@ abstract class WcMfpcAbstract
     const slug_delete = '&deleted=true';
     const common_slug = 'wp-common/';
 
+    /**
+     * @var string
+     */
     protected $plugin_constant;
 
+    /**
+     * @var array
+     */
     protected $options = [];
 
+    /**
+     * @var array|mixed
+     */
     protected $defaults = [];
 
+    /**
+     * @var int
+     */
     protected $status = 0;
 
+    /**
+     * @var bool
+     */
     protected $network = false;
 
+    /**
+     * @var string
+     */
     protected $settings_link = '';
 
+    /**
+     * @var string
+     */
     protected $settings_slug = '';
 
+    /**
+     * @var
+     */
     protected $plugin_url;
 
+    /**
+     * @var
+     */
     protected $plugin_dir;
 
+    /**
+     * @var
+     */
     protected $common_url;
 
+    /**
+     * @var
+     */
     protected $common_dir;
 
+    /**
+     * @var string
+     */
     protected $plugin_file;
 
+    /**
+     * @var string
+     */
     protected $plugin_name;
 
+    /**
+     * @var string
+     */
     protected $plugin_version;
 
+    /**
+     * @var string
+     */
     protected $plugin_settings_page;
 
+    /**
+     * @var string
+     */
     protected $button_save;
 
+    /**
+     * @var string
+     */
     protected $button_delete;
 
+    /**
+     * @var string
+     */
     protected $capability = 'manage_options';
 
+    /**
+     * @var
+     */
     protected $admin_css_handle;
 
+    /**
+     * @var
+     */
     protected $admin_css_url;
 
+    /**
+     * @var null
+     */
     protected $utils = null;
 
+    /**
+     * @var bool|mixed
+     */
     protected $donation_business_name;
 
+    /**
+     * @var bool|mixed
+     */
     protected $donation_item_name;
 
+    /**
+     * @var bool|mixed
+     */
     protected $donation_business_id;
 
+    /**
+     * @var bool
+     */
     protected $donation = false;
 
     /**
@@ -204,6 +279,9 @@ abstract class WcMfpcAbstract
      */
     abstract function plugin_deactivate();
 
+    /**
+     * @return void
+     */
     public function plugin_init()
     {
 
@@ -479,6 +557,9 @@ abstract class WcMfpcAbstract
         return $links;
     }
 
+    /**
+     *
+     */
     public function enqueue_admin_css_js()
     {
         /* jquery ui tabs is provided by WordPress */
@@ -489,6 +570,11 @@ abstract class WcMfpcAbstract
         wp_enqueue_style($this->admin_css_handle);
     }
 
+    /**
+     * @param $key
+     *
+     * @return bool|mixed
+     */
     public function getoption($key)
     {
         return (empty ($this->options[ $key ])) ? false : $this->options[ $key ];
@@ -516,6 +602,8 @@ abstract class WcMfpcAbstract
      *
      * @param mixed   $var Variable to dump
      * @param boolean $ret Return text instead of printing if true
+     *
+     * @return mixed
      */
     protected function print_var($var, $ret = false)
     {
@@ -539,8 +627,7 @@ abstract class WcMfpcAbstract
      * @param $print
      *  boolean: is true, the options will be printed, otherwise the string will be returned
      *
-     * @return
-     *  prints or returns the options string
+     * @return mixed $opt prints or returns the options string
      */
     protected function print_select_options($elements, $current, $valid = false, $print = true)
     {
@@ -575,51 +662,51 @@ abstract class WcMfpcAbstract
      */
     protected function plugin_donation_form()
     {
-        if ($this->donation) :
+        if ($this->donation) {
             ?>
-          <script>
-            jQuery(document).ready(function ($) {
-              jQuery(function () {
-                var select = $("#amount");
-                var slider = $('<div id="donation-slider"></div>').insertAfter(select).slider({
-                  min: 1,
-                  max: 8,
-                  range: "min",
-                  value: select[0].selectedIndex + 1,
-                  slide: function (event, ui) {
-                    select[0].selectedIndex = ui.value - 1;
-                  }
-                });
-                $("#amount").change(function () {
-                  slider.slider("value", this.selectedIndex + 1);
+            <script>
+              jQuery(document).ready(function ($) {
+                jQuery(function () {
+                  var select = $("#amount");
+                  var slider = $('<div id="donation-slider"></div>').insertAfter(select).slider({
+                    min: 1,
+                    max: 8,
+                    range: "min",
+                    value: select[0].selectedIndex + 1,
+                    slide: function (event, ui) {
+                      select[0].selectedIndex = ui.value - 1;
+                    }
+                  });
+                  $("#amount").change(function () {
+                    slider.slider("value", this.selectedIndex + 1);
+                  });
                 });
               });
-            });
-          </script>
+            </script>
 
-          <form action="https://www.paypal.com/cgi-bin/webscr" method="post" class="<?php echo $this->plugin_constant ?>-donation">
-            <label for="amount"><?php _e("This plugin helped your business? I'd appreciate a coffee in return :) Please!", 'wc-mfpc'); ?></label>
-            <select name="amount" id="amount">
-              <option value="3">3$</option>
-              <option value="5">5$</option>
-              <option value="10" selected="selected">10$</option>
-              <option value="15">15$</option>
-              <option value="30">30$</option>
-              <option value="42">42$</option>
-              <option value="75">75$</option>
-              <option value="100">100$</option>
-            </select>
-            <input type="hidden" id="cmd" name="cmd" value="_donations"/>
-            <input type="hidden" id="tax" name="tax" value="0"/>
-            <input type="hidden" id="business" name="business" value="<?php echo $this->donation_business_id ?>"/>
-            <input type="hidden" id="bn" name="bn" value="<?php echo $this->donation_business_name ?>"/>
-            <input type="hidden" id="item_name" name="item_name" value="<?php _e('Donation for ', 'wc-mfpc');
-            echo $this->donation_item_name ?>"/>
-            <input type="hidden" id="currency_code" name="currency_code" value="USD"/>
-            <input type="submit" name="submit" value="<?php _e('Donate via PayPal', 'wc-mfpc') ?>" class="button-secondary"/>
-          </form>
-        <?php
-        endif;
+            <form action="https://www.paypal.com/cgi-bin/webscr" method="post" class="<?php echo $this->plugin_constant ?>-donation">
+              <label for="amount"><?php _e("This plugin helped your business? I'd appreciate a coffee in return :) Please!", 'wc-mfpc'); ?></label>
+              <select name="amount" id="amount">
+                <option value="3">3$</option>
+                <option value="5">5$</option>
+                <option value="10" selected="selected">10$</option>
+                <option value="15">15$</option>
+                <option value="30">30$</option>
+                <option value="42">42$</option>
+                <option value="75">75$</option>
+                <option value="100">100$</option>
+              </select>
+              <input type="hidden" id="cmd" name="cmd" value="_donations"/>
+              <input type="hidden" id="tax" name="tax" value="0"/>
+              <input type="hidden" id="business" name="business" value="<?php echo $this->donation_business_id ?>"/>
+              <input type="hidden" id="bn" name="bn" value="<?php echo $this->donation_business_name ?>"/>
+              <input type="hidden" id="item_name" name="item_name" value="<?php _e('Donation for ', 'wc-mfpc');
+              echo $this->donation_item_name ?>"/>
+              <input type="hidden" id="currency_code" name="currency_code" value="USD"/>
+              <input type="submit" name="submit" value="<?php _e('Donate via PayPal', 'wc-mfpc') ?>" class="button-secondary"/>
+            </form>
+            <?php
+        }
     }
 
 }
