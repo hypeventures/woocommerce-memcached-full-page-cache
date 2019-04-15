@@ -56,7 +56,7 @@ abstract class MemcachedAbstract
     protected $urimap = [];
 
     /**
-     * WP_FFPC_Backend constructor.
+     * WC_MFPC_Backend constructor.
      *
      * @param array $config
      */
@@ -66,7 +66,7 @@ abstract class MemcachedAbstract
         /* no config, nothing is going to work */
         if (empty ($config)) {
             return false;
-            //die ( __translate__ ( 'WP-FFPC Backend class received empty configuration array, the plugin will not work this way', 'wp-ffpc') );
+            //die ( __translate__ ( 'WC-MFPC Backend class received empty configuration array, the plugin will not work this way', 'wc-mfpc') );
         }
         $this->options = $config;
         /* these are the list of the cookies to look for when looking for logged in user */
@@ -94,7 +94,7 @@ abstract class MemcachedAbstract
         /* call backend initiator based on cache type */
         $init = $this->_init();
         if (is_admin() && function_exists('add_filter')) {
-            add_filter('wp_ffpc_clear_keys_array', function ($to_clear, $options) {
+            add_filter('wc_mfpc_clear_keys_array', function ($to_clear, $options) {
                 $filtered_result = [];
                 foreach ($to_clear as $link => $dummy) {
                     /* clear feeds, meta and data as well */
@@ -320,7 +320,7 @@ abstract class MemcachedAbstract
             } while ($number_of_pages > 1 && $current_page_id <= $number_of_pages);
         }
         /* Hook to custom clearing array. */
-        $to_clear = apply_filters('wp_ffpc_to_clear_array', $to_clear, $post_id);
+        $to_clear = apply_filters('wc_mfpc_to_clear_array', $to_clear, $post_id);
         /* run clear */
         $this->clear_keys($to_clear);
     }
@@ -332,7 +332,7 @@ abstract class MemcachedAbstract
      */
     public function clear_keys($keys)
     {
-        $to_clear = apply_filters('wp_ffpc_clear_keys_array', $keys, $this->options);
+        $to_clear = apply_filters('wc_mfpc_clear_keys_array', $keys, $this->options);
         $this->_clear($to_clear);
     }
 
@@ -509,7 +509,7 @@ abstract class MemcachedAbstract
                 wp_die('<h1>Error:</h1>' . '<p>' . $message . '</p>');
                 exit;
             default:
-                if (! defined('WP_DEBUG') || WP_DEBUG != true || ! defined('WP_FFPC__DEBUG_MODE') || WP_FFPC__DEBUG_MODE != true) {
+                if (! defined('WP_DEBUG') || WP_DEBUG != true || ! defined('WC_MFPC__DEBUG_MODE') || WC_MFPC__DEBUG_MODE != true) {
                     return;
                 }
                 break;

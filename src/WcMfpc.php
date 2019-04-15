@@ -25,10 +25,10 @@ class WcMfpc extends WcMfpcAbstract
     const slug_precache = '&precached=true';
     const key_precache_disabled = 'precache_disabled';
     const slug_precache_disabled = '&precache_disabled=true';
-    const precache_log = 'wp-ffpc-precache-log';
-    const precache_timestamp = 'wp-ffpc-precache-timestamp';
-    const precache_php = 'wp-ffpc-precache.php';
-    const precache_id = 'wp-ffpc-precache-task';
+    const precache_log = 'wc-mfpc-precache-log';
+    const precache_timestamp = 'wc-mfpc-precache-timestamp';
+    const precache_php = 'wc-mfpc-precache.php';
+    const precache_id = 'wc-mfpc-precache-task';
     private $precache_message = '';
     private $precache_logfile = '';
     private $precache_phpfile = '';
@@ -111,47 +111,41 @@ class WcMfpc extends WcMfpcAbstract
 		else {
 			$sitedomain = parse_url( get_option('siteurl') , PHP_URL_HOST);
 			if ( $_SERVER['HTTP_HOST'] != $sitedomain ) {
-				$this->errors['domain_mismatch'] = sprintf( __("Domain mismatch: the site domain configuration (%s) does not match the HTTP_HOST (%s) variable in PHP. Please fix the incorrect one, otherwise the plugin may not work as expected.", 'wp-ffpc'), $sitedomain, $_SERVER['HTTP_HOST'] );
+				$this->errors['domain_mismatch'] = sprintf( __("Domain mismatch: the site domain configuration (%s) does not match the HTTP_HOST (%s) variable in PHP. Please fix the incorrect one, otherwise the plugin may not work as expected.", 'wc-mfpc'), $sitedomain, $_SERVER['HTTP_HOST'] );
 			}
 
 			$this->global_config_key = $_SERVER['HTTP_HOST'];
 		}
 
 		/* cache type possible values array */
-		$this->select_cache_type = array (
-			'apc' => __( 'APC' , 'wp-ffpc'),
-			'apcu' => __( 'APCu' , 'wp-ffpc'),
-			'memcache' => __( 'PHP Memcache' , 'wp-ffpc'),
-			'memcached' => __( 'PHP Memcached' , 'wp-ffpc'),
-		);
+		$this->select_cache_type = [
+			'memcached' => __( 'PHP Memcached' , 'wc-mfpc'),
+    ];
 		/* check for required functions / classes for the cache types */
 
-		$this->valid_cache_type = array (
-			'apc' => (function_exists( 'apc_cache_info' ) && version_compare(PHP_VERSION, '5.3.0') <= 0 ) ? true : false,
-			'apcu' => function_exists( 'apcu_cache_info' ) ? true : false,
-			'memcache' => class_exists ( 'Memcache') ? true : false,
+		$this->valid_cache_type = [
 			'memcached' => class_exists ( 'Memcached') ? true : false,
-		);
+    ];
 
 		/* invalidation method possible values array */
 		$this->select_invalidation_method = array (
-			0 => __( 'flush cache' , 'wp-ffpc'),
-			1 => __( 'only modified post' , 'wp-ffpc'),
-			2 => __( 'modified post and all related taxonomies' , 'wp-ffpc'),
+			0 => __( 'flush cache' , 'wc-mfpc'),
+			1 => __( 'only modified post' , 'wc-mfpc'),
+			2 => __( 'modified post and all related taxonomies' , 'wc-mfpc'),
 		);
 
 		/* map of possible key masks */
 		$this->list_uri_vars = array (
-			'$scheme' => __('The HTTP scheme (i.e. http, https).', 'wp-ffpc'),
-			'$host' => __('Host in the header of request or name of the server processing the request if the Host header is not available.', 'wp-ffpc'),
-			'$request_uri' => __('The *original* request URI as received from the client including the args', 'wp-ffpc'),
-			'$remote_user' => __('Name of user, authenticated by the Auth Basic Module', 'wp-ffpc'),
-			'$cookie_PHPSESSID' => __('PHP Session Cookie ID, if set ( empty if not )', 'wp-ffpc'),
-			'$accept_lang' => __('First HTTP Accept Lang set in the HTTP request', 'wp-ffpc'),
-			//'$cookie_COOKnginy IE' => __('Value of COOKIE', 'wp-ffpc'),
-			//'$http_HEADER' => __('Value of HTTP request header HEADER ( lowercase, dashes converted to underscore )', 'wp-ffpc'),
-			//'$query_string' => __('Full request URI after rewrites', 'wp-ffpc'),
-			//'' => __('', 'wp-ffpc'),
+			'$scheme' => __('The HTTP scheme (i.e. http, https).', 'wc-mfpc'),
+			'$host' => __('Host in the header of request or name of the server processing the request if the Host header is not available.', 'wc-mfpc'),
+			'$request_uri' => __('The *original* request URI as received from the client including the args', 'wc-mfpc'),
+			'$remote_user' => __('Name of user, authenticated by the Auth Basic Module', 'wc-mfpc'),
+			'$cookie_PHPSESSID' => __('PHP Session Cookie ID, if set ( empty if not )', 'wc-mfpc'),
+			'$accept_lang' => __('First HTTP Accept Lang set in the HTTP request', 'wc-mfpc'),
+			//'$cookie_COOKnginy IE' => __('Value of COOKIE', 'wc-mfpc'),
+			//'$http_HEADER' => __('Value of HTTP request header HEADER ( lowercase, dashes converted to underscore )', 'wc-mfpc'),
+			//'$query_string' => __('Full request URI after rewrites', 'wc-mfpc'),
+			//'' => __('', 'wc-mfpc'),
 		);
 
 		/* get current wp_cron schedules */
@@ -172,7 +166,7 @@ class WcMfpc extends WcMfpcAbstract
 	public function plugin_post_init () {
 
 		/* initiate backend */
-		$backend_class = 'WP_FFPC_Backend_' . $this->options['cache_type'];
+		$backend_class = 'WC_MFPC_Backend_' . $this->options['cache_type'];
 		$this->backend = new $backend_class ( $this->options );
 
 		/* re-save settings after update */
@@ -198,35 +192,35 @@ class WcMfpc extends WcMfpcAbstract
 
 		/* add filter for catching canonical redirects */
 		if ( WP_CACHE )
-			add_filter('redirect_canonical', 'wp_ffpc_redirect_callback', 10, 2);
+			add_filter('redirect_canonical', 'wc_mfpc_redirect_callback', 10, 2);
 
 		/* add precache coldrun action */
 		add_action( self::precache_id , array( &$this, 'precache_coldrun' ) );
 
 		/* link on to settings for plugins page */
-		$settings_link = ' &raquo; <a href="' . $this->settings_link . '">' . __( 'WP-FFPC Settings', 'wp-ffpc') . '</a>';
+		$settings_link = ' &raquo; <a href="' . $this->settings_link . '">' . __( 'WC-MFPC Settings', 'wc-mfpc') . '</a>';
 
 		/* check & collect errors */
 		/* look for WP_CACHE */
 		if ( ! WP_CACHE )
-			$this->errors['no_wp_cache'] = __("WP_CACHE is disabled. Without that, cache plugins, like this, will not work. Please add `define ( 'WP_CACHE', true );` to the beginning of wp-config.php.", 'wp-ffpc');
+			$this->errors['no_wp_cache'] = __("WP_CACHE is disabled. Without that, cache plugins, like this, will not work. Please add `define ( 'WP_CACHE', true );` to the beginning of wp-config.php.", 'wc-mfpc');
 
 		/* look for global settings array */
 		if ( ! $this->global_saved )
-			$this->errors['no_global_saved'] = sprintf( __('This site was reached as %s ( according to PHP HTTP_HOST ) and there are no settings present for this domain in the WP-FFPC configuration yet. Please save the %s for the domain or fix the webserver configuration!', 'wp-ffpc'), $_SERVER['HTTP_HOST'], $settings_link);
+			$this->errors['no_global_saved'] = sprintf( __('This site was reached as %s ( according to PHP HTTP_HOST ) and there are no settings present for this domain in the WC-MFPC configuration yet. Please save the %s for the domain or fix the webserver configuration!', 'wc-mfpc'), $_SERVER['HTTP_HOST'], $settings_link);
 
 		/* look for writable acache file */
 		if ( file_exists ( $this->acache ) && ! is_writable ( $this->acache ) )
-			$this->errors['no_acache_write'] = sprintf(__('Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.', 'wp-ffpc'), $this->acache);
+			$this->errors['no_acache_write'] = sprintf(__('Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.', 'wc-mfpc'), $this->acache);
 
 		/* look for acache file */
 		if ( ! file_exists ( $this->acache ) )
-			$this->errors['no_acache_saved'] = sprintf (__('Advanced cache file is yet to be generated, please save %s', 'wp-ffpc'), $settings_link );
+			$this->errors['no_acache_saved'] = sprintf (__('Advanced cache file is yet to be generated, please save %s', 'wc-mfpc'), $settings_link );
 
 		/* look for extensions that should be available */
 		foreach ( $this->valid_cache_type as $backend => $status ) {
 			if ( $this->options['cache_type'] == $backend && ! $status ) {
-				$this->errors['no_backend'] = sprintf ( __('%s cache backend activated but no PHP %s extension was found.<br />Please either use different backend or activate the module!', 'wp-ffpc'), $backend, $backend );
+				$this->errors['no_backend'] = sprintf ( __('%s cache backend activated but no PHP %s extension was found.<br />Please either use different backend or activate the module!', 'wc-mfpc'), $backend, $backend );
 			}
 		}
 
@@ -237,12 +231,12 @@ class WcMfpc extends WcMfpcAbstract
 			{
 				$memcache_protocol = strtolower($memcache_settings['memcache.protocol']['local_value']);
 				if ( $memcache_protocol == 'binary' ) {
-					$this->errors['memcached_binary'] = __('WARNING: Memcache extension is configured to use binary mode. This is very buggy and the plugin will most probably not work correctly. <br />Please consider to change either to ASCII mode or to Memcached extension.', 'wp-ffpc');
+					$this->errors['memcached_binary'] = __('WARNING: Memcache extension is configured to use binary mode. This is very buggy and the plugin will most probably not work correctly. <br />Please consider to change either to ASCII mode or to Memcached extension.', 'wc-mfpc');
 				}
 			}
 		}
 
-		$filtered_errors = apply_filters('wp_ffpc_post_init_errors_array', $this->errors);
+		$filtered_errors = apply_filters('wc_mfpc_post_init_errors_array', $this->errors);
 		if ($filtered_errors) {
 			if ( php_sapi_name() != "cli" ) {
 				foreach ( $this->errors as $e => $msg ) {
@@ -290,7 +284,7 @@ class WcMfpc extends WcMfpcAbstract
 			$this->update_global_config();
 			$this->plugin_options_save();
 			$this->deploy_advanced_cache();
-			static::alert ( __('WP-FFPC settings were upgraded; please double check if everything is still working correctly.', 'wp-ffpc'), LOG_NOTICE );
+			static::alert ( __('WC-MFPC settings were upgraded; please double check if everything is still working correctly.', 'wc-mfpc'), LOG_NOTICE );
 		}
 	}
 
@@ -300,7 +294,7 @@ class WcMfpc extends WcMfpcAbstract
 	 */
 	public function plugin_extend_admin_init () {
 		/* save parameter updates, if there are any */
-		if ( isset( $_POST[ $this->button_flush ] ) && check_admin_referer ( 'wp-ffpc') ) {
+		if ( isset( $_POST[ $this->button_flush ] ) && check_admin_referer ( 'wc-mfpc') ) {
 			/* remove precache log entry */
 			static::_delete_option( self::precache_log  );
 			/* remove precache timestamp entry */
@@ -323,7 +317,7 @@ class WcMfpc extends WcMfpcAbstract
 		}
 
 		/* save parameter updates, if there are any */
-		if ( isset( $_POST[ $this->button_precache ] ) && check_admin_referer ( 'wp-ffpc') ) {
+		if ( isset( $_POST[ $this->button_precache ] ) && check_admin_referer ( 'wc-mfpc') ) {
 			/* is no shell function is possible, fail */
 			if ( $this->shell_function == false ) {
 				$this->status = 5;
@@ -345,7 +339,7 @@ class WcMfpc extends WcMfpcAbstract
 
 		/* add our page only if the screenid is correct */
 		if ( strpos( $screen_id, $this->plugin_settings_page ) ) {
-			$contextual_help = __('<p>Please visit <a href="http://wordpress.org/support/plugin/wp-ffpc">the official support forum of the plugin</a> for help.</p>', 'wp-ffpc');
+			$contextual_help = __('<p>Please visit <a href="http://wordpress.org/support/plugin/wc-mfpc">the official support forum of the plugin</a> for help.</p>', 'wc-mfpc');
 
 			/* [TODO] give detailed information on errors & troubleshooting
 			get_current_screen()->add_help_tab( array(
@@ -369,14 +363,14 @@ class WcMfpc extends WcMfpcAbstract
 
 		/* add our page only if the screenid is correct */
 		if ( strpos( $screen_id, $this->plugin_settings_page ) ) {
-			$content = __('<h3>Sample config for nginx to utilize the data entries</h3>', 'wp-ffpc');
-			$content .= __('<div class="update-nag">This is not meant to be a copy-paste configuration; you most probably have to tailor it to your needs.</div>', 'wp-ffpc');
-			$content .= __('<div class="update-nag"><strong>In case you are about to use nginx to fetch memcached entries directly and to use SHA1 hash keys, you will need an nginx version compiled with <a href="http://wiki.nginx.org/HttpSetMiscModule">HttpSetMiscModule</a>. Otherwise set_sha1 function is not available in nginx.</strong></div>', 'wp-ffpc');
+			$content = __('<h3>Sample config for nginx to utilize the data entries</h3>', 'wc-mfpc');
+			$content .= __('<div class="update-nag">This is not meant to be a copy-paste configuration; you most probably have to tailor it to your needs.</div>', 'wc-mfpc');
+			$content .= __('<div class="update-nag"><strong>In case you are about to use nginx to fetch memcached entries directly and to use SHA1 hash keys, you will need an nginx version compiled with <a href="http://wiki.nginx.org/HttpSetMiscModule">HttpSetMiscModule</a>. Otherwise set_sha1 function is not available in nginx.</strong></div>', 'wc-mfpc');
 			$content .= '<code><pre>' . $this->nginx_example() . '</pre></code>';
 
 			get_current_screen()->add_help_tab( array(
-					'id'		=> 'wp-ffpc-nginx-help',
-					'title'		=> __( 'nginx example', 'wp-ffpc' ),
+					'id'		=> 'wc-mfpc-nginx-help',
+					'title'		=> __( 'nginx example', 'wc-mfpc' ),
 					'content'	=> $content,
 			) );
 		}
@@ -426,28 +420,28 @@ class WcMfpc extends WcMfpcAbstract
 		 * if options were saved, display saved message
 		 */
 		if (isset($_GET[ self::key_save ]) && $_GET[ self::key_save ]=='true' || $this->status == 1) { ?>
-			<div class='updated settings-error'><p><strong><?php _e( 'Settings saved.' , 'wp-ffpc') ?></strong></p></div>
+			<div class='updated settings-error'><p><strong><?php _e( 'Settings saved.' , 'wc-mfpc') ?></strong></p></div>
 		<?php }
 
 		/**
 		 * if options were delete, display delete message
 		 */
 		if (isset($_GET[ self::key_delete ]) && $_GET[ self::key_delete ]=='true' || $this->status == 2) { ?>
-			<div class='error'><p><strong><?php _e( 'Plugin options deleted.' , 'wp-ffpc') ?></strong></p></div>
+			<div class='error'><p><strong><?php _e( 'Plugin options deleted.' , 'wc-mfpc') ?></strong></p></div>
 		<?php }
 
 		/**
 		 * if options were saved
 		 */
 		if (isset($_GET[ self::key_flush ]) && $_GET[ self::key_flush ]=='true' || $this->status == 3) { ?>
-			<div class='updated settings-error'><p><strong><?php _e( "Cache flushed." , 'wp-ffpc'); ?></strong></p></div>
+			<div class='updated settings-error'><p><strong><?php _e( "Cache flushed." , 'wc-mfpc'); ?></strong></p></div>
 		<?php }
 
 		/**
 		 * if options were saved, display saved message
 		 */
 		if ( ( isset($_GET[ self::key_precache ]) && $_GET[ self::key_precache ]=='true' ) || $this->status == 4) { ?>
-		<div class='updated settings-error'><p><strong><?php _e( 'Precache process was started, it is now running in the background, please be patient, it may take a very long time to finish.' , 'wp-ffpc') ?></strong></p></div>
+		<div class='updated settings-error'><p><strong><?php _e( 'Precache process was started, it is now running in the background, please be patient, it may take a very long time to finish.' , 'wc-mfpc') ?></strong></p></div>
 		<?php }
 
 		/**
@@ -455,15 +449,15 @@ class WcMfpc extends WcMfpcAbstract
 		 */
 		?>
 
-		<h2><?php echo $this->plugin_name ; _e( ' settings', 'wp-ffpc') ; ?></h2>
+		<h2><?php echo $this->plugin_name ; _e( ' settings', 'wc-mfpc') ; ?></h2>
 
 		<div class="updated">
-			<p><strong><?php _e ( 'Driver: ' , 'wp-ffpc'); echo $this->options['cache_type']; ?></strong></p>
+			<p><strong><?php _e ( 'Driver: ' , 'wc-mfpc'); echo $this->options['cache_type']; ?></strong></p>
 			<?php
 			/* only display backend status if memcache-like extension is running */
 			if ( strstr ( $this->options['cache_type'], 'memcache') ) {
 				?><p><?php
-				_e( '<strong>Backend status:</strong><br />', 'wp-ffpc');
+				_e( '<strong>Backend status:</strong><br />', 'wc-mfpc');
 
 				/* we need to go through all servers */
 				$servers = $this->backend->status();
@@ -473,11 +467,11 @@ class WcMfpc extends WcMfpcAbstract
 						echo $server_string ." => ";
 
 						if ( $status == 0 )
-							_e ( '<span class="error-msg">down</span><br />', 'wp-ffpc');
+							_e ( '<span class="error-msg">down</span><br />', 'wc-mfpc');
 						elseif ( ( $this->options['cache_type'] == 'memcache' && $status > 0 )  || $status == 1 )
-							_e ( '<span class="ok-msg">up & running</span><br />', 'wp-ffpc');
+							_e ( '<span class="ok-msg">up & running</span><br />', 'wc-mfpc');
 						else
-							_e ( '<span class="error-msg">unknown, please try re-saving settings!</span><br />', 'wp-ffpc');
+							_e ( '<span class="error-msg">unknown, please try re-saving settings!</span><br />', 'wc-mfpc');
 					}
 				}
 
@@ -486,7 +480,7 @@ class WcMfpc extends WcMfpcAbstract
 		</div>
 		<form autocomplete="off" method="post" action="#" id="<?php echo $this->plugin_constant ?>-settings" class="plugin-admin">
 
-			<?php wp_nonce_field( 'wp-ffpc'); ?>
+			<?php wp_nonce_field( 'wc-mfpc'); ?>
 
 			<?php $switcher_tabs = $this->plugin_admin_panel_get_tabs(); ?>
 			<ul class="tabs">
@@ -496,82 +490,82 @@ class WcMfpc extends WcMfpcAbstract
 			</ul>
 
 			<fieldset id="<?php echo $this->plugin_constant ?>-type">
-			<legend><?php _e( 'Set cache type', 'wp-ffpc'); ?></legend>
+			<legend><?php _e( 'Set cache type', 'wc-mfpc'); ?></legend>
 			<dl>
 				<dt>
-					<label for="cache_type"><?php _e('Select backend', 'wp-ffpc'); ?></label>
+					<label for="cache_type"><?php _e('Select backend', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<select name="cache_type" id="cache_type">
 						<?php $this->print_select_options ( $this->select_cache_type , $this->options['cache_type'], $this->valid_cache_type ) ?>
 					</select>
-					<span class="description"><?php _e('Select backend storage driver', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Select backend storage driver', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="expire"><?php _e('Expiration time for posts', 'wp-ffpc'); ?></label>
+					<label for="expire"><?php _e('Expiration time for posts', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="number" name="expire" id="expire" value="<?php echo $this->options['expire']; ?>" />
-					<span class="description"><?php _e('Sets validity time of post entry in seconds, including custom post types and pages.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Sets validity time of post entry in seconds, including custom post types and pages.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="browsercache"><?php _e('Browser cache expiration time of posts', 'wp-ffpc'); ?></label>
+					<label for="browsercache"><?php _e('Browser cache expiration time of posts', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="number" name="browsercache" id="browsercache" value="<?php echo $this->options['browsercache']; ?>" />
-					<span class="description"><?php _e('Sets validity time of posts/pages/singles for the browser cache.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Sets validity time of posts/pages/singles for the browser cache.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="expire_taxonomy"><?php _e('Expiration time for taxonomy', 'wp-ffpc'); ?></label>
+					<label for="expire_taxonomy"><?php _e('Expiration time for taxonomy', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="number" name="expire_taxonomy" id="expire_taxonomy" value="<?php echo $this->options['expire_taxonomy']; ?>" />
-					<span class="description"><?php _e('Sets validity time of taxonomy entry in seconds, including custom taxonomy.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Sets validity time of taxonomy entry in seconds, including custom taxonomy.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="browsercache_taxonomy"><?php _e('Browser cache expiration time of taxonomy', 'wp-ffpc'); ?></label>
+					<label for="browsercache_taxonomy"><?php _e('Browser cache expiration time of taxonomy', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="number" name="browsercache_taxonomy" id="browsercache_taxonomy" value="<?php echo $this->options['browsercache_taxonomy']; ?>" />
-					<span class="description"><?php _e('Sets validity time of taxonomy for the browser cache.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Sets validity time of taxonomy for the browser cache.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="expire_home"><?php _e('Expiration time for home', 'wp-ffpc'); ?></label>
+					<label for="expire_home"><?php _e('Expiration time for home', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="number" name="expire_home" id="expire_home" value="<?php echo $this->options['expire_home']; ?>" />
-					<span class="description"><?php _e('Sets validity time of home on server side.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Sets validity time of home on server side.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="browsercache_home"><?php _e('Browser cache expiration time of home', 'wp-ffpc'); ?></label>
+					<label for="browsercache_home"><?php _e('Browser cache expiration time of home', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="number" name="browsercache_home" id="browsercache_home" value="<?php echo $this->options['browsercache_home']; ?>" />
-					<span class="description"><?php _e('Sets validity time of home for the browser cache.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Sets validity time of home for the browser cache.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="charset"><?php _e('Charset', 'wp-ffpc'); ?></label>
+					<label for="charset"><?php _e('Charset', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="text" name="charset" id="charset" value="<?php echo $this->options['charset']; ?>" />
-					<span class="description"><?php _e('Charset of HTML and XML (pages and feeds) data.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Charset of HTML and XML (pages and feeds) data.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="invalidation_method"><?php _e('Cache invalidation method', 'wp-ffpc'); ?></label>
+					<label for="invalidation_method"><?php _e('Cache invalidation method', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<select name="invalidation_method" id="invalidation_method">
 						<?php $this->print_select_options ( $this->select_invalidation_method , $this->options['invalidation_method'] ) ?>
 					</select>
-					<div class="description"><?php _e('Select cache invalidation method.', 'wp-ffpc'); ?>
+					<div class="description"><?php _e('Select cache invalidation method.', 'wc-mfpc'); ?>
 						<ol>
 							<?php
 							$invalidation_method_description = array(
@@ -587,35 +581,35 @@ class WcMfpc extends WcMfpcAbstract
 				</dd>
 
 				<dt>
-					<label for="comments_invalidate"><?php _e('Invalidate on comment actions', 'wp-ffpc'); ?></label>
+					<label for="comments_invalidate"><?php _e('Invalidate on comment actions', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="checkbox" name="comments_invalidate" id="comments_invalidate" value="1" <?php checked($this->options['comments_invalidate'],true); ?> />
-					<span class="description"><?php _e('Trigger cache invalidation when a comments is posted, edited, trashed. ', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Trigger cache invalidation when a comments is posted, edited, trashed. ', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="prefix_data"><?php _e('Data prefix', 'wp-ffpc'); ?></label>
+					<label for="prefix_data"><?php _e('Data prefix', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="text" name="prefix_data" id="prefix_data" value="<?php echo $this->options['prefix_data']; ?>" />
-					<span class="description"><?php _e('Prefix for HTML content keys, can be used in nginx.<br /><strong>WARNING</strong>: changing this will result the previous cache to becomes invalid!<br />If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Prefix for HTML content keys, can be used in nginx.<br /><strong>WARNING</strong>: changing this will result the previous cache to becomes invalid!<br />If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="prefix_meta"><?php _e('Meta prefix', 'wp-ffpc'); ?></label>
+					<label for="prefix_meta"><?php _e('Meta prefix', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="text" name="prefix_meta" id="prefix_meta" value="<?php echo $this->options['prefix_meta']; ?>" />
-					<span class="description"><?php _e('Prefix for meta content keys, used only with PHP processing.<br /><strong>WARNING</strong>: changing this will result the previous cache to becomes invalid!', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Prefix for meta content keys, used only with PHP processing.<br /><strong>WARNING</strong>: changing this will result the previous cache to becomes invalid!', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="key"><?php _e('Key scheme', 'wp-ffpc'); ?></label>
+					<label for="key"><?php _e('Key scheme', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="text" name="key" id="key" value="<?php echo $this->options['key']; ?>" />
-					<span class="description"><?php _e('Key layout; <strong>use the guide below to change it</strong>.<br /><strong>WARNING</strong>: changing this will result the previous cache to becomes invalid!<br />If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value.', 'wp-ffpc'); ?><?php ?></span>
+					<span class="description"><?php _e('Key layout; <strong>use the guide below to change it</strong>.<br /><strong>WARNING</strong>: changing this will result the previous cache to becomes invalid!<br />If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value.', 'wc-mfpc'); ?><?php ?></span>
 					<dl class="description"><?php
 					foreach ( $this->list_uri_vars as $uri => $desc ) {
 						echo '<dt>'. $uri .'</dt><dd>'. $desc .'</dd>';
@@ -624,11 +618,11 @@ class WcMfpc extends WcMfpcAbstract
 				</dd>
 
 				<dt>
-					<label for="hashkey"><?php _e('SHA1 hash key', 'wp-ffpc'); ?></label>
+					<label for="hashkey"><?php _e('SHA1 hash key', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="checkbox" name="hashkey" id="hashkey" value="1" <?php checked($this->options['hashkey'],true); ?> />
-					<span class="description"><?php _e('Occasionally URL can be too long to be used as key for the backend storage, especially with memcached. Turn on this feature to use SHA1 hash of the URL as key instead. Please be aware that you have to add ( or uncomment ) a line and a <strong>module</strong> in nginx if you want nginx to fetch the data directly; for details, please see the nginx example tab.', 'wp-ffpc'); ?>
+					<span class="description"><?php _e('Occasionally URL can be too long to be used as key for the backend storage, especially with memcached. Turn on this feature to use SHA1 hash of the URL as key instead. Please be aware that you have to add ( or uncomment ) a line and a <strong>module</strong> in nginx if you want nginx to fetch the data directly; for details, please see the nginx example tab.', 'wc-mfpc'); ?>
 				</dd>
 
 
@@ -637,33 +631,33 @@ class WcMfpc extends WcMfpcAbstract
 			</fieldset>
 
 			<fieldset id="<?php echo $this->plugin_constant; ?>-debug">
-			<legend><?php _e( 'Debug & in-depth settings', 'wp-ffpc'); ?></legend>
-			<h3><?php _e('Notes', 'wp-ffpc');?></h3>
-			<p><?php _e('The former method of debug logging flag has been removed. In case you need debug log from WP-FFPC please set both the <a href="http://codex.wordpress.org/WP_DEBUG">WP_DEBUG</a> and the WP_FFPC__DEBUG_MODE constants `true` in wp-config.php.<br /> This will enable NOTICE level messages apart from the WARNING level ones which are always displayed.', 'wp-ffpc'); ?></p>
+			<legend><?php _e( 'Debug & in-depth settings', 'wc-mfpc'); ?></legend>
+			<h3><?php _e('Notes', 'wc-mfpc');?></h3>
+			<p><?php _e('The former method of debug logging flag has been removed. In case you need debug log from WC-MFPC please set both the <a href="http://codex.wordpress.org/WP_DEBUG">WP_DEBUG</a> and the WC_MFPC__DEBUG_MODE constants `true` in wp-config.php.<br /> This will enable NOTICE level messages apart from the WARNING level ones which are always displayed.', 'wc-mfpc'); ?></p>
 
 			<dl>
 				<dt>
-					<label for="pingback_header"><?php _e('Enable X-Pingback header preservation', 'wp-ffpc'); ?></label>
+					<label for="pingback_header"><?php _e('Enable X-Pingback header preservation', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="checkbox" name="pingback_header" id="pingback_header" value="1" <?php checked($this->options['pingback_header'],true); ?> />
-					<span class="description"><?php _e('Preserve X-Pingback URL in response header.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Preserve X-Pingback URL in response header.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="response_header"><?php _e("Add X-Cache-Engine header", 'wp-ffpc'); ?></label>
+					<label for="response_header"><?php _e("Add X-Cache-Engine header", 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="checkbox" name="response_header" id="response_header" value="1" <?php checked($this->options['response_header'],true); ?> />
-					<span class="description"><?php _e('Add X-Cache-Engine HTTP header to HTTP responses.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Add X-Cache-Engine HTTP header to HTTP responses.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="generate_time"><?php _e("Add HTML debug comment", 'wp-ffpc'); ?></label>
+					<label for="generate_time"><?php _e("Add HTML debug comment", 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="checkbox" name="generate_time" id="generate_time" value="1" <?php checked($this->options['generate_time'],true); ?> />
-					<span class="description"><?php _e('Adds comment string including plugin name, cache engine and page generation time to every generated entry before closing <body> tag.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Adds comment string including plugin name, cache engine and page generation time to every generated entry before closing <body> tag.', 'wc-mfpc'); ?></span>
 				</dd>
 
 			</dl>
@@ -671,61 +665,61 @@ class WcMfpc extends WcMfpcAbstract
 			</fieldset>
 
 			<fieldset id="<?php echo $this->plugin_constant ?>-exceptions">
-			<legend><?php _e( 'Set cache additions/excepions', 'wp-ffpc'); ?></legend>
+			<legend><?php _e( 'Set cache additions/excepions', 'wc-mfpc'); ?></legend>
 			<dl>
 				<dt>
-					<label for="cache_loggedin"><?php _e('Enable cache for logged in users', 'wp-ffpc'); ?></label>
+					<label for="cache_loggedin"><?php _e('Enable cache for logged in users', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="checkbox" name="cache_loggedin" id="cache_loggedin" value="1" <?php checked($this->options['cache_loggedin'],true); ?> />
-					<span class="description"><?php _e('Cache pages even if user is logged in.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Cache pages even if user is logged in.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<?php _e("Excludes", 'wp-ffpc'); ?></label>
+					<?php _e("Excludes", 'wc-mfpc'); ?></label>
 				<dd>
 					<table style="width:100%">
 						<thead>
 							<tr>
-								<th style="width:13%; text-align:left"><label for="nocache_home"><?php _e("Exclude home", 'wp-ffpc'); ?></label></th>
-								<th style="width:13%; text-align:left"><label for="nocache_feed"><?php _e("Exclude feeds", 'wp-ffpc'); ?></label></th>
-								<th style="width:13%; text-align:left"><label for="nocache_archive"><?php _e("Exclude archives", 'wp-ffpc'); ?></label></th>
-								<th style="width:13%; text-align:left"><label for="nocache_page"><?php _e("Exclude pages", 'wp-ffpc'); ?></label></th>
-								<th style="width:13%; text-align:left"><label for="nocache_single"><?php _e("Exclude singulars", 'wp-ffpc'); ?></label></th>
-								<th style="width:17%; text-align:left"><label for="nocache_dyn"><?php _e("Dynamic requests", 'wp-ffpc'); ?></label></th>
-								<th style="width:18%; text-align:left"><label for="nocache_woocommerce"><?php _e("WooCommerce", 'wp-ffpc'); ?></label></th>
+								<th style="width:13%; text-align:left"><label for="nocache_home"><?php _e("Exclude home", 'wc-mfpc'); ?></label></th>
+								<th style="width:13%; text-align:left"><label for="nocache_feed"><?php _e("Exclude feeds", 'wc-mfpc'); ?></label></th>
+								<th style="width:13%; text-align:left"><label for="nocache_archive"><?php _e("Exclude archives", 'wc-mfpc'); ?></label></th>
+								<th style="width:13%; text-align:left"><label for="nocache_page"><?php _e("Exclude pages", 'wc-mfpc'); ?></label></th>
+								<th style="width:13%; text-align:left"><label for="nocache_single"><?php _e("Exclude singulars", 'wc-mfpc'); ?></label></th>
+								<th style="width:17%; text-align:left"><label for="nocache_dyn"><?php _e("Dynamic requests", 'wc-mfpc'); ?></label></th>
+								<th style="width:18%; text-align:left"><label for="nocache_woocommerce"><?php _e("WooCommerce", 'wc-mfpc'); ?></label></th>
 							</tr>
 						</thead>
 						<tbody>
 								<tr>
 									<td>
 										<input type="checkbox" name="nocache_home" id="nocache_home" value="1" <?php checked($this->options['nocache_home'],true); ?> />
-										<span class="description"><?php _e('Never cache home.', 'wp-ffpc'); ?>
+										<span class="description"><?php _e('Never cache home.', 'wc-mfpc'); ?>
 									</td>
 									<td>
 										<input type="checkbox" name="nocache_feed" id="nocache_feed" value="1" <?php checked($this->options['nocache_feed'],true); ?> />
-										<span class="description"><?php _e('Never cache feeds.', 'wp-ffpc'); ?>
+										<span class="description"><?php _e('Never cache feeds.', 'wc-mfpc'); ?>
 									</td>
 									<td>
 										<input type="checkbox" name="nocache_archive" id="nocache_archive" value="1" <?php checked($this->options['nocache_archive'],true); ?> />
-										<span class="description"><?php _e('Never cache archives.', 'wp-ffpc'); ?>
+										<span class="description"><?php _e('Never cache archives.', 'wc-mfpc'); ?>
 									</td>
 									<td>
 										<input type="checkbox" name="nocache_page" id="nocache_page" value="1" <?php checked($this->options['nocache_page'],true); ?> />
-										<span class="description"><?php _e('Never cache pages.', 'wp-ffpc'); ?>
+										<span class="description"><?php _e('Never cache pages.', 'wc-mfpc'); ?>
 									</td>
 									<td>
 										<input type="checkbox" name="nocache_single" id="nocache_single" value="1" <?php checked($this->options['nocache_single'],true); ?> />
-										<span class="description"><?php _e('Never cache singulars.', 'wp-ffpc'); ?>
+										<span class="description"><?php _e('Never cache singulars.', 'wc-mfpc'); ?>
 									</td>
 									<td>
 										<input type="checkbox" name="nocache_dyn" id="nocache_dyn" value="1" <?php checked($this->options['nocache_dyn'],true); ?> />
-					<span class="description"><?php _e('Exclude every URL with "?" in it.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Exclude every URL with "?" in it.', 'wc-mfpc'); ?></span>
 									</td>
 									<td>
 										<input type="hidden" name="nocache_woocommerce_url" id="nocache_woocommerce_url" value="<?php if(isset( $this->options['nocache_woocommerce_url'] ) ) echo $this->options['nocache_woocommerce_url']; ?>" />
 										<input type="checkbox" name="nocache_woocommerce" id="nocache_woocommerce" value="1" <?php checked($this->options['nocache_woocommerce'],true); ?> />
-					<span class="description"><?php _e('Exclude dynamic WooCommerce page.', 'wp-ffpc');?>
+					<span class="description"><?php _e('Exclude dynamic WooCommerce page.', 'wc-mfpc');?>
 					<?php if(isset( $this->options['nocache_woocommerce_url'] ) ) echo "<br />Url:".$this->options['nocache_woocommerce_url']; ?></span>
 									</td>
 								</tr>
@@ -733,15 +727,15 @@ class WcMfpc extends WcMfpcAbstract
 					</table>
 
 				<dt>
-					<label for="nocache_cookies"><?php _e("Exclude based on cookies", 'wp-ffpc'); ?></label>
+					<label for="nocache_cookies"><?php _e("Exclude based on cookies", 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="text" name="nocache_cookies" id="nocache_cookies" value="<?php if(isset( $this->options['nocache_cookies'] ) ) echo $this->options['nocache_cookies']; ?>" />
-					<span class="description"><?php _e('Exclude content based on cookies names starting with this from caching. Separate multiple cookies names with commas.<br />If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Exclude content based on cookies names starting with this from caching. Separate multiple cookies names with commas.<br />If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value.', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="nocache_url"><?php _e("Don't cache following URL paths - use with caution!", 'wp-ffpc'); ?></label>
+					<label for="nocache_url"><?php _e("Don't cache following URL paths - use with caution!", 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<textarea name="nocache_url" id="nocache_url" rows="3" cols="100" class="large-text code"><?php
@@ -749,63 +743,63 @@ class WcMfpc extends WcMfpcAbstract
 							echo $this->options['nocache_url'];
 						}
 					?></textarea>
-					<span class="description"><?php _e('Regular expressions use you must! e.g. <em>pattern1|pattern2|etc</em>', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Regular expressions use you must! e.g. <em>pattern1|pattern2|etc</em>', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="nocache_comment"><?php _e("Exclude from cache based on content", 'wp-ffpc'); ?></label>
+					<label for="nocache_comment"><?php _e("Exclude from cache based on content", 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input name="nocache_comment" id="nocache_comment" type="text" value="<?php if(isset( $this->options['nocache_comment'] ) ) echo $this->options['nocache_comment']; ?>" />
 					<span class="description"><?php _e('Enter a regex pattern that will trigger excluding content from caching. Eg. <!--nocache-->. Regular expressions use you must! e.g. <em>pattern1|pattern2|etc</em><br />
-					<strong>WARNING:</strong> be careful where you display this, because it will apply to any content, including archives, collection pages, singles, anything. If empty, this setting will be ignored.', 'wp-ffpc'); ?></span>
+					<strong>WARNING:</strong> be careful where you display this, because it will apply to any content, including archives, collection pages, singles, anything. If empty, this setting will be ignored.', 'wc-mfpc'); ?></span>
 				</dd>
 
 			</dl>
 			</fieldset>
 
 			<fieldset id="<?php echo $this->plugin_constant ?>-servers">
-			<legend><?php _e('Backend server settings', 'wp-ffpc'); ?></legend>
+			<legend><?php _e('Backend server settings', 'wc-mfpc'); ?></legend>
 			<dl>
 				<dt>
-					<label for="hosts"><?php _e('Hosts', 'wp-ffpc'); ?></label>
+					<label for="hosts"><?php _e('Hosts', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="text" name="hosts" id="hosts" value="<?php echo $this->options['hosts']; ?>" />
 					<span class="description">
-					<?php _e('List of backends, with the following syntax: <br />- in case of TCP based connections, list the servers as host1:port1,host2:port2,... . Do not add trailing , and always separate host and port with : .<br />- for a unix socket enter: unix://[socket_path]', 'wp-ffpc'); ?></span>
+					<?php _e('List of backends, with the following syntax: <br />- in case of TCP based connections, list the servers as host1:port1,host2:port2,... . Do not add trailing , and always separate host and port with : .<br />- for a unix socket enter: unix://[socket_path]', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<h3><?php _e('Authentication ( only for SASL enabled Memcached)')?></h3>
 				<?php
 					if ( ! ini_get('memcached.use_sasl') && ( !empty( $this->options['authuser'] ) || !empty( $this->options['authpass'] ) ) ) { ?>
-						<div class="error"><p><strong><?php _e( 'WARNING: you\'ve entered username and/or password for memcached authentication ( or your browser\'s autocomplete did ) which will not work unless you enable memcached sasl in the PHP settings: add `memcached.use_sasl=1` to php.ini' , 'wp-ffpc') ?></strong></p></div>
+						<div class="error"><p><strong><?php _e( 'WARNING: you\'ve entered username and/or password for memcached authentication ( or your browser\'s autocomplete did ) which will not work unless you enable memcached sasl in the PHP settings: add `memcached.use_sasl=1` to php.ini' , 'wc-mfpc') ?></strong></p></div>
 				<?php } ?>
 				<dt>
-					<label for="authuser"><?php _e('Authentication: username', 'wp-ffpc'); ?></label>
+					<label for="authuser"><?php _e('Authentication: username', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="text" autocomplete="off" name="authuser" id="authuser" value="<?php echo $this->options['authuser']; ?>" />
 					<span class="description">
-					<?php _e('Username for authentication with backends', 'wp-ffpc'); ?></span>
+					<?php _e('Username for authentication with backends', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<dt>
-					<label for="authpass"><?php _e('Authentication: password', 'wp-ffpc'); ?></label>
+					<label for="authpass"><?php _e('Authentication: password', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="password" autocomplete="off" name="authpass" id="authpass" value="<?php echo $this->options['authpass']; ?>" />
 					<span class="description">
-					<?php _e('Password for authentication with for backends - WARNING, the password will be stored in an unsecure format!', 'wp-ffpc'); ?></span>
+					<?php _e('Password for authentication with for backends - WARNING, the password will be stored in an unsecure format!', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<h3><?php _e('Memcached specific settings')?></h3>
 				<dt>
-					<label for="memcached_binary"><?php _e('Enable memcached binary mode', 'wp-ffpc'); ?></label>
+					<label for="memcached_binary"><?php _e('Enable memcached binary mode', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<input type="checkbox" name="memcached_binary" id="memcached_binary" value="1" <?php checked($this->options['memcached_binary'],true); ?> />
-					<span class="description"><?php _e('Some memcached proxies and implementations only support the ASCII protocol.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Some memcached proxies and implementations only support the ASCII protocol.', 'wc-mfpc'); ?></span>
 				</dd>
 
 
@@ -813,16 +807,16 @@ class WcMfpc extends WcMfpcAbstract
 			</fieldset>
 
 			<fieldset id="<?php echo $this->plugin_constant ?>-precache">
-			<legend><?php _e('Precache settings & log from previous pre-cache generation', 'wp-ffpc'); ?></legend>
+			<legend><?php _e('Precache settings & log from previous pre-cache generation', 'wc-mfpc'); ?></legend>
 
 				<dt>
-					<label for="precache_schedule"><?php _e('Precache schedule', 'wp-ffpc'); ?></label>
+					<label for="precache_schedule"><?php _e('Precache schedule', 'wc-mfpc'); ?></label>
 				</dt>
 				<dd>
 					<select name="precache_schedule" id="precache_schedule">
 						<?php $this->print_select_options ( $this->select_schedules, $this->options['precache_schedule'] ) ?>
 					</select>
-					<span class="description"><?php _e('Schedule autorun for precache with WP-Cron', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Schedule autorun for precache with WP-Cron', 'wc-mfpc'); ?></span>
 				</dd>
 
 				<?php
@@ -843,7 +837,7 @@ class WcMfpc extends WcMfpcAbstract
 				}
 
 				if ( empty ( $log ) ) {
-					_e('No precache log was found!', 'wp-ffpc');
+					_e('No precache log was found!', 'wc-mfpc');
 				}
 				else { ?>
 					<p><strong><?php _e( 'Time of run: ') ?><?php echo date('r', $gentime ); ?></strong></p>
@@ -867,59 +861,59 @@ class WcMfpc extends WcMfpcAbstract
 			<?php } ?>
 			</fieldset>
 
-			<?php do_action('wp_ffpc_admin_panel_tabs_extra_content', 'wp-ffpc'); ?>
+			<?php do_action('wc_mfpc_admin_panel_tabs_extra_content', 'wc-mfpc'); ?>
 
 			<p class="clear">
-				<input class="button-primary" type="submit" name="<?php echo $this->button_save ?>" id="<?php echo $this->button_save ?>" value="<?php _e('Save Changes', 'wp-ffpc') ?>" />
+				<input class="button-primary" type="submit" name="<?php echo $this->button_save ?>" id="<?php echo $this->button_save ?>" value="<?php _e('Save Changes', 'wc-mfpc') ?>" />
 			</p>
 
 		</form>
 
 		<form method="post" action="#" id="<?php echo $this->plugin_constant ?>-commands" class="plugin-admin" style="padding-top:2em;">
 
-			<?php wp_nonce_field( 'wp-ffpc'); ?>
+			<?php wp_nonce_field( 'wc-mfpc'); ?>
 
 			<ul class="tabs">
-				<li><a href="#<?php echo $this->plugin_constant ?>-precache" class="wp-switch-editor"><?php _e( 'Precache', 'wp-ffpc'); ?></a></li>
-				<li><a href="#<?php echo $this->plugin_constant ?>-flush" class="wp-switch-editor"><?php _e( 'Empty cache', 'wp-ffpc'); ?></a></li>
-				<li><a href="#<?php echo $this->plugin_constant ?>-reset" class="wp-switch-editor"><?php _e( 'Reset settings', 'wp-ffpc'); ?></a></li>
+				<li><a href="#<?php echo $this->plugin_constant ?>-precache" class="wp-switch-editor"><?php _e( 'Precache', 'wc-mfpc'); ?></a></li>
+				<li><a href="#<?php echo $this->plugin_constant ?>-flush" class="wp-switch-editor"><?php _e( 'Empty cache', 'wc-mfpc'); ?></a></li>
+				<li><a href="#<?php echo $this->plugin_constant ?>-reset" class="wp-switch-editor"><?php _e( 'Reset settings', 'wc-mfpc'); ?></a></li>
 			</ul>
 
 			<fieldset id="<?php echo $this->plugin_constant ?>-precache">
-			<legend><?php _e( 'Precache', 'wp-ffpc'); ?></legend>
+			<legend><?php _e( 'Precache', 'wc-mfpc'); ?></legend>
 			<dl>
 				<dt>
 					<?php if ( ( isset( $_GET[ self::key_precache_disabled ] ) && $_GET[ self::key_precache_disabled ] =='true' ) || $this->status == 5 || $this->shell_function == false ) { ?>
-						<strong><?php _e( "Precache functionality is disabled due to unavailable system call function. <br />Since precaching may take a very long time, it's done through a background CLI process in order not to run out of max execution time of PHP. Please enable one of the following functions if you whish to use precaching: " , 'wp-ffpc') ?><?php echo join( ',' , $this->shell_possibilities ); ?></strong>
+						<strong><?php _e( "Precache functionality is disabled due to unavailable system call function. <br />Since precaching may take a very long time, it's done through a background CLI process in order not to run out of max execution time of PHP. Please enable one of the following functions if you whish to use precaching: " , 'wc-mfpc') ?><?php echo join( ',' , $this->shell_possibilities ); ?></strong>
 					<?php }
 					else { ?>
-						<input class="button-secondary" type="submit" name="<?php echo $this->button_precache ?>" id="<?php echo $this->button_precache ?>" value="<?php _e('Pre-cache', 'wp-ffpc') ?>" />
+						<input class="button-secondary" type="submit" name="<?php echo $this->button_precache ?>" id="<?php echo $this->button_precache ?>" value="<?php _e('Pre-cache', 'wc-mfpc') ?>" />
 					<?php } ?>
 				</dt>
 				<dd>
-					<span class="description"><?php _e('Start a background process that visits all permalinks of all blogs it can found thus forces WordPress to generate cached version of all the pages.<br />The plugin tries to visit links of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be prepared for these in your logfiles if you plan to pre-cache.', 'wp-ffpc'); ?></span>
+					<span class="description"><?php _e('Start a background process that visits all permalinks of all blogs it can found thus forces WordPress to generate cached version of all the pages.<br />The plugin tries to visit links of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be prepared for these in your logfiles if you plan to pre-cache.', 'wc-mfpc'); ?></span>
 				</dd>
 			</dl>
 			</fieldset>
 			<fieldset id="<?php echo $this->plugin_constant ?>-flush">
-			<legend><?php _e( 'Precache', 'wp-ffpc'); ?></legend>
+			<legend><?php _e( 'Precache', 'wc-mfpc'); ?></legend>
 			<dl>
 				<dt>
-					<input class="button-warning" type="submit" name="<?php echo $this->button_flush ?>" id="<?php echo $this->button_flush ?>" value="<?php _e('Clear cache', 'wp-ffpc') ?>" />
+					<input class="button-warning" type="submit" name="<?php echo $this->button_flush ?>" id="<?php echo $this->button_flush ?>" value="<?php _e('Clear cache', 'wc-mfpc') ?>" />
 				</dt>
 				<dd>
-					<span class="description"><?php _e ( "Clear all entries in the storage, including the ones that were set by other processes.", 'wp-ffpc'); ?> </span>
+					<span class="description"><?php _e ( "Clear all entries in the storage, including the ones that were set by other processes.", 'wc-mfpc'); ?> </span>
 				</dd>
 			</dl>
 			</fieldset>
 			<fieldset id="<?php echo $this->plugin_constant ?>-reset">
-			<legend><?php _e( 'Precache', 'wp-ffpc'); ?></legend>
+			<legend><?php _e( 'Precache', 'wc-mfpc'); ?></legend>
 			<dl>
 				<dt>
-					<input class="button-warning" type="submit" name="<?php echo $this->button_delete ?>" id="<?php echo $this->button_delete ?>" value="<?php _e('Reset options', 'wp-ffpc') ?>" />
+					<input class="button-warning" type="submit" name="<?php echo $this->button_delete ?>" id="<?php echo $this->button_delete ?>" value="<?php _e('Reset options', 'wc-mfpc') ?>" />
 				</dt>
 				<dd>
-					<span class="description"><?php _e ( "Reset settings to defaults.", 'wp-ffpc'); ?> </span>
+					<span class="description"><?php _e ( "Reset settings to defaults.", 'wc-mfpc'); ?> </span>
 				</dd>
 			</dl>
 			</fieldset>
@@ -930,14 +924,14 @@ class WcMfpc extends WcMfpcAbstract
 
 	private function plugin_admin_panel_get_tabs() {
 		$default_tabs = array(
-			'type' => __( 'Cache type', 'wp-ffpc'),
-			'debug' => __( 'Debug & in-depth', 'wp-ffpc'),
-			'exceptions' => __( 'Cache exceptions', 'wp-ffpc'),
-			'servers' => __( 'Backend settings', 'wp-ffpc'),
-			'precache' => __( 'Precache & precache log', 'wp-ffpc')
+			'type' => __( 'Cache type', 'wc-mfpc'),
+			'debug' => __( 'Debug & in-depth', 'wc-mfpc'),
+			'exceptions' => __( 'Cache exceptions', 'wc-mfpc'),
+			'servers' => __( 'Backend settings', 'wc-mfpc'),
+			'precache' => __( 'Precache & precache log', 'wc-mfpc')
 		);
 
-		return apply_filters('wp_ffpc_admin_panel_tabs', $default_tabs);
+		return apply_filters('wc_mfpc_admin_panel_tabs', $default_tabs);
 	}
 
 	/**
@@ -951,11 +945,11 @@ class WcMfpc extends WcMfpcAbstract
 		if ( $this->options['precache_schedule'] != 'null' ) {
 			/* clear all other schedules before adding a new in order to replace */
 			wp_clear_scheduled_hook ( self::precache_id );
-			static::debug ( $this->plugin_constant, __( 'Scheduling WP-CRON event', 'wp-ffpc') );
+			static::debug ( $this->plugin_constant, __( 'Scheduling WP-CRON event', 'wc-mfpc') );
 			$this->scheduled = wp_schedule_event( time(), $this->options['precache_schedule'] , self::precache_id );
 		}
 		elseif ( ( !isset($this->options['precache_schedule']) || $this->options['precache_schedule'] == 'null' ) && !empty( $schedule ) ) {
-			static::debug ( $this->plugin_constant, __('Clearing WP-CRON scheduled hook ' , 'wp-ffpc') );
+			static::debug ( $this->plugin_constant, __('Clearing WP-CRON scheduled hook ' , 'wc-mfpc') );
 			wp_clear_scheduled_hook ( self::precache_id );
 		}
 
@@ -1005,7 +999,7 @@ class WcMfpc extends WcMfpcAbstract
 
 		if ( version_compare ( $options['version'] , $this->plugin_version, '<' ) ) {
 			/* cleanup possible leftover files from previous versions */
-			$check = array ( 'advanced-cache.php', 'nginx-sample.conf', 'wp-ffpc.admin.css', 'wp-ffpc-common.php' );
+			$check = array ( 'advanced-cache.php', 'nginx-sample.conf', 'wc-mfpc.admin.css', 'wc-mfpc-common.php' );
 			foreach ( $check as $fname ) {
 				$fname = $this->plugin_dir . $fname;
 				if ( file_exists ( $fname ) )
@@ -1013,11 +1007,11 @@ class WcMfpc extends WcMfpcAbstract
 			}
 
 			/* look for previous config leftovers */
-			$try = get_site_option( 'wp-ffpc');
+			$try = get_site_option( 'wc-mfpc');
 			/* network option key changed, remove & migrate the leftovers if there's any */
 			if ( !empty ( $try ) && $this->network ) {
 				/* clean it up, we don't use it anymore */
-				delete_site_option ( 'wp-ffpc');
+				delete_site_option ( 'wc-mfpc');
 
 				if ( empty ( $options ) && array_key_exists ( $this->global_config_key, $try ) ) {
 					$options = $try [ $this->global_config_key ];
@@ -1138,7 +1132,7 @@ class WcMfpc extends WcMfpcAbstract
 
 		/* add custom response header if specified in the options */
 		if( $this->options['response_header'] && strstr ( $this->options['cache_type'], 'memcached') ) {
-			$response_header =  'add_header X-Cache-Engine "WP-FFPC with ' . $this->options['cache_type'] .' via nginx";';
+			$response_header =  'add_header X-Cache-Engine "WC-MFPC with ' . $this->options['cache_type'] .' via nginx";';
 			$nginx = str_replace ( 'RESPONSE_HEADER' , $response_header , $nginx );
 		}
 		else {

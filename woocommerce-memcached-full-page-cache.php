@@ -76,4 +76,4 @@ if (! defined('WC_MFPC_DEFAULTS')) {
 
 use InvincibleBrands\WcMfpc\WcMfpc;
 
-$wp_ffpc = new WcMfpc('wp-ffpc', '1.11.2', 'WP-FFPC', WC_MFPC_DEFAULTS);
+$wc_mfpc = new WcMfpc('wc-mfpc', '1.11.2', 'WC-MFPC', WC_MFPC_DEFAULTS);

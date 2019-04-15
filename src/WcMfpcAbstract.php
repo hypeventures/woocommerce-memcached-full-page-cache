@@ -32,7 +32,7 @@ if ( !function_exists ('__debug__') ) {
     /* __ only availabe if we're running from the inside of wordpress, not in advanced-cache.php phase */
     function __debug__ ( $text ) {
 
-        if ( defined('WP_FFPC__DEBUG_MODE') && WP_FFPC__DEBUG_MODE == true) {
+        if ( defined('WC_MFPC__DEBUG_MODE') && WC_MFPC__DEBUG_MODE == true) {
 
             error_log ( __FILE__ . ': ' . $text );
 
@@ -198,7 +198,7 @@ abstract class WcMfpcAbstract
      */
     public function plugin_load_textdomain()
     {
-        load_plugin_textdomain( 'wp-ffpc', false ,  dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+        load_plugin_textdomain( 'wc-mfpc', false ,  dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
     }
 
     /**
@@ -217,7 +217,7 @@ abstract class WcMfpcAbstract
     public function plugin_admin_init() {
 
       /* save parameter updates, if there are any */
-      if ( isset( $_POST[ $this->button_save ] ) && check_admin_referer( 'wp-ffpc') ) {
+      if ( isset( $_POST[ $this->button_save ] ) && check_admin_referer( 'wc-mfpc') ) {
 
         $this->plugin_options_save();
         $this->status = 1;
@@ -225,7 +225,7 @@ abstract class WcMfpcAbstract
       }
 
       /* delete parameters if requested */
-      if ( isset( $_POST[ $this->button_delete ] ) && check_admin_referer( 'wp-ffpc') ) {
+      if ( isset( $_POST[ $this->button_delete ] ) && check_admin_referer( 'wc-mfpc') ) {
         $this->plugin_options_delete();
         $this->status = 2;
         header( "Location: ". $this->settings_link . self::slug_delete );
@@ -407,7 +407,7 @@ abstract class WcMfpcAbstract
      *
      */
     protected function print_default ( $e ) {
-      _e('Default : ', 'wp-ffpc');
+      _e('Default : ', 'wc-mfpc');
       $select = 'select_' . $e;
       if ( @is_array ( $this->$select ) ) {
         $x = $this->$select;
@@ -490,7 +490,7 @@ abstract class WcMfpcAbstract
       </script>
 
       <form action="https://www.paypal.com/cgi-bin/webscr" method="post" class="<?php echo $this->plugin_constant ?>-donation">
-        <label for="amount"><?php _e( "This plugin helped your business? I'd appreciate a coffee in return :) Please!", 'wp-ffpc'); ?></label>
+        <label for="amount"><?php _e( "This plugin helped your business? I'd appreciate a coffee in return :) Please!", 'wc-mfpc'); ?></label>
         <select name="amount" id="amount">
           <option value="3">3$</option>
           <option value="5">5$</option>
@@ -505,9 +505,9 @@ abstract class WcMfpcAbstract
         <input type="hidden" id="tax" name="tax" value="0" />
         <input type="hidden" id="business" name="business" value="<?php echo $this->donation_business_id ?>" />
         <input type="hidden" id="bn" name="bn" value="<?php echo $this->donation_business_name ?>" />
-        <input type="hidden" id="item_name" name="item_name" value="<?php _e('Donation for ', 'wp-ffpc'); echo $this->donation_item_name ?>" />
+        <input type="hidden" id="item_name" name="item_name" value="<?php _e('Donation for ', 'wc-mfpc'); echo $this->donation_item_name ?>" />
         <input type="hidden" id="currency_code" name="currency_code" value="USD" />
-        <input type="submit" name="submit" value="<?php _e('Donate via PayPal', 'wp-ffpc') ?>" class="button-secondary" />
+        <input type="submit" name="submit" value="<?php _e('Donate via PayPal', 'wc-mfpc') ?>" class="button-secondary" />
       </form>
       <?php
       endif;
@@ -611,7 +611,7 @@ abstract class WcMfpcAbstract
           wp_die( '<h1>Error:</h1>' . '<p>' . $message . '</p>' );
           exit;
         default:
-          if ( !defined( 'WP_DEBUG' ) || WP_DEBUG != true || !defined( 'WP_FFPC__DEBUG_MODE' ) || WP_FFPC__DEBUG_MODE != true )
+          if ( !defined( 'WP_DEBUG' ) || WP_DEBUG != true || !defined( 'WC_MFPC__DEBUG_MODE' ) || WC_MFPC__DEBUG_MODE != true )
             return;
           break;
       }

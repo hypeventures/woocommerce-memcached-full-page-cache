@@ -16,7 +16,7 @@ class Memcached extends MemcachedAbstract
 	protected function _init () {
 		/* Memcached class does not exist, Memcached extension is not available */
 		if (!class_exists('Memcached')) {
-			$this->log (  ' Memcached extension missing, wp-ffpc will not be able to function correctly!', LOG_WARNING );
+			$this->log (  ' Memcached extension missing, wc-mfpc will not be able to function correctly!', LOG_WARNING );
 			return false;
 		}
 
@@ -91,7 +91,7 @@ class Memcached extends MemcachedAbstract
 			$server_id = $server['host'] . self::port_separator . $server['port'];
 			/* reset server status to offline */
 			$this->status[$server_id] = 0;
-				if ($this->connection->set('wp-ffpc', time())) {
+				if ($this->connection->set('wc-mfpc', time())) {
 					$this->log ( sprintf(  '%s server is up & running',  $server_id ) );
 				$this->status[$server_id] = 1;
 			}
