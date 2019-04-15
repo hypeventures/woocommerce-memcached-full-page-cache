@@ -237,7 +237,6 @@ abstract class WcMfpcAbstract
             $f   = create_function('', 'global $tmp; echo $tmp;');
             add_action('admin_notices', $f);
         }
-        static::debug($msg, $level);
     }
 
     /**
@@ -314,34 +313,12 @@ abstract class WcMfpcAbstract
     public static function _get_option($optionID, $network = false)
     {
         if ($network) {
-            static::debug(sprintf(__('- getting network option %s', 'PluginUtils'), $optionID));
             $options = get_site_option($optionID);
         } else {
-            static::debug(sprintf(__(' – getting option %s', 'PluginUtils'), $optionID));
             $options = get_option($optionID);
         }
 
         return $options;
-    }
-
-    /**
-     */
-    static function debug($message, $level = LOG_NOTICE)
-    {
-        if (@is_array($message) || @is_object($message)) {
-            $message = json_encode($message);
-        }
-        switch ($level) {
-            case LOG_ERR :
-                wp_die('<h1>Error:</h1>' . '<p>' . $message . '</p>');
-                exit;
-            default:
-                if (! defined('WP_DEBUG') || WP_DEBUG != true || ! defined('WC_MFPC__DEBUG_MODE') || WC_MFPC__DEBUG_MODE != true) {
-                    return;
-                }
-                break;
-        }
-        error_log(__CLASS__ . ": " . $message);
     }
 
     /**
@@ -466,10 +443,8 @@ abstract class WcMfpcAbstract
     public static function _update_option($optionID, $data, $network = false)
     {
         if ($network) {
-            static::debug(sprintf(__(' – updating network option %s', 'PluginUtils'), $optionID));
             update_site_option($optionID, $data);
         } else {
-            static::debug(sprintf(__('- updating option %s', 'PluginUtils'), $optionID));
             update_option($optionID, $data);
         }
     }
@@ -490,10 +465,8 @@ abstract class WcMfpcAbstract
     public static function _delete_option($optionID, $network = false)
     {
         if ($network) {
-            static::debug(sprintf(__(' – deleting network option %s', 'PluginUtils'), $optionID));
             delete_site_option($optionID);
         } else {
-            static::debug(sprintf(__(' – deleting option %s', 'PluginUtils'), $optionID));
             delete_option($optionID);
         }
     }

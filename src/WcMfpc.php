@@ -150,7 +150,6 @@ class WcMfpc extends WcMfpcAbstract
      */
     public function plugin_post_construct()
     {
-        static::debug(__CLASS__, 'post_construct');
         $this->plugin_url = plugin_dir_url(__FILE__);
         $this->plugin_dir = plugin_dir_path(__FILE__);
         $this->admin_css_handle = $this->plugin_constant . '-admin-css';
@@ -162,7 +161,6 @@ class WcMfpc extends WcMfpcAbstract
      */
     public function plugin_pre_init()
     {
-        static::debug(__CLASS__, 'pre_init');
         /* advanced cache "worker" file */
         $this->acache_worker = $this->plugin_dir . $this->plugin_constant . '-acache.php';
         /* WordPress advanced-cache.php file location */
@@ -1501,12 +1499,10 @@ class WcMfpc extends WcMfpcAbstract
 
             /* clear all other schedules before adding a new in order to replace */
             wp_clear_scheduled_hook(self::precache_id);
-            static::debug($this->plugin_constant, __('Scheduling WP-CRON event', 'wc-mfpc'));
             $this->scheduled = wp_schedule_event(time(), $this->options[ 'precache_schedule' ], self::precache_id);
 
         } elseif ((! isset($this->options[ 'precache_schedule' ]) || $this->options[ 'precache_schedule' ] == 'null') && ! empty($schedule)) {
 
-            static::debug($this->plugin_constant, __('Clearing WP-CRON scheduled hook ', 'wc-mfpc'));
             wp_clear_scheduled_hook(self::precache_id);
 
         }
