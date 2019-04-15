@@ -923,9 +923,6 @@ class WcMfpc extends WcMfpcAbstract
         </script>
 
           <?php
-          /* display donation form */
-          $this->plugin_donation_form();
-
           /*
            * if options were saved, display saved message
            */

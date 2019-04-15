@@ -123,39 +123,16 @@ abstract class WcMfpcAbstract
     protected $utils = null;
 
     /**
-     * @var bool|mixed
-     */
-    protected $donation_business_name;
-
-    /**
-     * @var bool|mixed
-     */
-    protected $donation_item_name;
-
-    /**
-     * @var bool|mixed
-     */
-    protected $donation_business_id;
-
-    /**
-     * @var bool
-     */
-    protected $donation = false;
-
-    /**
      * WcMfpcAbstract constructor.
      *
      * @param string $plugin_constant General plugin identifier, same as directory & base PHP file name
      * @param string $plugin_version  Version number of the parameter
      * @param string $plugin_name     Readable name of the plugin
      * @param mixed  $defaults        Default value(s) for plugin option(s)
-     * @param mixed  $donation_business_name
-     * @param mixed  $donation_item_name
-     * @param mixed  $donation_business_id
      *
      * @return void
      */
-    public function __construct($plugin_constant, $plugin_version, $plugin_name, $defaults, $donation_business_name = false, $donation_item_name = false, $donation_business_id = false)
+    public function __construct($plugin_constant, $plugin_version, $plugin_name, $defaults)
     {
 
         $this->plugin_constant = $plugin_constant;
@@ -166,13 +143,7 @@ abstract class WcMfpcAbstract
         $this->plugin_settings_page = $this->plugin_constant . '-settings';
         $this->button_save   = $this->plugin_constant . '-save';
         $this->button_delete = $this->plugin_constant . '-delete';
-        if (! empty($donation_business_name) && ! empty($donation_item_name) && ! empty($donation_business_id)) {
-            $this->donation_business_name = $donation_business_name;
-            $this->donation_item_name     = $donation_item_name;
-            $this->donation_business_id   = $donation_business_id;
-            $this->donation               = true;
-        }
-        //$this->utils =  new PluginUtils();
+
         /* we need network wide plugin check functions */
         if (! function_exists('is_plugin_active_for_network')) {
             require_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -654,58 +625,6 @@ abstract class WcMfpcAbstract
             echo $opt;
         } else {
             return $opt;
-        }
-    }
-
-    /**
-     * creates PayPal donation form based on plugin details
-     */
-    protected function plugin_donation_form()
-    {
-        if ($this->donation) {
-            ?>
-            <script>
-              jQuery(document).ready(function ($) {
-                jQuery(function () {
-                  var select = $("#amount");
-                  var slider = $('<div id="donation-slider"></div>').insertAfter(select).slider({
-                    min: 1,
-                    max: 8,
-                    range: "min",
-                    value: select[0].selectedIndex + 1,
-                    slide: function (event, ui) {
-                      select[0].selectedIndex = ui.value - 1;
-                    }
-                  });
-                  $("#amount").change(function () {
-                    slider.slider("value", this.selectedIndex + 1);
-                  });
-                });
-              });
-            </script>
-
-            <form action="https://www.paypal.com/cgi-bin/webscr" method="post" class="<?php echo $this->plugin_constant ?>-donation">
-              <label for="amount"><?php _e("This plugin helped your business? I'd appreciate a coffee in return :) Please!", 'wc-mfpc'); ?></label>
-              <select name="amount" id="amount">
-                <option value="3">3$</option>
-                <option value="5">5$</option>
-                <option value="10" selected="selected">10$</option>
-                <option value="15">15$</option>
-                <option value="30">30$</option>
-                <option value="42">42$</option>
-                <option value="75">75$</option>
-                <option value="100">100$</option>
-              </select>
-              <input type="hidden" id="cmd" name="cmd" value="_donations"/>
-              <input type="hidden" id="tax" name="tax" value="0"/>
-              <input type="hidden" id="business" name="business" value="<?php echo $this->donation_business_id ?>"/>
-              <input type="hidden" id="bn" name="bn" value="<?php echo $this->donation_business_name ?>"/>
-              <input type="hidden" id="item_name" name="item_name" value="<?php _e('Donation for ', 'wc-mfpc');
-              echo $this->donation_item_name ?>"/>
-              <input type="hidden" id="currency_code" name="currency_code" value="USD"/>
-              <input type="submit" name="submit" value="<?php _e('Donate via PayPal', 'wc-mfpc') ?>" class="button-secondary"/>
-            </form>
-            <?php
         }
     }
 
