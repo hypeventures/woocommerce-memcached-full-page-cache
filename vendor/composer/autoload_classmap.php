@@ -6,7 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'InvincibleBrands\\WcMfpc\\Admin\\Admin' => $baseDir . '/src/Admin/Admin.php',
+    'InvincibleBrands\\WcMfpc\\Admin' => $baseDir . '/src/Admin.php',
     'InvincibleBrands\\WcMfpc\\Data' => $baseDir . '/src/Data.php',
     'InvincibleBrands\\WcMfpc\\Memcached' => $baseDir . '/src/Memcached.php',
     'InvincibleBrands\\WcMfpc\\WcMfpc' => $baseDir . '/src/WcMfpc.php',

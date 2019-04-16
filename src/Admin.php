@@ -1,12 +1,9 @@
 <?php
 
-namespace InvincibleBrands\WcMfpc\Admin;
+namespace InvincibleBrands\WcMfpc;
 
 
 if (! defined('ABSPATH')) { exit; }
-
-use InvincibleBrands\WcMfpc\Data;
-use InvincibleBrands\WcMfpc\WcMfpc;
 
 /**
  * Class Admin

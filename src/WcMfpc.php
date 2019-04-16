@@ -5,8 +5,6 @@ namespace InvincibleBrands\WcMfpc;
 
 if (! defined('ABSPATH')) { exit; }
 
-use InvincibleBrands\WcMfpc\Admin\Admin;
-
 /**
  * Class WcMfpc
  *
