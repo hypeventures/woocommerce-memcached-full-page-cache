@@ -124,16 +124,16 @@ class Admin
 
             $this->plugin_options_save();
             $this->status = 1;
-            header("Location: " . $this->settings_link . self::slug_save);
+            header("Location: " . $this->settings_link . Data::slug_save);
 
         }
 
         /* delete parameters if requested */
         if (isset($_POST[ Data::button_delete ]) && check_admin_referer('wc-mfpc')) {
 
-            $this->plugin_options_delete();
+            self::plugin_options_delete();
             $this->status = 2;
-            header("Location: " . $this->settings_link . self::slug_delete);
+            header("Location: " . $this->settings_link . Data::slug_delete);
 
         }
 
@@ -160,9 +160,9 @@ class Admin
         if (isset($_POST[ Data::button_flush ]) && check_admin_referer('wc-mfpc')) {
 
             /* remove precache log entry */
-            WcMfpc::_delete_option(self::precache_log);
+            self::_delete_option(Data::precache_log);
             /* remove precache timestamp entry */
-            WcMfpc::_delete_option(self::precache_timestamp);
+            self::_delete_option(Data::precache_timestamp);
             /* remove precache logfile */
 
             if (@file_exists($this->precache_logfile)) {
@@ -344,7 +344,7 @@ class Admin
     {
         $options = static::_get_option(Data::plugin_constant, $this->network);
         /* map missing values from default */
-        foreach ($this->defaults as $key => $default) {
+        foreach (WC_MFPC_DEFAULTS as $key => $default) {
             if (! @array_key_exists($key, $options)) {
                 $options[ $key ] = $default;
             }
@@ -440,7 +440,7 @@ class Admin
 
         /* add the required includes and generate the needed code */
         $string[] = "<?php";
-        $string[] = self::global_config_var . ' = ' . var_export($this->global_config, true) . ';';
+        $string[] = Data::global_config_var . ' = ' . var_export($this->global_config, true) . ';';
         $string[] = "include_once ('" . $this->acache_worker . "');";
 
         /* write the file and start caching from this point */
@@ -498,8 +498,8 @@ class Admin
 
             <script>
               jQuery(document).ready(function ($) {
-                jQuery("#<?php echo $this->plugin_constant ?>-settings").tabs();
-                jQuery("#<?php echo $this->plugin_constant ?>-commands").tabs();
+                jQuery("#<?php echo Data::plugin_constant ?>-settings").tabs();
+                jQuery("#<?php echo Data::plugin_constant ?>-commands").tabs();
               });
             </script>
 
@@ -507,7 +507,7 @@ class Admin
             /*
              * if options were saved, display saved message
              */
-            if (isset($_GET[ self::key_save ]) && $_GET[ self::key_save ] == 'true' || $this->status == 1) { ?>
+            if (isset($_GET[ Data::key_save ]) && $_GET[ Data::key_save ] == 'true' || $this->status == 1) { ?>
 
                 <div class='updated settings-error'><p><strong><?php _e('Settings saved.', 'wc-mfpc') ?></strong></p></div>
 
@@ -516,7 +516,7 @@ class Admin
             /*
              * if options were delete, display delete message
              */
-            if (isset($_GET[ self::key_delete ]) && $_GET[ self::key_delete ] == 'true' || $this->status == 2) { ?>
+            if (isset($_GET[ Data::key_delete ]) && $_GET[ Data::key_delete ] == 'true' || $this->status == 2) { ?>
 
                 <div class='error'><p><strong><?php _e('Plugin options deleted.', 'wc-mfpc') ?></strong></p></div>
 
@@ -525,7 +525,7 @@ class Admin
             /*
              * if options were saved
              */
-            if (isset($_GET[ self::key_flush ]) && $_GET[ self::key_flush ] == 'true' || $this->status == 3) { ?>
+            if (isset($_GET[ Data::key_flush ]) && $_GET[ Data::key_flush ] == 'true' || $this->status == 3) { ?>
 
                 <div class='updated settings-error'><p><strong><?php _e("Cache flushed.", 'wc-mfpc'); ?></strong></p></div>
 
@@ -534,27 +534,25 @@ class Admin
             /*
              * if options were saved, display saved message
              */
-            if ((isset($_GET[ self::key_precache ]) && $_GET[ self::key_precache ] == 'true') || $this->status == 4) { ?>
+            if ((isset($_GET[ Data::key_precache ]) && $_GET[ Data::key_precache ] == 'true') || $this->status == 4) { ?>
 
                 <div class='updated settings-error'><p><strong><?php _e('Precache process was started, it is now running in the background, please be patient, it may take a very long time to finish.', 'wc-mfpc') ?></strong></p></div>
 
-            <?php }
+            <?php } ?>
 
-            /*
-             * the admin panel itself
-             */
-            ?>
-
-            <h2><?php echo $this->plugin_name . ' settings'; ?></h2>
+            <h2><?php echo Data::plugin_name . ' settings'; ?></h2>
 
             <div class="updated">
-                <p><strong><?php _e('Driver: ', 'wc-mfpc');
-                        echo $this->options[ 'cache_type' ]; ?></strong></p>
-                <?php
-                /* only display backend status if memcache-like extension is running */
-                if (strstr($this->options[ 'cache_type' ], 'memcache')) {
-
-                    ?><p><?php
+                <p>
+                  <strong>
+                    <?php
+                      _e('Driver: ', 'wc-mfpc');
+                      echo $this->options[ 'cache_type' ];
+                    ?>
+                  </strong>
+                </p>
+                <p>
+                    <?php
                     _e('<strong>Backend status:</strong><br />', 'wc-mfpc');
 
                     /* we need to go through all servers */
@@ -582,22 +580,21 @@ class Admin
                         }
 
                     }
-
-                    ?></p><?php
-                } ?>
+                    ?>
+                </p>
             </div>
-            <form autocomplete="off" method="post" action="#" id="<?php echo $this->plugin_constant ?>-settings" class="plugin-admin">
+            <form autocomplete="off" method="post" action="#" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin">
                 <?php wp_nonce_field('wc-mfpc'); ?>
                 <?php $switcher_tabs = $this->plugin_admin_panel_get_tabs(); ?>
                 <ul class="tabs">
                     <?php foreach ($switcher_tabs AS $tab_section => $tab_label) { ?>
 
-                        <li><a href="#<?= $this->plugin_constant ?>-<?= $tab_section ?>" class="wp-switch-editor"><?= $tab_label ?></a></li>
+                        <li><a href="#<?= Data::plugin_constant ?>-<?= $tab_section ?>" class="wp-switch-editor"><?= $tab_label ?></a></li>
 
                     <?php } ?>
                 </ul>
 
-                <fieldset id="<?php echo $this->plugin_constant ?>-type">
+                <fieldset id="<?php echo Data::plugin_constant ?>-type">
                     <legend><?php _e('Set cache type', 'wc-mfpc'); ?></legend>
                     <dl>
                         <dt>
@@ -748,7 +745,7 @@ class Admin
                     </dl>
                 </fieldset>
 
-                <fieldset id="<?php echo $this->plugin_constant; ?>-debug">
+                <fieldset id="<?php echo Data::plugin_constant; ?>-debug">
                     <legend><?php _e('Debug & in-depth settings', 'wc-mfpc'); ?></legend>
                     <h3><?php _e('Notes', 'wc-mfpc'); ?></h3>
                     <p><?php _e('The former method of debug logging flag has been removed. In case you need debug log from WC-MFPC please set both the <a href="http://codex.wordpress.org/WP_DEBUG">WP_DEBUG</a> and the WC_MFPC__DEBUG_MODE constants `true` in wp-config.php.<br /> This will enable NOTICE level messages apart from the WARNING level ones which are always displayed.', 'wc-mfpc'); ?></p>
@@ -782,7 +779,7 @@ class Admin
 
                 </fieldset>
 
-                <fieldset id="<?php echo $this->plugin_constant ?>-exceptions">
+                <fieldset id="<?php echo Data::plugin_constant ?>-exceptions">
                     <legend><?php _e('Set cache additions/excepions', 'wc-mfpc'); ?></legend>
                     <dl>
                         <dt>
@@ -888,7 +885,7 @@ class Admin
                     </dl>
                 </fieldset>
 
-                <fieldset id="<?php echo $this->plugin_constant ?>-servers">
+                <fieldset id="<?php echo Data::plugin_constant ?>-servers">
                     <legend><?php _e('Backend server settings', 'wc-mfpc'); ?></legend>
                     <dl>
                         <dt>
@@ -936,7 +933,7 @@ class Admin
                     </dl>
                 </fieldset>
 
-                <fieldset id="<?php echo $this->plugin_constant ?>-precache">
+                <fieldset id="<?php echo Data::plugin_constant ?>-precache">
                     <legend><?php _e('Precache settings & log from previous pre-cache generation', 'wc-mfpc'); ?></legend>
 
                     <dt>
@@ -950,15 +947,15 @@ class Admin
                     </dd>
 
                     <?php
-                    $gentime = static::_get_option(self::precache_timestamp, $this->network);
-                    $log     = static::_get_option(self::precache_log, $this->network);
+                    $gentime = static::_get_option(Data::precache_timestamp, $this->network);
+                    $log     = static::_get_option(Data::precache_log, $this->network);
                     if (@file_exists($this->precache_logfile)) {
                         $logtime = filemtime($this->precache_logfile);
                         /* update precache log in DB if needed */
                         if ($logtime > $gentime) {
                             $log = file($this->precache_logfile);
-                            static::_update_option(self::precache_log, $log, $this->network);
-                            static::_update_option(self::precache_timestamp, $logtime, $this->network);
+                            static::_update_option(Data::precache_log, $log, $this->network);
+                            static::_update_option(Data::precache_timestamp, $logtime, $this->network);
                         }
                     }
                     if (empty ($log)) {
@@ -997,7 +994,7 @@ class Admin
 
             </form>
 
-            <form method="post" action="#" id="<?php echo $this->plugin_constant ?>-commands" class="plugin-admin" style="padding-top:2em;">
+            <form method="post" action="#" id="<?php echo Data::plugin_constant ?>-commands" class="plugin-admin" style="padding-top:2em;">
 
                 <?php wp_nonce_field('wc-mfpc'); ?>
 
