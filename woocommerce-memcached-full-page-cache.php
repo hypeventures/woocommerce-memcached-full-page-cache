@@ -74,6 +74,8 @@ if (! defined('WC_MFPC_DEFAULTS')) {
 
 }
 
+use InvincibleBrands\WcMfpc\Data;
 use InvincibleBrands\WcMfpc\WcMfpc;
 
-$wc_mfpc = new WcMfpc(WC_MFPC_DEFAULTS);
+$wc_mfpc_data = new Data();
+$wc_mfpc = new WcMfpc();

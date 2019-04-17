@@ -30,7 +30,7 @@ class Data
     const slug_save              = '&saved=true';
     const slug_delete            = '&deleted=true';
     const common_slug            = 'wp-common/';
-    const plugin_constant        = 'wc-mfpc';
+    const plugin_constant        = 'woocommerce-memcached-full-page-cache';
     const plugin_name            = 'WC-MFPC';
     const capability             = 'manage_options';
     const global_option          = 'wc-mfpc-global';
@@ -38,5 +38,63 @@ class Data
     const button_flush           = 'wc-mfpc-flush';
     const button_save            = 'wc-mfpc-save';
     const button_delete          = 'wc-mfpc-delete';
+    const plugin_settings_page   = 'wc-mfpc-settings';
+    const admin_css_handle       = 'wc-mfpc-admin-css';
+    const defaults               = [
+        'hosts'                   => '127.0.0.1:11211',
+        'memcached_binary'        => false,
+        'authpass'                => '',
+        'authuser'                => '',
+        'browsercache'            => 0,
+        'browsercache_home'       => 0,
+        'browsercache_taxonomy'   => 0,
+        'expire'                  => 300,
+        'expire_home'             => 300,
+        'expire_taxonomy'         => 300,
+        'invalidation_method'     => 0,
+        'prefix_meta'             => 'meta-',
+        'prefix_data'             => 'data-',
+        'charset'                 => 'utf-8',
+        'log'                     => true,
+        'cache_type'              => 'memcached',
+        'cache_loggedin'          => false,
+        'nocache_home'            => false,
+        'nocache_feed'            => false,
+        'nocache_archive'         => false,
+        'nocache_single'          => false,
+        'nocache_page'            => false,
+        'nocache_cookies'         => false,
+        'nocache_dyn'             => true,
+        'nocache_woocommerce'     => true,
+        'nocache_woocommerce_url' => '',
+        'nocache_url'             => '^/wp-',
+        'nocache_comment'         => '',
+        'response_header'         => false,
+        'generate_time'           => false,
+        'precache_schedule'       => 'null',
+        'key'                     => '$scheme://$host$request_uri',
+        'comments_invalidate'     => true,
+        'pingback_header'         => false,
+        'hashkey'                 => false,
+    ];
+
+    private $plugin_file;
+    private $defaults;
+    private $plugin_url;
+    private $plugin_dir;
+    private $admin_css_url;
+
+    /**
+     * Data constructor.
+     */
+    public function __construct()
+    {
+        $this->plugin_file          = getcwd() . '/' . Data::plugin_constant . '.php';
+        error_log($this->plugin_file);
+        $this->defaults             = WC_MFPC_DEFAULTS;
+        $this->plugin_url           = plugin_dir_url(dirname(__FILE__));
+        $this->plugin_dir           = plugin_dir_path(dirname(__FILE__));
+        $this->admin_css_url        = $this->plugin_url . 'assets/admin.css';
+    }
 
 }

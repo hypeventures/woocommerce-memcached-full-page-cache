@@ -69,11 +69,6 @@ class WcMfpc
     protected $plugin_file;
 
     /**
-     * @var string
-     */
-    protected $plugin_settings_page;
-
-    /**
      * @var
      */
     protected $admin_css_handle;
@@ -170,21 +165,9 @@ class WcMfpc
 
     /**
      * WcMfpc constructor.
-     *
-     * @param mixed $defaults   Default value(s) for plugin option(s)
-     *
-     * @return void
      */
-    public function __construct($defaults = [])
+    public function __construct()
     {
-        $this->plugin_file          = Data::plugin_constant . '/' . Data::plugin_constant . '.php';
-        $this->defaults             = $defaults;
-        $this->plugin_settings_page = Data::plugin_constant . '-settings';
-        $this->plugin_url           = plugin_dir_url(__FILE__);
-        $this->plugin_dir           = plugin_dir_path(dirname(__FILE__));
-        $this->admin_css_handle     = Data::plugin_constant . '-admin-css';
-        $this->admin_css_url        = $this->plugin_url . 'assets/admin.css';
-
         add_action('init', [ &$this, 'plugin_init' ]);
         add_action('plugins_loaded', [ &$this, 'plugin_load_textdomain' ]);
     }

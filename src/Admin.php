@@ -73,7 +73,7 @@ class Admin
         }
 
         /* set the settings page link string */
-        $this->settings_link = $this->settings_slug . '?page=' . $this->plugin_settings_page;
+        $this->settings_link = $this->settings_slug . '?page=' . Data::plugin_settings_page;
     }
 
     /**
@@ -140,15 +140,27 @@ class Admin
         /* load additional moves */
         $this->plugin_extend_admin_init();
 
+        error_log('adding submenu');
+
+        error_log(print_r([
+            'data' => [
+                '$this->settings_slug' => $this->settings_slug,
+                'Data::plugin_name . \' options\'' => Data::plugin_name . ' options',
+                'Data::plugin_name' => Data::plugin_name,
+                'Data::capability' => Data::capability,
+                'Data::plugin_settings_page' => Data::plugin_settings_page,
+            ],
+        ], true));
+
         /* add submenu to settings pages */
-        add_submenu_page(
+        error_log(add_submenu_page(
             $this->settings_slug,
             Data::plugin_name . ' options',
             Data::plugin_name,
             Data::capability,
-            $this->plugin_settings_page,
+            Data::plugin_settings_page,
             [ &$this, 'plugin_admin_panel' ]
-        );
+        ));
     }
 
     /**
@@ -469,6 +481,7 @@ class Admin
      */
     public function plugin_admin_panel()
     {
+        error_log('reached admin panel method');
         /*
          * security, if somehow we're running without WordPress security functions
          */
