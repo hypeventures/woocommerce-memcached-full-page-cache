@@ -203,9 +203,18 @@ class Config
      */
     public function setConfig($config = [])
     {
-        if (! empty($config) && is_array($config)) {
+        if (empty($config) || ! is_array($config)) {
 
-            // ToDo: finish setting attributes from array;
+            return $this;
+        }
+
+        foreach ($config as $key => $value) {
+
+            if (property_exists(self::class, $key)) {
+
+                $this->$key = esc_attr($value);
+
+            }
 
         }
 
