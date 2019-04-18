@@ -13,12 +13,10 @@ if (! defined( 'WP_UNINSTALL_PLUGIN') || ! defined('ABSPATH')) {
 
 }
 
-/*
- * get the worker file
- */
-include_once 'woocommerce-memcached-full-page-cache.php';
+include_once 'vendor/autoload.php';
 
-/*
- * run uninstall function
- */
-$wc_mfpc->plugin_uninstall();
+/* delete advanced-cache.php file */
+unlink(WP_CONTENT_DIR . '/advanced-cache.php');
+
+/* delete site settings */
+InvincibleBrands\WcMfpc\Admin::plugin_options_delete();
