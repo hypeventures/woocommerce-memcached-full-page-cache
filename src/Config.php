@@ -212,7 +212,7 @@ class Config
 
             if (property_exists(self::class, $key)) {
 
-                $this->$key = esc_attr($value);
+                $this->{$key} = esc_attr($value);
 
             }
 
