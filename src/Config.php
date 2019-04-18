@@ -3,6 +3,8 @@
 namespace InvincibleBrands\WcMfpc;
 
 
+if (! defined('ABSPATH')) { exit; }
+
 /**
  * Class Config
  *
@@ -14,177 +16,177 @@ class Config
     /**
      * @var string
      */
-    protected $hosts                   = '127.0.0.1:11211';
+    public $hosts                   = '127.0.0.1:11211';
 
     /**
      * @var bool
      */
-    protected $memcached_binary        = false;
+    public $memcached_binary        = false;
 
     /**
      * @var string
      */
-    protected $authpass                = '';
+    public $authpass                = '';
 
     /**
      * @var string
      */
-    protected $authuser                = '';
+    public $authuser                = '';
 
     /**
      * @var int
      */
-    protected $browsercache            = 0;
+    public $browsercache            = 0;
 
     /**
      * @var int
      */
-    protected $browsercache_home       = 0;
+    public $browsercache_home       = 0;
 
     /**
      * @var int
      */
-    protected $browsercache_taxonomy   = 0;
+    public $browsercache_taxonomy   = 0;
 
     /**
      * @var int
      */
-    protected $expire                  = 300;
+    public $expire                  = 300;
 
     /**
      * @var int
      */
-    protected $expire_home             = 300;
+    public $expire_home             = 300;
 
     /**
      * @var int
      */
-    protected $expire_taxonomy         = 300;
+    public $expire_taxonomy         = 300;
 
     /**
      * @var int
      */
-    protected $invalidation_method     = 0;
+    public $invalidation_method     = 0;
 
     /**
      * @var string
      */
-    protected $prefix_meta             = 'meta-';
+    public $prefix_meta             = 'meta-';
 
     /**
      * @var string
      */
-    protected $prefix_data             = 'data-';
+    public $prefix_data             = 'data-';
 
     /**
      * @var string
      */
-    protected $charset                 = 'utf-8';
+    public $charset                 = 'utf-8';
 
     /**
      * @var bool
      */
-    protected $log                     = true;
+    public $log                     = true;
 
     /**
      * @var string
      */
-    protected $cache_type              = 'memcached';
+    public $cache_type              = 'memcached';
 
     /**
      * @var bool
      */
-    protected $cache_loggedin          = false;
+    public $cache_loggedin          = false;
 
     /**
      * @var bool
      */
-    protected $nocache_home            = false;
+    public $nocache_home            = false;
 
     /**
      * @var bool
      */
-    protected $nocache_feed            = false;
+    public $nocache_feed            = false;
 
     /**
      * @var bool
      */
-    protected $nocache_archive         = false;
+    public $nocache_archive         = false;
 
     /**
      * @var bool
      */
-    protected $nocache_single          = false;
+    public $nocache_single          = false;
 
     /**
      * @var bool
      */
-    protected $nocache_page            = false;
+    public $nocache_page            = false;
 
     /**
      * @var bool
      */
-    protected $nocache_cookies         = false;
+    public $nocache_cookies         = false;
 
     /**
      * @var bool
      */
-    protected $nocache_dyn             = true;
+    public $nocache_dyn             = true;
 
     /**
      * @var bool
      */
-    protected $nocache_woocommerce     = true;
+    public $nocache_woocommerce     = true;
 
     /**
      * @var string
      */
-    protected $nocache_woocommerce_url = '';
+    public $nocache_woocommerce_url = '';
 
     /**
      * @var string
      */
-    protected $nocache_url             = '^/wp-';
+    public $nocache_url             = '^/wp-';
 
     /**
      * @var string
      */
-    protected $nocache_comment         = '';
+    public $nocache_comment         = '';
 
     /**
      * @var bool
      */
-    protected $response_header         = false;
+    public $response_header         = false;
 
     /**
      * @var bool
      */
-    protected $generate_time           = false;
+    public $generate_time           = false;
 
     /**
      * @var string
      */
-    protected $precache_schedule       = 'null';
+    public $precache_schedule       = 'null';
 
     /**
      * @var string
      */
-    protected $key                     = '$scheme://$host$request_uri';
+    public $key                     = '$scheme://$host$request_uri';
 
     /**
      * @var bool
      */
-    protected $comments_invalidate     = true;
+    public $comments_invalidate     = true;
 
     /**
      * @var bool
      */
-    protected $pingback_header         = false;
+    public $pingback_header         = false;
 
     /**
      * @var bool
      */
-    protected $hashkey                 = false;
+    public $hashkey                 = false;
 
     /**
      * Config constructor.
@@ -197,6 +199,9 @@ class Config
     }
 
     /**
+     * Processes a given Config Array and sets its contents for all keys
+     * which are a known attribute of this Config::class.
+     *
      * @param array $config
      *
      * @return Config $this
@@ -219,6 +224,16 @@ class Config
         }
 
         return $this;
+    }
+
+    /**
+     * Returns an array of this Config::class
+     *
+     * @return array
+     */
+    public function getConfig()
+    {
+        return (array) $this;
     }
 
     /**
