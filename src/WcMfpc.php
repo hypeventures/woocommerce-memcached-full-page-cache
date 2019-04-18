@@ -479,28 +479,13 @@ class WcMfpc
     }
 
     /**
-     * deactivation hook function, to be extended
+     * Removes current site config from global config on deactivation.
      */
     public function plugin_deactivate()
     {
+        $admin = new Admin();
         /* remove current site config from global config */
-        $this->update_global_config(true);
-    }
-
-    /**
-     * uninstall hook function, to be extended
-     */
-    public function plugin_uninstall($delete_options = true)
-    {
-        /* delete advanced-cache.php file */
-        unlink($this->acache);
-
-        /* delete site settings */
-        if ($delete_options) {
-
-            $this->plugin_options_delete();
-
-        }
+        $admin->update_global_config(true);
     }
 
     /**
