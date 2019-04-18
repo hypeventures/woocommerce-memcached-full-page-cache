@@ -354,19 +354,32 @@ class Admin
      */
     public function plugin_options_read()
     {
-        $options = static::_get_option(Data::plugin_constant, $this->network);
+        global $wcMfpcData;
+
+        $options = self::_get_option(Data::plugin_constant, $this->network);
+
         /* map missing values from default */
-        foreach (WC_MFPC_DEFAULTS as $key => $default) {
+        foreach ($wcMfpcData->defaults as $key => $default) {
+
             if (! @array_key_exists($key, $options)) {
+
                 $options[ $key ] = $default;
+
             }
+
         }
+
         /* removed unused keys, rare, but possible */
         foreach (@array_keys($options) as $key) {
-            if (! @array_key_exists($key, $this->defaults)) {
+
+            if (! @array_key_exists($key, $wcMfpcData->defaults)) {
+
                 unset ($options[ $key ]);
+
             }
+
         }
+
         /* any additional read hook */
         $this->plugin_extend_options_read($options);
         $this->options = $options;
