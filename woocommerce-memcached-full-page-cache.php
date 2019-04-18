@@ -32,50 +32,12 @@ if (! defined('ABSPATH')) { exit; }
 
 include_once('vendor/autoload.php');
 
-if (! defined('WC_MFPC_DEFAULTS')) {
+global $wcMfpcConfig, $wcMfpcData, $wcMfpc;
 
-    define ('WC_MFPC_DEFAULTS', [
-        'hosts'                   => '127.0.0.1:11211',
-        'memcached_binary'        => false,
-        'authpass'                => '',
-        'authuser'                => '',
-        'browsercache'            => 0,
-        'browsercache_home'       => 0,
-        'browsercache_taxonomy'   => 0,
-        'expire'                  => 300,
-        'expire_home'             => 300,
-        'expire_taxonomy'         => 300,
-        'invalidation_method'     => 0,
-        'prefix_meta'             => 'meta-',
-        'prefix_data'             => 'data-',
-        'charset'                 => 'utf-8',
-        'log'                     => true,
-        'cache_type'              => 'memcached',
-        'cache_loggedin'          => false,
-        'nocache_home'            => false,
-        'nocache_feed'            => false,
-        'nocache_archive'         => false,
-        'nocache_single'          => false,
-        'nocache_page'            => false,
-        'nocache_cookies'         => false,
-        'nocache_dyn'             => true,
-        'nocache_woocommerce'     => true,
-        'nocache_woocommerce_url' => '',
-        'nocache_url'             => '^/wp-',
-        'nocache_comment'         => '',
-        'response_header'         => false,
-        'generate_time'           => false,
-        'precache_schedule'       => 'null',
-        'key'                     => '$scheme://$host$request_uri',
-        'comments_invalidate'     => true,
-        'pingback_header'         => false,
-        'hashkey'                 => false,
-    ]);
-
-}
-
+use InvincibleBrands\WcMfpc\Config;
 use InvincibleBrands\WcMfpc\Data;
 use InvincibleBrands\WcMfpc\WcMfpc;
 
-$wc_mfpc_data = new Data();
-$wc_mfpc = new WcMfpc();
+$wcMfpcConfig = new Config();
+$wcMfpcData   = new Data();
+$wcMfpc       = new WcMfpc();
