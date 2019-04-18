@@ -215,7 +215,7 @@ class Config
     /**
      * @return string
      */
-    public function getHosts(): string
+    public function getHosts()
     {
         return $this->hosts;
     }
@@ -231,7 +231,7 @@ class Config
     /**
      * @return bool
      */
-    public function isMemcachedBinary(): bool
+    public function isMemcachedBinary()
     {
         return $this->memcached_binary;
     }
@@ -247,7 +247,7 @@ class Config
     /**
      * @return string
      */
-    public function getAuthpass(): string
+    public function getAuthpass()
     {
         return $this->authpass;
     }
@@ -263,7 +263,7 @@ class Config
     /**
      * @return string
      */
-    public function getAuthuser(): string
+    public function getAuthuser()
     {
         return $this->authuser;
     }
@@ -279,7 +279,7 @@ class Config
     /**
      * @return int
      */
-    public function getBrowsercache(): int
+    public function getBrowsercache()
     {
         return $this->browsercache;
     }
@@ -295,7 +295,7 @@ class Config
     /**
      * @return int
      */
-    public function getBrowsercacheHome(): int
+    public function getBrowsercacheHome()
     {
         return $this->browsercache_home;
     }
@@ -311,7 +311,7 @@ class Config
     /**
      * @return int
      */
-    public function getBrowsercacheTaxonomy(): int
+    public function getBrowsercacheTaxonomy()
     {
         return $this->browsercache_taxonomy;
     }
@@ -327,7 +327,7 @@ class Config
     /**
      * @return int
      */
-    public function getExpire(): int
+    public function getExpire()
     {
         return $this->expire;
     }
@@ -343,7 +343,7 @@ class Config
     /**
      * @return int
      */
-    public function getExpireHome(): int
+    public function getExpireHome()
     {
         return $this->expire_home;
     }
@@ -359,7 +359,7 @@ class Config
     /**
      * @return int
      */
-    public function getExpireTaxonomy(): int
+    public function getExpireTaxonomy()
     {
         return $this->expire_taxonomy;
     }
@@ -375,7 +375,7 @@ class Config
     /**
      * @return int
      */
-    public function getInvalidationMethod(): int
+    public function getInvalidationMethod()
     {
         return $this->invalidation_method;
     }
@@ -391,7 +391,7 @@ class Config
     /**
      * @return string
      */
-    public function getPrefixMeta(): string
+    public function getPrefixMeta()
     {
         return $this->prefix_meta;
     }
@@ -407,7 +407,7 @@ class Config
     /**
      * @return string
      */
-    public function getPrefixData(): string
+    public function getPrefixData()
     {
         return $this->prefix_data;
     }
@@ -423,7 +423,7 @@ class Config
     /**
      * @return string
      */
-    public function getCharset(): string
+    public function getCharset()
     {
         return $this->charset;
     }
@@ -439,7 +439,7 @@ class Config
     /**
      * @return bool
      */
-    public function isLog(): bool
+    public function isLog()
     {
         return $this->log;
     }
@@ -455,7 +455,7 @@ class Config
     /**
      * @return string
      */
-    public function getCacheType(): string
+    public function getCacheType()
     {
         return $this->cache_type;
     }
@@ -471,7 +471,7 @@ class Config
     /**
      * @return bool
      */
-    public function isCacheLoggedin(): bool
+    public function isCacheLoggedin()
     {
         return $this->cache_loggedin;
     }
@@ -487,7 +487,7 @@ class Config
     /**
      * @return bool
      */
-    public function isNocacheHome(): bool
+    public function isNocacheHome()
     {
         return $this->nocache_home;
     }
@@ -503,7 +503,7 @@ class Config
     /**
      * @return bool
      */
-    public function isNocacheFeed(): bool
+    public function isNocacheFeed()
     {
         return $this->nocache_feed;
     }
@@ -519,7 +519,7 @@ class Config
     /**
      * @return bool
      */
-    public function isNocacheArchive(): bool
+    public function isNocacheArchive()
     {
         return $this->nocache_archive;
     }
@@ -535,7 +535,7 @@ class Config
     /**
      * @return bool
      */
-    public function isNocacheSingle(): bool
+    public function isNocacheSingle()
     {
         return $this->nocache_single;
     }
@@ -551,7 +551,7 @@ class Config
     /**
      * @return bool
      */
-    public function isNocachePage(): bool
+    public function isNocachePage()
     {
         return $this->nocache_page;
     }
@@ -567,7 +567,7 @@ class Config
     /**
      * @return bool
      */
-    public function isNocacheCookies(): bool
+    public function isNocacheCookies()
     {
         return $this->nocache_cookies;
     }
@@ -583,7 +583,7 @@ class Config
     /**
      * @return bool
      */
-    public function isNocacheDyn(): bool
+    public function isNocacheDyn()
     {
         return $this->nocache_dyn;
     }
@@ -599,7 +599,7 @@ class Config
     /**
      * @return bool
      */
-    public function isNocacheWoocommerce(): bool
+    public function isNocacheWoocommerce()
     {
         return $this->nocache_woocommerce;
     }
@@ -615,7 +615,7 @@ class Config
     /**
      * @return string
      */
-    public function getNocacheWoocommerceUrl(): string
+    public function getNocacheWoocommerceUrl()
     {
         return $this->nocache_woocommerce_url;
     }
@@ -631,7 +631,7 @@ class Config
     /**
      * @return string
      */
-    public function getNocacheUrl(): string
+    public function getNocacheUrl()
     {
         return $this->nocache_url;
     }
@@ -647,7 +647,7 @@ class Config
     /**
      * @return string
      */
-    public function getNocacheComment(): string
+    public function getNocacheComment()
     {
         return $this->nocache_comment;
     }
@@ -663,7 +663,7 @@ class Config
     /**
      * @return bool
      */
-    public function isResponseHeader(): bool
+    public function isResponseHeader()
     {
         return $this->response_header;
     }
@@ -679,7 +679,7 @@ class Config
     /**
      * @return bool
      */
-    public function isGenerateTime(): bool
+    public function isGenerateTime()
     {
         return $this->generate_time;
     }
@@ -695,7 +695,7 @@ class Config
     /**
      * @return string
      */
-    public function getPrecacheSchedule(): string
+    public function getPrecacheSchedule()
     {
         return $this->precache_schedule;
     }
@@ -711,7 +711,7 @@ class Config
     /**
      * @return string
      */
-    public function getKey(): string
+    public function getKey()
     {
         return $this->key;
     }
@@ -727,7 +727,7 @@ class Config
     /**
      * @return bool
      */
-    public function isCommentsInvalidate(): bool
+    public function isCommentsInvalidate()
     {
         return $this->comments_invalidate;
     }
@@ -743,7 +743,7 @@ class Config
     /**
      * @return bool
      */
-    public function isPingbackHeader(): bool
+    public function isPingbackHeader()
     {
         return $this->pingback_header;
     }
@@ -759,7 +759,7 @@ class Config
     /**
      * @return bool
      */
-    public function isHashkey(): bool
+    public function isHashkey()
     {
         return $this->hashkey;
     }
