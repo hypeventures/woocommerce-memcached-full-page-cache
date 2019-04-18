@@ -24,11 +24,6 @@ class WcMfpc
     protected $defaults = [];
 
     /**
-     * @var int
-     */
-    protected $status = 0;
-
-    /**
      * @var bool
      */
     protected $network = false;
@@ -47,11 +42,6 @@ class WcMfpc
      * @var
      */
     protected $plugin_url;
-
-    /**
-     * @var
-     */
-    protected $plugin_dir;
 
     /**
      * @var
@@ -94,74 +84,14 @@ class WcMfpc
     private $precache_phpfile = '';
 
     /**
-     * @var string
-     */
-    private $global_config_key = '';
-
-    /**
-     * @var array
-     */
-    private $global_config = [];
-
-    /**
-     * @var bool
-     */
-    private $global_saved = false;
-
-    /**
-     * @var string
-     */
-    private $acache_worker = '';
-
-    /**
-     * @var string
-     */
-    private $acache = '';
-
-    /**
-     * @var array
-     */
-    private $select_cache_type = [];
-
-    /**
-     * @var array
-     */
-    private $select_invalidation_method = [];
-
-    /**
-     * @var array
-     */
-    private $select_schedules = [];
-
-    /**
-     * @var array
-     */
-    private $valid_cache_type = [];
-
-    /**
-     * @var array
-     */
-    private $list_uri_vars = [];
-
-    /**
      * @var bool
      */
     private $shell_function = false;
 
     /**
-     * @var array
-     */
-    private $shell_possibilities = [];
-
-    /**
      * @var null|Memcached
      */
-    private $backend = null;
-
-    /**
-     * @var array
-     */
-    private $errors = [];
+    public $backend = null;
 
     /**
      * WcMfpc constructor.
@@ -208,10 +138,6 @@ class WcMfpc
      */
     public function plugin_init()
     {
-
-        /* initialize plugin, plugin specific init functions */
-        $this->plugin_pre_init();
-
         register_activation_hook($this->plugin_file, [ &$this, 'plugin_activate' ]);
         register_deactivation_hook($this->plugin_file, [ &$this, 'plugin_deactivate' ]);
 
@@ -220,107 +146,12 @@ class WcMfpc
             $admin = new Admin();
             $admin->setHooks();
             $admin->plugin_options_read();
+            $admin->plugin_pre_init();
 
         }
 
         /* setup plugin, plugin specific setup functions that need options */
         $this->plugin_post_init();
-    }
-
-    /**
-     * init hook function runs before admin panel hook, themeing and options read
-     */
-    public function plugin_pre_init()
-    {
-        /* advanced cache "worker" file */
-        $this->acache_worker = $this->plugin_dir . Data::plugin_constant . '-acache.php';
-        /* WordPress advanced-cache.php file location */
-        $this->acache = WP_CONTENT_DIR . '/advanced-cache.php';
-        /* precache log */
-        $this->precache_logfile = sys_get_temp_dir() . '/' . Data::precache_log;
-        /* this is the precacher php worker file */
-        $this->precache_phpfile = sys_get_temp_dir() . '/' . Data::precache_php;
-        /* search for a system function */
-        $this->shell_possibilities = [ 'shell_exec', 'exec', 'system', 'passthru' ];
-        /* get disabled functions list */
-        $disabled_functions = array_map('trim', explode(',', ini_get('disable_functions')));
-
-        foreach ($this->shell_possibilities as $possible) {
-
-            if (function_exists($possible) && ! (ini_get('safe_mode') || in_array($possible, $disabled_functions))) {
-
-                /* set shell function */
-                $this->shell_function = $possible;
-                break;
-
-            }
-
-        }
-
-        if (! isset($_SERVER[ 'HTTP_HOST' ])) {
-
-            $_SERVER[ 'HTTP_HOST' ] = '127.0.0.1';
-
-        }
-
-        /* set global config key; here, because it's needed for migration */
-        if ($this->network) {
-
-            $this->global_config_key = 'network';
-
-        } else {
-
-            $sitedomain = parse_url(get_option('siteurl'), PHP_URL_HOST);
-
-            if ($_SERVER[ 'HTTP_HOST' ] != $sitedomain) {
-
-                $this->errors[ 'domain_mismatch' ] = sprintf(__("Domain mismatch: the site domain configuration (%s) does not match the HTTP_HOST (%s) variable in PHP. Please fix the incorrect one, otherwise the plugin may not work as expected.", 'wc-mfpc'), $sitedomain, $_SERVER[ 'HTTP_HOST' ]);
-
-            }
-
-            $this->global_config_key = $_SERVER[ 'HTTP_HOST' ];
-
-        }
-
-        /* cache type possible values array */
-        $this->select_cache_type = [
-            'memcached' => __('PHP Memcached', 'wc-mfpc'),
-        ];
-
-        /* check for required functions / classes for the cache types */
-        $this->valid_cache_type = [
-            'memcached' => class_exists('Memcached') ? true : false,
-        ];
-
-        /* invalidation method possible values array */
-        $this->select_invalidation_method = [
-            0 => __('flush cache', 'wc-mfpc'),
-            1 => __('only modified post', 'wc-mfpc'),
-            2 => __('modified post and all related taxonomies', 'wc-mfpc'),
-        ];
-
-        /* map of possible key masks */
-        $this->list_uri_vars = [
-            '$scheme'           => __('The HTTP scheme (i.e. http, https).', 'wc-mfpc'),
-            '$host'             => __('Host in the header of request or name of the server processing the request if the Host header is not available.', 'wc-mfpc'),
-            '$request_uri'      => __('The *original* request URI as received from the client including the args', 'wc-mfpc'),
-            '$remote_user'      => __('Name of user, authenticated by the Auth Basic Module', 'wc-mfpc'),
-            '$cookie_PHPSESSID' => __('PHP Session Cookie ID, if set ( empty if not )', 'wc-mfpc'),
-            '$accept_lang'      => __('First HTTP Accept Lang set in the HTTP request', 'wc-mfpc'),
-        ];
-
-        /* get current wp_cron schedules */
-        $wp_schedules = wp_get_schedules();
-        /* add 'null' to switch off timed precache */
-        $schedules[ 'null' ] = __('do not use timed precache');
-
-        foreach ($wp_schedules as $interval => $details) {
-
-            $schedules[ $interval ] = $details[ 'display' ];
-
-        }
-
-        $this->select_schedules = $schedules;
     }
 
     /**
@@ -335,7 +166,7 @@ class WcMfpc
         add_action('transition_post_status', [ &$this->backend, 'clear_ng' ], 10, 3);
 
         /* comments invalidation hooks */
-        if ($this->options[ 'comments_invalidate' ]) {
+        if (! empty($this->options[ 'comments_invalidate' ])) {
 
             add_action('comment_post', [ &$this->backend, 'clear' ], 0);
             add_action('edit_comment', [ &$this->backend, 'clear' ], 0);
@@ -360,114 +191,6 @@ class WcMfpc
 
         /* add precache coldrun action */
         add_action(Data::precache_id, [ &$this, 'precache_coldrun' ]);
-
-        /* link on to settings for plugins page */
-        $settings_link = ' &raquo; <a href="' . $this->settings_link . '">' . __('WC-MFPC Settings', 'wc-mfpc') . '</a>';
-
-        /* look for WP_CACHE */
-        if (! WP_CACHE) {
-
-            $this->errors[ 'no_wp_cache' ] = __("WP_CACHE is disabled. Without that, cache plugins, like this, will not work. Please add `define ( 'WP_CACHE', true );` to the beginning of wp-config.php.", 'wc-mfpc');
-
-        }
-
-        /* look for global settings array */
-        if (! $this->global_saved) {
-
-            $this->errors[ 'no_global_saved' ] = sprintf(__('This site was reached as %s ( according to PHP HTTP_HOST ) and there are no settings present for this domain in the WC-MFPC configuration yet. Please save the %s for the domain or fix the webserver configuration!', 'wc-mfpc'),
-                $_SERVER[ 'HTTP_HOST' ], $settings_link
-            );
-
-        }
-
-        /* look for writable acache file */
-        if (file_exists($this->acache) && ! is_writable($this->acache)) {
-
-            $this->errors[ 'no_acache_write' ] = sprintf(__('Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.', 'wc-mfpc'), $this->acache);
-
-        }
-
-        /* look for acache file */
-        if (! file_exists($this->acache)) {
-
-            $this->errors[ 'no_acache_saved' ] = sprintf(__('Advanced cache file is yet to be generated, please save %s', 'wc-mfpc'), $settings_link);
-
-        }
-
-        /* look for extensions that should be available */
-        foreach ($this->valid_cache_type as $backend => $status) {
-
-            if ($this->options[ 'cache_type' ] == $backend && ! $status) {
-
-                $this->errors[ 'no_backend' ] = sprintf(__('%s cache backend activated but no PHP %s extension was found.<br />Please either use different backend or activate the module!', 'wc-mfpc'), $backend, $backend);
-
-            }
-
-        }
-
-        $filtered_errors = apply_filters('wc_mfpc_post_init_errors_array', $this->errors);
-
-        if ($filtered_errors) {
-
-            if (php_sapi_name() != "cli") {
-
-                foreach ($this->errors as $e => $msg) {
-
-                    static::alert($msg, LOG_WARNING, $this->network);
-
-                }
-
-            }
-
-        }
-    }
-
-    /**
-     * display formatted alert message
-     *
-     * @param string  $msg     Error message
-     * @param string  $error   "level" of error
-     * @param boolean $network WordPress network or not, DEPRECATED
-     *
-     * @return bool
-     */
-    static public function alert($msg, $level = LOG_WARNING, $network = false)
-    {
-        if (empty($msg)) {
-
-            return false;
-        }
-
-        switch ($level) {
-
-            case LOG_ERR:
-            case LOG_WARNING:
-                $css = "error";
-                break;
-            default:
-                $css = "updated";
-                break;
-
-        }
-
-        $r = '<div class="' . $css . '"><p>' . sprintf(__('%s', 'PluginUtils'), $msg) . '</p></div>';
-
-        if (version_compare(phpversion(), '5.3.0', '>=')) {
-
-            add_action('admin_notices', function () use ($r) {
-                echo $r;
-            }, 10);
-
-        } else {
-
-            global $tmp;
-
-            $tmp = $r;
-            $f   = create_function('', 'global $tmp; echo $tmp;');
-
-            add_action('admin_notices', $f);
-
-        }
     }
 
     /**
@@ -494,56 +217,6 @@ class WcMfpc
     public function plugin_load_textdomain()
     {
         load_plugin_textdomain('wc-mfpc', false, dirname(plugin_basename(__FILE__)) . '/languages/');
-    }
-
-    /**
-     * Select options field processor
-     *
-     * @param array $elements  Array to build <option> values of
-     * @param mixed $current   The current active element
-     * @param bool  $print     Is true, the options will be printed, otherwise the string will be returned
-     *
-     * @return mixed $opt      Prints or returns the options string
-     */
-    protected function print_select_options($elements, $current, $valid = false, $print = true)
-    {
-        if (is_array($valid)) {
-
-            $check_disabled = true;
-
-        } else {
-
-            $check_disabled = false;
-
-        }
-
-        $opt = '';
-
-        foreach ($elements as $value => $name) {
-
-            $opt .= '<option value="' . $value . '" ';
-            $opt .= selected($value, $current);
-
-            // ugly tree level valid check to prevent array warning messages
-            if (is_array($valid) && isset ($valid [ $value ]) && $valid [ $value ] == false) {
-
-                $opt .= ' disabled="disabled"';
-
-            }
-
-            $opt .= '>';
-            $opt .= $name;
-            $opt .= "</option>\n";
-        }
-
-        if ($print) {
-
-            echo $opt;
-
-        } else {
-
-            return $opt;
-        }
     }
 
     /**

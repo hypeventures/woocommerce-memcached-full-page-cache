@@ -36,17 +36,77 @@ class Admin
     /**
      * @var string
      */
-    private $plugin_settings_page = '';
-
-    /**
-     * @var string
-     */
     private $precache_message = '';
 
     /**
      * @var bool
      */
     private $scheduled = false;
+
+    /**
+     * @var array
+     */
+    private $global_config = [];
+
+    /**
+     * @var string
+     */
+    private $global_config_key = '';
+
+    /**
+     * @var array
+     */
+    private $shell_possibilities = [];
+
+    /**
+     * @var int
+     */
+    private $status = 0;
+
+    /**
+     * @var bool
+     */
+    private $global_saved = false;
+
+    /**
+     * @var string
+     */
+    private $acache_worker = '';
+
+    /**
+     * @var string
+     */
+    private $acache = '';
+
+    /**
+     * @var array
+     */
+    private $select_cache_type = [];
+
+    /**
+     * @var array
+     */
+    private $select_invalidation_method = [];
+
+    /**
+     * @var array
+     */
+    private $select_schedules = [];
+
+    /**
+     * @var array
+     */
+    private $valid_cache_type = [];
+
+    /**
+     * @var array
+     */
+    private $list_uri_vars = [];
+
+    /**
+     * @var array
+     */
+    private $errors = [];
 
     /**
      * Admin constructor.
@@ -110,8 +170,104 @@ class Admin
         wp_enqueue_script("jquery-ui-tabs");
         wp_enqueue_script("jquery-ui-slider");
         /* additional admin styling */
-        wp_register_style($this->admin_css_handle, $this->admin_css_url, [ 'dashicons' ], false, 'all');
-        wp_enqueue_style($this->admin_css_handle);
+        wp_register_style(Data::admin_css_handle, Data::$admin_css_url, [ 'dashicons' ], false, 'all');
+        wp_enqueue_style(Data::admin_css_handle);
+    }
+
+    /**
+     * init hook function runs before admin panel hook, themeing and options read
+     */
+    public function plugin_pre_init()
+    {
+        /* advanced cache "worker" file */
+        $this->acache_worker = Data::$plugin_dir . Data::plugin_constant . '-advanced-cache.php';
+        /* WordPress advanced-cache.php file location */
+        $this->acache = WP_CONTENT_DIR . '/advanced-cache.php';
+        /* precache log */
+        $this->precache_logfile = sys_get_temp_dir() . '/' . Data::precache_log;
+        /* this is the precacher php worker file */
+        $this->precache_phpfile = sys_get_temp_dir() . '/' . Data::precache_php;
+        /* search for a system function */
+        $this->shell_possibilities = [ 'shell_exec', 'exec', 'system', 'passthru' ];
+        /* get disabled functions list */
+        $disabled_functions = array_map('trim', explode(',', ini_get('disable_functions')));
+
+        foreach ($this->shell_possibilities as $possible) {
+
+            if (function_exists($possible) && ! (ini_get('safe_mode') || in_array($possible, $disabled_functions))) {
+
+                /* set shell function */
+                $this->shell_function = $possible;
+                break;
+
+            }
+
+        }
+
+        if (! isset($_SERVER[ 'HTTP_HOST' ])) {
+
+            $_SERVER[ 'HTTP_HOST' ] = '127.0.0.1';
+
+        }
+
+        /* set global config key; here, because it's needed for migration */
+        if ($this->network) {
+
+            $this->global_config_key = 'network';
+
+        } else {
+
+            $sitedomain = parse_url(get_option('siteurl'), PHP_URL_HOST);
+
+            if ($_SERVER[ 'HTTP_HOST' ] != $sitedomain) {
+
+                $this->errors[ 'domain_mismatch' ] = sprintf(__("Domain mismatch: the site domain configuration (%s) does not match the HTTP_HOST (%s) variable in PHP. Please fix the incorrect one, otherwise the plugin may not work as expected.", 'wc-mfpc'), $sitedomain, $_SERVER[ 'HTTP_HOST' ]);
+
+            }
+
+            $this->global_config_key = $_SERVER[ 'HTTP_HOST' ];
+
+        }
+
+        /* cache type possible values array */
+        $this->select_cache_type = [
+            'memcached' => __('PHP Memcached', 'wc-mfpc'),
+        ];
+
+        /* check for required functions / classes for the cache types */
+        $this->valid_cache_type = [
+            'memcached' => class_exists('Memcached') ? true : false,
+        ];
+
+        /* invalidation method possible values array */
+        $this->select_invalidation_method = [
+            0 => __('flush cache', 'wc-mfpc'),
+            1 => __('only modified post', 'wc-mfpc'),
+            2 => __('modified post and all related taxonomies', 'wc-mfpc'),
+        ];
+
+        /* map of possible key masks */
+        $this->list_uri_vars = [
+            '$scheme'           => __('The HTTP scheme (i.e. http, https).', 'wc-mfpc'),
+            '$host'             => __('Host in the header of request or name of the server processing the request if the Host header is not available.', 'wc-mfpc'),
+            '$request_uri'      => __('The *original* request URI as received from the client including the args', 'wc-mfpc'),
+            '$remote_user'      => __('Name of user, authenticated by the Auth Basic Module', 'wc-mfpc'),
+            '$cookie_PHPSESSID' => __('PHP Session Cookie ID, if set ( empty if not )', 'wc-mfpc'),
+            '$accept_lang'      => __('First HTTP Accept Lang set in the HTTP request', 'wc-mfpc'),
+        ];
+
+        /* get current wp_cron schedules */
+        $wp_schedules = wp_get_schedules();
+        /* add 'null' to switch off timed precache */
+        $schedules[ 'null' ] = __('do not use timed precache');
+
+        foreach ($wp_schedules as $interval => $details) {
+
+            $schedules[ $interval ] = $details[ 'display' ];
+
+        }
+
+        $this->select_schedules = $schedules;
     }
 
     /**
@@ -161,6 +317,67 @@ class Admin
             Data::plugin_settings_page,
             [ &$this, 'plugin_admin_panel' ]
         ));
+
+
+        /* link on to settings for plugins page */
+        $settings_link = ' &raquo; <a href="' . $this->settings_link . '">' . __('WC-MFPC Settings', 'wc-mfpc') . '</a>';
+
+        /* look for WP_CACHE */
+        if (! WP_CACHE) {
+
+            $this->errors[ 'no_wp_cache' ] = __("WP_CACHE is disabled. Without that, cache plugins, like this, will not work. Please add `define ( 'WP_CACHE', true );` to the beginning of wp-config.php.", 'wc-mfpc');
+
+        }
+
+        /* look for global settings array */
+        if (! $this->global_saved) {
+
+            $this->errors[ 'no_global_saved' ] = sprintf(__('This site was reached as %s ( according to PHP HTTP_HOST ) and there are no settings present for this domain in the WC-MFPC configuration yet. Please save the %s for the domain or fix the webserver configuration!', 'wc-mfpc'),
+                $_SERVER[ 'HTTP_HOST' ], $settings_link
+            );
+
+        }
+
+        /* look for writable acache file */
+        if (file_exists($this->acache) && ! is_writable($this->acache)) {
+
+            $this->errors[ 'no_acache_write' ] = sprintf(__('Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.', 'wc-mfpc'), $this->acache);
+
+        }
+
+        /* look for acache file */
+        if (! file_exists($this->acache)) {
+
+            $this->errors[ 'no_acache_saved' ] = sprintf(__('Advanced cache file is yet to be generated, please save %s', 'wc-mfpc'), $settings_link);
+
+        }
+
+        /* look for extensions that should be available */
+        foreach ($this->valid_cache_type as $backend => $status) {
+
+            if ($this->options[ 'cache_type' ] == $backend && ! $status) {
+
+                $this->errors[ 'no_backend' ] = sprintf(__('%s cache backend activated but no PHP %s extension was found.<br />Please either use different backend or activate the module!', 'wc-mfpc'), $backend, $backend);
+
+            }
+
+        }
+
+        $filtered_errors = apply_filters('wc_mfpc_post_init_errors_array', $this->errors);
+
+        if ($filtered_errors) {
+
+            if (php_sapi_name() != "cli") {
+
+                foreach ($this->errors as $e => $msg) {
+
+                    self::alert($msg, LOG_WARNING, $this->network);
+
+                }
+
+            }
+
+        }
     }
 
     /**
@@ -190,8 +407,10 @@ class Admin
 
             }
 
+            global $wcMfpc;
+
             /* flush backend */
-            $this->backend->clear(false, true);
+            $wcMfpc->backend->clear(false, true);
             $this->status = 3;
             header("Location: " . $this->settings_link . self::slug_flush);
 
@@ -288,7 +507,7 @@ class Admin
         /* call hook function for additional moves before saving the values */
         $this->plugin_extend_options_save($activating);
         /* save options to database */
-        static::_update_option(Data::plugin_constant, $this->options, $this->network);
+        self::_update_option(Data::plugin_constant, $this->options, $this->network);
     }
 
     /**
@@ -314,7 +533,9 @@ class Admin
         /* flush the cache when new options are saved, not needed on activation */
         if (! $activating) {
 
-            $this->backend->clear(null, true);
+            global $wcMfpc;
+
+            $wcMfpc->backend->clear(null, true);
 
         }
 
@@ -354,12 +575,10 @@ class Admin
      */
     public function plugin_options_read()
     {
-        global $wcMfpcData;
-
         $options = self::_get_option(Data::plugin_constant, $this->network);
 
         /* map missing values from default */
-        foreach ($wcMfpcData->defaults as $key => $default) {
+        foreach (Data::$defaults as $key => $default) {
 
             if (! @array_key_exists($key, $options)) {
 
@@ -424,7 +643,7 @@ class Admin
      *
      * @param boolean $remove_site Bool to remove or add current config to global
      */
-    private function update_global_config($remove_site = false)
+    public function update_global_config($remove_site = false)
     {
         /* remove or add current config to global config */
         if ($remove_site) {
@@ -490,6 +709,104 @@ class Admin
     }
 
     /**
+     * display formatted alert message
+     *
+     * @param string  $msg     Error message
+     * @param string  $error   "level" of error
+     * @param boolean $network WordPress network or not, DEPRECATED
+     *
+     * @return bool
+     */
+    static public function alert($msg, $level = LOG_WARNING, $network = false)
+    {
+        if (empty($msg)) {
+
+            return false;
+        }
+
+        switch ($level) {
+
+            case LOG_ERR:
+            case LOG_WARNING:
+                $css = "error";
+                break;
+            default:
+                $css = "updated";
+                break;
+
+        }
+
+        $r = '<div class="' . $css . '"><p>' . sprintf(__('%s', 'PluginUtils'), $msg) . '</p></div>';
+
+        if (version_compare(phpversion(), '5.3.0', '>=')) {
+
+            add_action('admin_notices', function () use ($r) {
+                echo $r;
+            }, 10);
+
+        } else {
+
+            global $tmp;
+
+            $tmp = $r;
+            $f   = create_function('', 'global $tmp; echo $tmp;');
+
+            add_action('admin_notices', $f);
+
+        }
+    }
+
+    /**
+     * Select options field processor
+     *
+     * @param array $elements  Array to build <option> values of
+     * @param mixed $current   The current active element
+     * @param bool  $print     Is true, the options will be printed, otherwise the string will be returned
+     *
+     * @return mixed $opt      Prints or returns the options string
+     */
+    protected function print_select_options($elements, $current, $valid = false, $print = true)
+    {
+        if (is_array($valid)) {
+
+            $check_disabled = true;
+
+        } else {
+
+            $check_disabled = false;
+
+        }
+
+        $opt = '';
+
+        foreach ($elements as $value => $name) {
+
+            $opt .= '<option value="' . $value . '" ';
+            $opt .= selected($value, $current);
+
+            // ugly tree level valid check to prevent array warning messages
+            if (is_array($valid) && isset ($valid [ $value ]) && $valid [ $value ] == false) {
+
+                $opt .= ' disabled="disabled"';
+
+            }
+
+            $opt .= '>';
+            $opt .= $name;
+            $opt .= "</option>\n";
+        }
+
+        if ($print) {
+
+            echo $opt;
+
+        } else {
+
+            return $opt;
+        }
+    }
+
+    /**
      * admin panel, the admin page displayed for plugin settings
      */
     public function plugin_admin_panel()
@@ -518,6 +835,9 @@ class Admin
             $this->options[ 'nocache_woocommerce_url' ] = '';
 
         }
+
+        global $wcMfpc;
+
         ?>
 
         <div class="wrap">
@@ -582,7 +902,7 @@ class Admin
                     _e('<strong>Backend status:</strong><br />', 'wc-mfpc');
 
                     /* we need to go through all servers */
-                    $servers = $this->backend->status();
+                    $servers = $wcMfpc->backend->status();
 
                     if (is_array($servers) && ! empty ($servers)) {
 
@@ -973,15 +1293,15 @@ class Admin
                     </dd>
 
                     <?php
-                    $gentime = static::_get_option(Data::precache_timestamp, $this->network);
-                    $log     = static::_get_option(Data::precache_log, $this->network);
+                    $gentime = self::_get_option(Data::precache_timestamp, $this->network);
+                    $log     = self::_get_option(Data::precache_log, $this->network);
                     if (@file_exists($this->precache_logfile)) {
                         $logtime = filemtime($this->precache_logfile);
                         /* update precache log in DB if needed */
                         if ($logtime > $gentime) {
                             $log = file($this->precache_logfile);
-                            static::_update_option(Data::precache_log, $log, $this->network);
-                            static::_update_option(Data::precache_timestamp, $logtime, $this->network);
+                            self::_update_option(Data::precache_log, $log, $this->network);
+                            self::_update_option(Data::precache_timestamp, $logtime, $this->network);
                         }
                     }
                     if (empty ($log)) {

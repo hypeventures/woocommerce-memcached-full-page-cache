@@ -46,27 +46,27 @@ class Data
     /**
      * @var string
      */
-    public $plugin_file          = '';
+    public static $plugin_file   = '';
 
     /**
      * @var array
      */
-    public $defaults             = [];
+    public static $defaults      = [];
 
     /**
      * @var string
      */
-    public $plugin_url           = '';
+    public static $plugin_url    = '';
 
     /**
      * @var string
      */
-    public $plugin_dir           = '';
+    public static $plugin_dir    = '';
 
     /**
      * @var string
      */
-    public $admin_css_url        = '';
+    public static $admin_css_url = '';
 
     /**
      * Data constructor.
@@ -75,11 +75,11 @@ class Data
     {
         $defaultConfig              = new Config();
 
-        $this->plugin_file          = basename(dirname(__FILE__, 2)) . '/' . self::plugin_constant . '.php';
-        $this->defaults             = $defaultConfig->getConfig();
-        $this->plugin_url           = plugin_dir_url(dirname(__FILE__));
-        $this->plugin_dir           = plugin_dir_path(dirname(__FILE__));
-        $this->admin_css_url        = $this->plugin_url . 'assets/admin.css';
+        self::$plugin_file          = basename(dirname(__FILE__, 2)) . '/' . self::plugin_constant . '.php';
+        self::$defaults             = $defaultConfig->getConfig();
+        self::$plugin_url           = plugin_dir_url(dirname(__FILE__));
+        self::$plugin_dir           = plugin_dir_path(dirname(__FILE__));
+        self::$admin_css_url        = self::$plugin_url . 'assets/admin.css';
     }
 
 }
