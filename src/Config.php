@@ -14,177 +14,177 @@ class Config
     /**
      * @var string
      */
-    public $hosts                   = '127.0.0.1:11211';
+    protected $hosts                   = '127.0.0.1:11211';
 
     /**
      * @var bool
      */
-    public $memcached_binary        = false;
+    protected $memcached_binary        = false;
 
     /**
      * @var string
      */
-    public $authpass                = '';
+    protected $authpass                = '';
 
     /**
      * @var string
      */
-    public $authuser                = '';
+    protected $authuser                = '';
 
     /**
      * @var int
      */
-    public $browsercache            = 0;
+    protected $browsercache            = 0;
 
     /**
      * @var int
      */
-    public $browsercache_home       = 0;
+    protected $browsercache_home       = 0;
 
     /**
      * @var int
      */
-    public $browsercache_taxonomy   = 0;
+    protected $browsercache_taxonomy   = 0;
 
     /**
      * @var int
      */
-    public $expire                  = 300;
+    protected $expire                  = 300;
 
     /**
      * @var int
      */
-    public $expire_home             = 300;
+    protected $expire_home             = 300;
 
     /**
      * @var int
      */
-    public $expire_taxonomy         = 300;
+    protected $expire_taxonomy         = 300;
 
     /**
      * @var int
      */
-    public $invalidation_method     = 0;
+    protected $invalidation_method     = 0;
 
     /**
      * @var string
      */
-    public $prefix_meta             = 'meta-';
+    protected $prefix_meta             = 'meta-';
 
     /**
      * @var string
      */
-    public $prefix_data             = 'data-';
+    protected $prefix_data             = 'data-';
 
     /**
      * @var string
      */
-    public $charset                 = 'utf-8';
+    protected $charset                 = 'utf-8';
 
     /**
      * @var bool
      */
-    public $log                     = true;
+    protected $log                     = true;
 
     /**
      * @var string
      */
-    public $cache_type              = 'memcached';
+    protected $cache_type              = 'memcached';
 
     /**
      * @var bool
      */
-    public $cache_loggedin          = false;
+    protected $cache_loggedin          = false;
 
     /**
      * @var bool
      */
-    public $nocache_home            = false;
+    protected $nocache_home            = false;
 
     /**
      * @var bool
      */
-    public $nocache_feed            = false;
+    protected $nocache_feed            = false;
 
     /**
      * @var bool
      */
-    public $nocache_archive         = false;
+    protected $nocache_archive         = false;
 
     /**
      * @var bool
      */
-    public $nocache_single          = false;
+    protected $nocache_single          = false;
 
     /**
      * @var bool
      */
-    public $nocache_page            = false;
+    protected $nocache_page            = false;
 
     /**
      * @var bool
      */
-    public $nocache_cookies         = false;
+    protected $nocache_cookies         = false;
 
     /**
      * @var bool
      */
-    public $nocache_dyn             = true;
+    protected $nocache_dyn             = true;
 
     /**
      * @var bool
      */
-    public $nocache_woocommerce     = true;
+    protected $nocache_woocommerce     = true;
 
     /**
      * @var string
      */
-    public $nocache_woocommerce_url = '';
+    protected $nocache_woocommerce_url = '';
 
     /**
      * @var string
      */
-    public $nocache_url             = '^/wp-';
+    protected $nocache_url             = '^/wp-';
 
     /**
      * @var string
      */
-    public $nocache_comment         = '';
+    protected $nocache_comment         = '';
 
     /**
      * @var bool
      */
-    public $response_header         = false;
+    protected $response_header         = false;
 
     /**
      * @var bool
      */
-    public $generate_time           = false;
+    protected $generate_time           = false;
 
     /**
      * @var string
      */
-    public $precache_schedule       = 'null';
+    protected $precache_schedule       = 'null';
 
     /**
      * @var string
      */
-    public $key                     = '$scheme://$host$request_uri';
+    protected $key                     = '$scheme://$host$request_uri';
 
     /**
      * @var bool
      */
-    public $comments_invalidate     = true;
+    protected $comments_invalidate     = true;
 
     /**
      * @var bool
      */
-    public $pingback_header         = false;
+    protected $pingback_header         = false;
 
     /**
      * @var bool
      */
-    public $hashkey                 = false;
+    protected $hashkey                 = false;
 
     /**
      * Config constructor.
