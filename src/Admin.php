@@ -14,26 +14,6 @@ class Admin
 {
 
     /**
-     * @var string
-     */
-    private $plugin_file = '';
-
-    /**
-     * @var bool
-     */
-    private $network = false;
-
-    /**
-     * @var string
-     */
-    private $settings_slug = '';
-
-    /**
-     * @var string
-     */
-    private $settings_link = '';
-
-    /**
      * @var bool
      */
     private $scheduled = false;
@@ -104,51 +84,25 @@ class Admin
     private $errors = [];
 
     /**
-     * Admin constructor.
-     */
-    public function __construct()
-    {
-        /* we need network wide plugin check functions */
-        if (! function_exists('is_plugin_active_for_network')) {
-
-            require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-
-        }
-
-        /* check if plugin is network-activated */
-        if (@is_plugin_active_for_network($this->plugin_file)) {
-
-            $this->network       = true;
-            $this->settings_slug = 'settings.php';
-
-        } else {
-
-            $this->settings_slug = 'options-general.php';
-
-        }
-
-        /* set the settings page link string */
-        $this->settings_link = $this->settings_slug . '?page=' . Data::plugin_settings_page;
-    }
-
-    /**
      * Initializes the Hooks necessary for the admin settings pages.
      *
      * @return void
      */
     public function setHooks()
     {
+        global $wcMfpcData;
+
         /*
          * register settings pages & register admin init, catches $_POST and adds submenu to admin menu
          */
-        if ($this->network) {
+        if ($wcMfpcData->network) {
 
-            add_filter("network_admin_plugin_action_links_" . $this->plugin_file, [ &$this, 'plugin_settings_link' ]);
+            add_filter("network_admin_plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
             add_action('network_admin_menu', [ &$this, 'plugin_admin_init' ]);
 
         } else {
 
-            add_filter("plugin_action_links_" . $this->plugin_file, [ &$this, 'plugin_settings_link' ]);
+            add_filter("plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
             add_action('admin_menu', [ &$this, 'plugin_admin_init' ]);
 
         }
@@ -174,6 +128,8 @@ class Admin
      */
     public function plugin_pre_init()
     {
+        global $wcMfpcData;
+
         /* advanced cache "worker" file */
         $this->acache_worker = Data::$plugin_dir . Data::plugin_constant . '-advanced-cache.php';
         /* WordPress advanced-cache.php file location */
@@ -186,7 +142,7 @@ class Admin
         }
 
         /* set global config key; here, because it's needed for migration */
-        if ($this->network) {
+        if ($wcMfpcData->network) {
 
             $this->global_config_key = 'network';
 
@@ -250,12 +206,14 @@ class Admin
      */
     public function plugin_admin_init()
     {
+        global $wcMfpcData, $wcMfpcConfig;
+
         /* save parameter updates, if there are any */
         if (isset($_POST[ Data::button_save ]) && check_admin_referer('wc-mfpc')) {
 
             $this->plugin_options_save();
             $this->status = 1;
-            header("Location: " . $this->settings_link . Data::slug_save);
+            header("Location: " . $wcMfpcData->settings_link . Data::slug_save);
 
         }
 
@@ -264,7 +222,7 @@ class Admin
 
             self::plugin_options_delete();
             $this->status = 2;
-            header("Location: " . $this->settings_link . Data::slug_delete);
+            header("Location: " . $wcMfpcData->settings_link . Data::slug_delete);
 
         }
 
@@ -273,7 +231,7 @@ class Admin
 
         /* add submenu to settings pages */
         add_submenu_page(
-            $this->settings_slug,
+            $wcMfpcData->settings_slug,
             Data::plugin_name . ' options',
             Data::plugin_name,
             Data::capability,
@@ -283,7 +241,7 @@ class Admin
 
 
         /* link on to settings for plugins page */
-        $settings_link = ' &raquo; <a href="' . $this->settings_link . '">' . __('WC-MFPC Settings', 'wc-mfpc') . '</a>';
+        $settings_link = ' &raquo; <a href="' . $wcMfpcData->settings_link . '">' . __('WC-MFPC Settings', 'wc-mfpc') . '</a>';
 
         /* look for WP_CACHE */
         if (! WP_CACHE) {
@@ -315,8 +273,6 @@ class Admin
 
         }
 
-        global $wcMfpcConfig;
-
         /* look for extensions that should be available */
         foreach ($this->valid_cache_type as $backend => $status) {
 
@@ -328,17 +284,11 @@ class Admin
 
         }
 
-        $filtered_errors = apply_filters('wc_mfpc_post_init_errors_array', $this->errors);
+        if ($this->errors && php_sapi_name() != "cli") {
 
-        if ($filtered_errors) {
+            foreach ($this->errors as $e => $msg) {
 
-            if (php_sapi_name() != "cli") {
-
-                foreach ($this->errors as $e => $msg) {
-
-                    self::alert($msg, LOG_WARNING, $this->network);
-
-                }
+                self::alert($msg, LOG_WARNING, $wcMfpcData->network);
 
             }
 
@@ -379,7 +329,7 @@ class Admin
             /* flush backend */
             $wcMfpc->backend->clear(false, true);
             $this->status = 3;
-            header("Location: " . $this->settings_link . self::slug_flush);
+            header("Location: " . $wcMfpcData->settings_link . Data::slug_flush);
 
         }
 
@@ -390,14 +340,14 @@ class Admin
             if ($wcMfpcData->shell_function === false) {
 
                 $this->status = 5;
-                header("Location: " . $this->settings_link . Data::slug_precache_disabled);
+                header("Location: " . $wcMfpcData->settings_link . Data::slug_precache_disabled);
 
             } else {
 
                 #$this->precache_message = $wcMfpc->precache_coldrun(); // ToDo: check this - method returns void!
                 $wcMfpc->precache_coldrun();
                 $this->status           = 4;
-                header("Location: " . $this->settings_link . Data::slug_precache);
+                header("Location: " . $wcMfpcData->settings_link . Data::slug_precache);
 
             }
 
@@ -409,9 +359,9 @@ class Admin
      */
     public static function plugin_options_delete()
     {
-        global $wcMfpc;
+        global $wcMfpcData;
 
-        self::_delete_option(Data::plugin_constant, $wcMfpc->network);
+        self::_delete_option(Data::plugin_constant, $wcMfpcData->network);
         /* additional moves */
         self::plugin_extend_options_delete();
     }
@@ -446,7 +396,7 @@ class Admin
      */
     protected function plugin_options_save($activating = false)
     {
-        global $wcMfpc, $wcMfpcData;
+        global $wcMfpc, $wcMfpcData, $wcMfpcConfig;
 
         /* only try to update defaults if it's not activation hook, $_POST is not empty and the post is ours */
         if (! $activating && ! empty ($_POST) && isset($_POST[ Data::button_save ])) {
@@ -489,14 +439,15 @@ class Admin
             }
 
             /* update the options array */
-            $wcMfpc->options = $options;
+            #$wcMfpc->options = $options; # ToDo: remove this line if there are no errors anymore.
+            $wcMfpcConfig->setConfig($options);
 
         }
 
         /* call hook function for additional moves before saving the values */
         $this->plugin_extend_options_save($activating);
         /* save options to database */
-        self::_update_option(Data::plugin_constant, $wcMfpc->options, $this->network);
+        self::_update_option(Data::plugin_constant, $wcMfpcConfig->getConfig(), $wcMfpcData->network);
     }
 
     /**
@@ -568,9 +519,9 @@ class Admin
      */
     public function plugin_options_read()
     {
-        global $wcMfpc, $wcMfpcData;
+        global $wcMfpcConfig, $wcMfpcData;
 
-        $options = self::_get_option(Data::plugin_constant, $this->network);
+        $options = self::_get_option(Data::plugin_constant, $wcMfpcData->network);
 
         /* map missing values from default */
         foreach (Data::$defaults as $key => $default) {
@@ -596,7 +547,7 @@ class Admin
 
         /* any additional read hook */
         $this->plugin_extend_options_read($options);
-        $wcMfpc->options = $options;
+        $wcMfpcConfig->setConfig($options);
     }
 
     /**
@@ -644,6 +595,8 @@ class Admin
      */
     public function update_global_config($remove_site = false)
     {
+        global $wcMfpcConfig;
+
         /* remove or add current config to global config */
         if ($remove_site) {
 
@@ -653,7 +606,7 @@ class Admin
 
             global $wcMfpc;
 
-            $this->global_config[ $this->global_config_key ] = $wcMfpc->options;
+            $this->global_config[ $this->global_config_key ] = $wcMfpcConfig->getConfig();
 
         }
 
@@ -816,7 +769,9 @@ class Admin
      */
     public function plugin_settings_link($links)
     {
-        $settings_link = '<a href="' . $this->settings_link . '">' . __('Settings', 'wc-mfpc') . '</a>';
+        global $wcMfpcData;
+
+        $settings_link = '<a href="' . $wcMfpcData->settings_link . '">' . __('Settings', 'wc-mfpc') . '</a>';
         array_unshift($links, $settings_link);
 
         return $links;
@@ -1232,16 +1187,16 @@ class Admin
                     <?php
                     global $wcMfpc;
 
-                    $gentime = self::_get_option(Data::precache_timestamp, $this->network);
-                    $log     = self::_get_option(Data::precache_log, $this->network);
+                    $gentime = self::_get_option(Data::precache_timestamp, $wcMfpcData->network);
+                    $log     = self::_get_option(Data::precache_log, $wcMfpcData->network);
 
                     if (@file_exists($wcMfpc->precache_logfile)) {
-                        $logtime = filemtime($this->precache_logfile);
+                        $logtime = filemtime($wcMfpcData->precache_logfile);
                         /* update precache log in DB if needed */
                         if ($logtime > $gentime) {
-                            $log = file($this->precache_logfile);
-                            self::_update_option(Data::precache_log, $log, $this->network);
-                            self::_update_option(Data::precache_timestamp, $logtime, $this->network);
+                            $log = file($wcMfpcData->precache_logfile);
+                            self::_update_option(Data::precache_log, $log, $wcMfpcData->network);
+                            self::_update_option(Data::precache_timestamp, $logtime, $wcMfpcData->network);
                         }
                     }
                     if (empty ($log)) {
