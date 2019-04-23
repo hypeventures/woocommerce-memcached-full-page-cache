@@ -195,6 +195,7 @@ class Config
      */
     public function __construct($config = [])
     {
+        add_action('wp_loaded', [ $this, 'setNocacheWoocommerceUrl' ]);
         $this->setConfig($config);
     }
 
@@ -650,6 +651,19 @@ class Config
     public function setNocacheWoocommerceUrl(string $nocache_woocommerce_url)
     {
         $this->nocache_woocommerce_url = $nocache_woocommerce_url;
+
+        if (empty($nocache_woocommerce_url) && class_exists('WooCommerce')) {
+
+                $home                  = home_url();
+                $page_wc_checkout      = str_replace($home, '', wc_get_page_permalink('checkout'));
+                $page_wc_myaccount     = str_replace($home, '', wc_get_page_permalink('myaccount'));
+                $page_wc_cart          = str_replace($home, '', wc_get_page_permalink('cart'));
+                $wcapi                 = '^/wc-api|^/\?wc-api=';
+                $noCacheWooCommerceUrl = '^' . $page_wc_checkout . '|^' . $page_wc_myaccount . '|^' . $page_wc_cart . '|' . $wcapi;
+
+                $this->nocache_woocommerce_url = $noCacheWooCommerceUrl;
+
+        }
     }
 
     /**
