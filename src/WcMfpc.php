@@ -26,7 +26,7 @@ class WcMfpc
     /**
      * @var bool
      */
-    protected $network = false;
+    public $network = false;
 
     /**
      * @var string
@@ -72,21 +72,6 @@ class WcMfpc
      * @var null
      */
     protected $utils = null;
-
-    /**
-     * @var string
-     */
-    private $precache_logfile = '';
-
-    /**
-     * @var string
-     */
-    private $precache_phpfile = '';
-
-    /**
-     * @var bool
-     */
-    public $shell_function = false;
 
     /**
      * @var null|Memcached
@@ -159,14 +144,16 @@ class WcMfpc
      */
     public function plugin_post_init()
     {
+        global $wcMfpcConfig;
+
         /* initiate backend */
-        $this->backend = new Memcached($this->options);
+        $this->backend = new Memcached($wcMfpcConfig->getConfig());
 
         /* cache invalidation hooks */
         add_action('transition_post_status', [ &$this->backend, 'clear_ng' ], 10, 3);
 
         /* comments invalidation hooks */
-        if (! empty($this->options[ 'comments_invalidate' ])) {
+        if (! empty($wcMfpcConfig->isCommentsInvalidate())) {
 
             add_action('comment_post', [ &$this->backend, 'clear' ], 0);
             add_action('edit_comment', [ &$this->backend, 'clear' ], 0);
@@ -381,6 +368,8 @@ class WcMfpc
      */
     private function precache(&$links)
     {
+        global $wcMfpcData;
+
         /* double check if we do have any links to pre-cache */
         if (! empty ($links) && ! $this->precache_running()) {
 
@@ -406,13 +395,13 @@ class WcMfpc
                     
                 }
                 
-                unlink ( "' . $this->precache_phpfile . '" );
+                unlink ( "' . $wcMfpcData->precache_phpfile . '" );
             ?>';
 
-            file_put_contents($this->precache_phpfile, $out);
+            file_put_contents($wcMfpcData->precache_phpfile, $out);
             /* call the precache worker file in the background */
-            $shellfunction = $this->shell_function;
-            $shellfunction('php ' . $this->precache_phpfile . ' >' . $this->precache_logfile . ' 2>&1 &');
+            $shellfunction = $wcMfpcData->shell_function;
+            $shellfunction('php ' . $wcMfpcData->precache_phpfile . ' >' . $wcMfpcData->precache_logfile . ' 2>&1 &');
 
         }
     }
@@ -424,90 +413,18 @@ class WcMfpc
      */
     private function precache_running()
     {
+        global $wcMfpcData;
+
         $return = false;
 
         /* if the precache file exists, it did not finish running as it should delete itself on finish */
-        if (file_exists($this->precache_phpfile)) {
+        if (file_exists($wcMfpcData->precache_phpfile)) {
 
             $return = true;
 
         }
 
         return $return;
-    }
-
-    /**
-     * UTILS
-     */
-
-    /**
-     * @return null|Memcached
-     */
-    public function getBackend()
-    {
-        return $this->backend;
-    }
-
-    /**
-     * callback function to add settings link to plugins page
-     *
-     * @param array $links Current links to add ours to
-     *
-     * @return array
-     */
-    public function plugin_settings_link($links)
-    {
-        $settings_link = '<a href="' . $this->settings_link . '">' . __('Settings', 'wc-mfpc') . '</a>';
-        array_unshift($links, $settings_link);
-
-        return $links;
-    }
-
-    /**
-     * @param $key
-     *
-     * @return bool|mixed
-     */
-    public function getoption($key)
-    {
-        return (empty($this->options[ $key ])) ? false : $this->options[ $key ];
-    }
-
-    /**
-     * print value of an element from defaults array
-     *
-     * @param mixed $e Element index of $this->defaults array
-     */
-    protected function print_default($e)
-    {
-        _e('Default : ', 'wc-mfpc');
-        $select = 'select_' . $e;
-        if (@is_array($this->$select)) {
-            $x = $this->$select;
-            $this->print_var($x[ $this->defaults[ $e ] ]);
-        } else {
-            $this->print_var($this->defaults[ $e ]);
-        }
-    }
-
-    /**
-     * function to easily print a variable
-     *
-     * @param mixed   $var Variable to dump
-     * @param boolean $ret Return text instead of printing if true
-     *
-     * @return mixed
-     */
-    protected function print_var($var, $ret = false)
-    {
-        if (@is_array($var) || @is_object($var) || @is_bool($var)) {
-            $var = var_export($var, true);
-        }
-        if ($ret) {
-            return $var;
-        } else {
-            echo $var;
-        }
     }
 
 }
