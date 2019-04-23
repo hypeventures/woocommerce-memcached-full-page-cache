@@ -14,67 +14,7 @@ class WcMfpc
 {
 
     /**
-     * @var array
-     */
-    public $options = [];
-
-    /**
-     * @var array|mixed
-     */
-    protected $defaults = [];
-
-    /**
-     * @var bool
-     */
-    public $network = false;
-
-    /**
-     * @var string
-     */
-    protected $settings_link = '';
-
-    /**
-     * @var string
-     */
-    protected $settings_slug = '';
-
-    /**
-     * @var
-     */
-    protected $plugin_url;
-
-    /**
-     * @var
-     */
-    protected $common_url;
-
-    /**
-     * @var
-     */
-    protected $common_dir;
-
-    /**
-     * @var string
-     */
-    protected $plugin_file;
-
-    /**
-     * @var
-     */
-    protected $admin_css_handle;
-
-    /**
-     * @var
-     */
-    protected $admin_css_url;
-
-    /**
-     * @var null
-     */
-    protected $utils = null;
-
-    /**
-     * @var null|Memcached
+     * @var null|Memcached   Contains the active Memcached-Server connection if initialized.
      */
     public $backend = null;
 
@@ -123,8 +63,10 @@ class WcMfpc
      */
     public function plugin_init()
     {
-        register_activation_hook($this->plugin_file, [ &$this, 'plugin_activate' ]);
-        register_deactivation_hook($this->plugin_file, [ &$this, 'plugin_deactivate' ]);
+        global $wcMfpcData;
+
+        register_activation_hook($wcMfpcData->plugin_file, [ &$this, 'plugin_activate' ]);
+        register_deactivation_hook($wcMfpcData->plugin_file, [ &$this, 'plugin_deactivate' ]);
 
         if (is_admin()) {
 
@@ -211,11 +153,13 @@ class WcMfpc
      */
     public function precache_coldrun()
     {
+        global $wcMfpcData;
+
         /* container for links to precache, well be accessed by reference */
         $links = [];
 
         /* when plugin is  network wide active, we need to pre-cache for all link of all blogs */
-        if ($this->network) {
+        if ($wcMfpcData->network) {
 
             /* list all blogs */
             global $wpdb;
@@ -399,6 +343,7 @@ class WcMfpc
             ?>';
 
             file_put_contents($wcMfpcData->precache_phpfile, $out);
+
             /* call the precache worker file in the background */
             $shellfunction = $wcMfpcData->shell_function;
             $shellfunction('php ' . $wcMfpcData->precache_phpfile . ' >' . $wcMfpcData->precache_logfile . ' 2>&1 &');
