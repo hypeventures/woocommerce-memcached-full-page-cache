@@ -47,22 +47,22 @@ class Data
     /**
      * @var string
      */
-    public static $plugin_file   = '';
+    public $plugin_file = '';
 
     /**
      * @var array
      */
-    public static $defaults      = [];
+    public static $defaults = [];
 
     /**
      * @var string
      */
-    public static $plugin_url    = '';
+    public static $plugin_url = '';
 
     /**
      * @var string
      */
-    public static $plugin_dir    = '';
+    public static $plugin_dir = '';
 
     /**
      * @var string
@@ -85,13 +85,28 @@ class Data
     public $shell_function = false;
 
     /**
+     * @var bool
+     */
+    public $network = false;
+
+    /**
+     * @var string
+     */
+    public $settings_slug = '';
+
+    /**
+     * @var string
+     */
+    public $settings_link = '';
+
+    /**
      * Data constructor.
      */
     public function __construct()
     {
         $defaultConfig              = new Config();
 
-        self::$plugin_file          = basename(dirname(__FILE__, 2)) . '/' . self::plugin_constant . '.php';
+        $this->plugin_file          = basename(dirname(__FILE__, 2)) . '/' . self::plugin_constant . '.php';
         self::$defaults             = $defaultConfig->getConfig();
         self::$plugin_url           = plugin_dir_url(dirname(__FILE__));
         self::$plugin_dir           = plugin_dir_path(dirname(__FILE__));
@@ -99,18 +114,50 @@ class Data
         self::$precache_logfile     = sys_get_temp_dir() . '/' . self::precache_log;
         self::$precache_phpfile     = sys_get_temp_dir() . '/' . self::precache_php;
 
+        $this->setShellFunction();
+        $this->setSettingsLinkAndSlug();
+    }
+
+    /**
+     * Sets the possible shell function if it finds one.
+     *
+     * @return void
+     */
+    private function setShellFunction()
+    {
         $disabled = array_flip(array_map('trim', explode(',', ini_get('disable_functions'))));
 
-        foreach (self::shell_possibilities as $possible) {
+        foreach (self::shell_possibilities as $possibility) {
 
-            if (function_exists($possible) && ! (ini_get('safe_mode') || isset($disabled[ $possible ]))) {
+            if (function_exists($possibility) && ! (ini_get('safe_mode') || isset($disabled[ $possibility ]))) {
 
-                $this->shell_function = $possible;
-                break;
+                $this->shell_function = $possibility;
+                return;
 
             }
 
         }
+    }
+
+    /**
+     * Checks if plugin is activated via network and sets Slug & Link for the Settings-Page accordingly.
+     *
+     * @return void
+     */
+    private function setSettingsLinkAndSlug()
+    {
+        $this->settings_slug = 'options-general.php';
+
+        if (! function_exists('is_plugin_active_for_network') && @is_plugin_active_for_network(self::$plugin_file)) {
+
+            require_once(ABSPATH . 'wp-admin/includes/plugin.php');
+
+            $this->network       = true;
+            $this->settings_slug = 'settings.php';
+
+        }
+
+        $this->settings_link = $this->settings_slug . '?page=' . Data::plugin_settings_page;
     }
 
 }
