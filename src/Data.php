@@ -42,6 +42,7 @@ class Data
     const button_delete          = 'wc-mfpc-delete';
     const plugin_settings_page   = 'wc-mfpc-settings';
     const admin_css_handle       = 'wc-mfpc-admin-css';
+    const shell_possibilities    = [ 'shell_exec', 'exec', 'system', 'passthru' ];
 
     /**
      * @var string
@@ -69,6 +70,21 @@ class Data
     public static $admin_css_url = '';
 
     /**
+     * @var string
+     */
+    public static $precache_logfile = '';
+
+    /**
+     * @var string
+     */
+    public static $precache_phpfile = '';
+
+    /**
+     * @var mixed|string
+     */
+    public $shell_function = false;
+
+    /**
      * Data constructor.
      */
     public function __construct()
@@ -80,6 +96,21 @@ class Data
         self::$plugin_url           = plugin_dir_url(dirname(__FILE__));
         self::$plugin_dir           = plugin_dir_path(dirname(__FILE__));
         self::$admin_css_url        = self::$plugin_url . 'assets/admin.css';
+        self::$precache_logfile     = sys_get_temp_dir() . '/' . self::precache_log;
+        self::$precache_phpfile     = sys_get_temp_dir() . '/' . self::precache_php;
+
+        $disabled = array_flip(array_map('trim', explode(',', ini_get('disable_functions'))));
+
+        foreach (self::shell_possibilities as $possible) {
+
+            if (function_exists($possible) && ! (ini_get('safe_mode') || isset($disabled[ $possible ]))) {
+
+                $this->shell_function = $possible;
+                break;
+
+            }
+
+        }
     }
 
 }
