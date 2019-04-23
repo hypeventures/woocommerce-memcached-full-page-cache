@@ -1,0 +1,99 @@
+/*
+ * ToDo: Reduce this file further!
+ */
+
+.plugin-admin dt {
+  margin-top: 2em;
+  font-weight:bold;
+}
+
+.plugin-admin fieldset {
+  display:block;
+  margin: 0;
+  padding: 0 1em 0 1em;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+
+.plugin-admin legend {
+  display: none;
+  visibility: hidden;
+}
+
+.plugin-admin .description {
+  display: block;
+  padding-top: 0.3em;
+}
+
+.plugin-admin .tabs {
+  padding:0;
+  margin: 0;
+  list-style-type: none;
+}
+
+.plugin-admin .tabs li  {
+  border: 1px solid #ccc;
+  line-height: 120%;
+  display: inline-block;
+  padding: 0.5em 2em 0.5em 2em;
+  text-decoration: none;
+  margin-bottom: -1px;
+  background: #f1f1f1;
+}
+
+.plugin-admin .tabs li a {
+  outline: none;
+  text-decoration: none;
+  font-size: 120%;
+}
+
+.plugin-admin .tabs li.ui-state-active {
+  background: #fff;
+  border-bottom-color: #fff;
+}
+
+.error p {
+  font-weight: bold;
+}
+
+.error-msg {
+  color: #990000;
+}
+
+.ok-msg {
+  color: #009900;
+}
+
+.clear {
+  clear:both;
+}
+
+.plugin-admin td {
+  height: 3rem;
+}
+
+.button {
+  font-weight: bold;
+}
+
+.button-warning {
+  color: #ff0000 !important;
+}
+
+.button-warning:hover,
+.button-warning:focus {
+  background: #f3f3f3;
+  border-color: #900;
+  color: #a00;
+  -webkit-box-shadow: 1px 1px 1px rgba(0,0,0,.2);
+  box-shadow: 1px 1px 1px rgba(0,0,0,.2);
+}
+
+.button-warning:active {
+  background: #eee;
+  border-color: #900;
+  color: #a00;
+  text-shadow: 0 -1px 0 #fff;
+  -webkit-box-shadow: inset 0 2px 5px -3px rgba( 0, 0, 0, 0.5 );
+  box-shadow: inset 0 2px 5px -3px rgba( 0, 0, 0, 0.5 );
+}
