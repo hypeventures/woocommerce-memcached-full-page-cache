@@ -354,6 +354,11 @@ class WcMfpc
 
     /**
      * read option; will handle network wide or standalone site options
+     *
+     * @param string $site
+     * @param bool   $network
+     *
+     * @return mixed|string
      */
     public static function _site_url($site = '', $network = false)
     {
