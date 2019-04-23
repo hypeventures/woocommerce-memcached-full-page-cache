@@ -16,7 +16,7 @@ class WcMfpc
     /**
      * @var array
      */
-    protected $options = [];
+    public $options = [];
 
     /**
      * @var array|mixed
@@ -86,7 +86,7 @@ class WcMfpc
     /**
      * @var bool
      */
-    private $shell_function = false;
+    public $shell_function = false;
 
     /**
      * @var null|Memcached
