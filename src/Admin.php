@@ -174,7 +174,7 @@ class Admin
 
             $this->plugin_options_save();
             $this->status = 1;
-            header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_save);
+            header("Location: " . $wcMfpcData->settings_link . Data::slug_save);
 
         }
 
@@ -416,22 +416,20 @@ class Admin
      */
     public function plugin_extend_options_save($activating)
     {
-        global $wcMfpcData;
-
         /* schedule cron if posted */
-        $schedule = wp_get_schedule($wcMfpcData->precache_id);
+        $schedule = wp_get_schedule(Data::precache_id);
 
         global $wcMfpcConfig;
 
         if ($wcMfpcConfig->getPrecacheSchedule() != 'null') {
 
             /* clear all other schedules before adding a new in order to replace */
-            wp_clear_scheduled_hook($wcMfpcData->precache_id);
-            $this->scheduled = wp_schedule_event(time(), $wcMfpcConfig->getPrecacheSchedule(), $wcMfpcData->precache_id);
+            wp_clear_scheduled_hook(Data::precache_id);
+            $this->scheduled = wp_schedule_event(time(), $wcMfpcConfig->getPrecacheSchedule(), Data::precache_id);
 
         } elseif (! empty($wcMfpcConfig->getPrecacheSchedule()) && ! empty($schedule)) {
 
-            wp_clear_scheduled_hook($wcMfpcData->precache_id);
+            wp_clear_scheduled_hook(Data::precache_id);
 
         }
 
@@ -604,7 +602,8 @@ class Admin
 
         /* add the required includes and generate the needed code */
         $string[] = "<?php";
-        $string[] = $wcMfpcData->global_config_var . ' = ' . var_export($this->global_config, true) . ';';
+        $string[] = "global " . Data::global_config_var . ';';
+        $string[] = Data::global_config_var . '->setConfig(' . var_export($this->global_config, true) . ');';
         $string[] = "include_once ('" . $wcMfpcData->acache_worker . "');";
 
         /* write the file and start caching from this point */
@@ -1035,9 +1034,7 @@ class Admin
                             <label for="nocache_url"><?php _e("Don't cache following URL paths - use with caution!", 'wc-mfpc'); ?></label>
                         </dt>
                         <dd>
-					                <textarea name="nocache_url" id="nocache_url" rows="3" cols="100" class="large-text code">
-                            <?php echo $wcMfpcConfig->getNocacheUrl(); ?>
-                          </textarea>
+					                <textarea name="nocache_url" id="nocache_url" rows="3" cols="100" class="large-text code"><?php echo $wcMfpcConfig->getNocacheUrl(); ?></textarea>
                           <span class="description"><?php _e('Regular expressions use you must! e.g. <em>pattern1|pattern2|etc</em>', 'wc-mfpc'); ?></span>
                         </dd>
 
