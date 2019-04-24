@@ -587,7 +587,7 @@ class Admin
 
         if (! touch($wcMfpcData->acache)) {
 
-            error_log('Generating advanced-cache.php failed: ' . $this->acache . ' is not writable');
+            error_log('Generating advanced-cache.php failed: ' . $wcMfpcData->acache . ' is not writable');
 
             return false;
         }
@@ -656,22 +656,9 @@ class Admin
 
         $r = '<div class="' . $css . '"><p>' . sprintf(__('%s', 'PluginUtils'), $msg) . '</p></div>';
 
-        if (version_compare(phpversion(), '5.3.0', '>=')) {
-
-            add_action('admin_notices', function () use ($r) {
-                echo $r;
-            }, 10);
-
-        } else {
-
-            global $tmp;
-
-            $tmp = $r;
-            $f   = create_function('', 'global $tmp; echo $tmp;');
-
-            add_action('admin_notices', $f);
-
-        }
+        add_action('admin_notices', function () use ($r) {
+            echo $r;
+        }, 10);
     }
 
     /**
