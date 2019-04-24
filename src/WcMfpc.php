@@ -72,8 +72,8 @@ class WcMfpc
 
             $admin = new Admin();
             $admin->setHooks();
-            $admin->plugin_options_read();
             $admin->plugin_pre_init();
+            $admin->plugin_options_read();
 
         }
 
