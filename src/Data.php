@@ -16,7 +16,7 @@ class Data
     const host_separator         = ',';
     const port_separator         = ':';
     const donation_id_key        = 'hosted_button_id=';
-    const global_config_var      = 'wcMfpcConfig';
+    const global_config_var      = '$wcMfpcConfig';
     const key_save               = 'saved';
     const key_delete             = 'deleted';
     const key_flush              = 'flushed';
@@ -128,7 +128,7 @@ class Data
         $this->admin_css_url        = $this->plugin_url . 'assets/admin.css';
         $this->precache_logfile     = sys_get_temp_dir() . '/' . self::precache_log;
         $this->precache_phpfile     = sys_get_temp_dir() . '/' . self::precache_php;
-        $this->acache_worker        = $this->plugin_dir . self::plugin_constant . '-advanced-cache.php';
+        $this->acache_worker        = $this->plugin_dir . 'wc-mfpc-advanced-cache.php';
         $this->acache               = WP_CONTENT_DIR . '/advanced-cache.php';
 
         $this->setShellFunction();
