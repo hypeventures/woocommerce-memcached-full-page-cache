@@ -21,7 +21,7 @@ class Config
     /**
      * @var bool
      */
-    public $memcached_binary        = false;
+    public $memcached_binary        = true;
 
     /**
      * @var string
@@ -36,37 +36,37 @@ class Config
     /**
      * @var int
      */
-    public $browsercache            = 0;
+    public $browsercache            = 14400;
 
     /**
      * @var int
      */
-    public $browsercache_home       = 0;
+    public $browsercache_home       = 14400;
 
     /**
      * @var int
      */
-    public $browsercache_taxonomy   = 0;
+    public $browsercache_taxonomy   = 14400;
 
     /**
      * @var int
      */
-    public $expire                  = 300;
+    public $expire                  = 86400;
 
     /**
      * @var int
      */
-    public $expire_home             = 300;
+    public $expire_home             = 86400;
 
     /**
      * @var int
      */
-    public $expire_taxonomy         = 300;
+    public $expire_taxonomy         = 86400;
 
     /**
      * @var int
      */
-    public $invalidation_method     = 0;
+    public $invalidation_method     = 1;
 
     /**
      * @var string
@@ -141,12 +141,12 @@ class Config
     /**
      * @var string
      */
-    public $nocache_woocommerce_url = '';
+    public $nocache_woocommerce_url = '^/checkout/|^/my-account/|^/cart/|^/wc-api|^/\\?wc-api=';
 
     /**
      * @var string
      */
-    public $nocache_url             = '^/wp-';
+    public $nocache_url             = '^/wc-|^/wp-|addons|removed|gdsr|wp_rg|wp_session​|wc_session​';
 
     /**
      * @var string
@@ -156,7 +156,7 @@ class Config
     /**
      * @var bool
      */
-    public $response_header         = false;
+    public $response_header         = true;
 
     /**
      * @var bool
@@ -166,7 +166,7 @@ class Config
     /**
      * @var string
      */
-    public $precache_schedule       = 'null';
+    public $precache_schedule       = 'daily';
 
     /**
      * @var string
