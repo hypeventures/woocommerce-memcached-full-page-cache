@@ -806,6 +806,8 @@ class Admin
 
             <h2><?php echo Data::plugin_name . ' settings'; ?></h2>
 
+            <?php $this->renderActionButtons(); ?>
+
             <form autocomplete="off" method="post" action="#" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin">
                 <?php wp_nonce_field('wc-mfpc'); ?>
                 <?php $switcher_tabs = $this->plugin_admin_panel_get_tabs(); ?>
@@ -1233,63 +1235,6 @@ class Admin
                            value="<?php _e('Save Changes', 'wc-mfpc') ?>"
                     />
                 </p>
-
-            </form>
-
-            <form method="post" action="#" id="<?php echo Data::plugin_constant ?>-commands" class="plugin-admin">
-              <?php wp_nonce_field('wc-mfpc'); ?>
-              <table cellpadding="5" cellspacing="5">
-                <tr>
-                  <td>
-                  <?php if ((isset($_GET[ Data::key_precache_disabled ]) && $_GET[ Data::key_precache_disabled ] == 'true') || $this->status == 5 || $wcMfpcData->shell_function == false) { ?>
-                      <strong>
-                        "Precache functionality is disabled due to unavailable system call function. <br />
-                        Since precaching may take a very long time, it's done through a background CLI process
-                        in order not to run out of max execution time of PHP. Please enable one of the
-                        following functions if you whish to use precaching:
-                        <?php echo join(',', $this->shell_possibilities); ?>
-                      </strong>
-                  <?php } else { ?>
-                      <input class="button button-secondary" type="submit" name="<?php echo Data::button_precache ?>"
-                             id="<?php echo Data::button_precache ?>"
-                             value="<?php _e('Pre-cache', 'wc-mfpc') ?>"
-                      />
-                  <?php } ?>
-                  </td>
-                  <td style="padding-left: 1rem;">
-                    <span class="description">
-                      Start a background process that visits all permalinks of all blogs it can found thus forces
-                      WordPress to generate cached version of all the pages.<br />The plugin tries to visit links
-                      of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be
-                      prepared for these in your logfiles if you plan to pre-cache.
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <input class="button button-secondary" type="submit" name="<?php echo Data::button_flush; ?>"
-                           id="<?php echo Data::button_flush; ?>"
-                           value="<?php _e('Clear cache', 'wc-mfpc') ?>"
-                    />
-                  </td>
-                  <td style="padding-left: 1rem;">
-                    <span class="description">
-                      Clear all entries in the storage, including the ones that were set by other processes.
-                    </span>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                      <input class="button button-warning" type="submit" name="<?php echo Data::button_delete; ?>"
-                             id="<?php echo Data::button_delete; ?>"
-                             value="<?php _e('Reset options', 'wc-mfpc') ?>"
-                      />
-                  </td>
-                  <td style="padding-left: 1rem;">
-                    <span class="description">Reset settings to defaults.</span>
-                  </td>
-                </tr>
-              </table>
             </form>
         </div>
         <?php
@@ -1403,6 +1348,77 @@ class Admin
           ?>
           </p>
         </div>
+        <?php
+    }
+
+    /**
+     * Renders the Form with the action buttons for "Pre-Cache", "Clear-Cache" & "Reset-Options".
+     *
+     * @return void
+     */
+    private function renderActionButtons()
+    {
+        global $wcMfpcData;
+
+        $disabled = '';
+
+        if (
+            (isset($_GET[ Data::key_precache_disabled ]) && $_GET[ Data::key_precache_disabled ] == 'true')
+            || $this->status == 5
+            || $wcMfpcData->shell_function == false
+        ) {
+
+            $disabled = 'disabled="disabled"';
+
+        }
+
+        ?>
+        <form method="post" action="#" id="<?php echo Data::plugin_constant ?>-commands" class="plugin-admin">
+          <?php wp_nonce_field('wc-mfpc'); ?>
+          <table cellpadding="5" cellspacing="5">
+            <tr>
+              <td>
+                <input class="button button-secondary" type="submit" name="<?php echo Data::button_precache ?>"
+                       id="<?php echo Data::button_precache ?>"
+                       value="<?php _e('Pre-cache', 'wc-mfpc') ?>"
+                       <?php echo $disabled; ?>
+                />
+              </td>
+              <td style="padding-left: 1rem;">
+                      <span class="description">
+                        Start a background process that visits all permalinks of all blogs it can found thus forces
+                        WordPress to generate cached version of all the pages.<br />The plugin tries to visit links
+                        of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be
+                        prepared for these in your logfiles if you plan to pre-cache.
+                      </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input class="button button-secondary" type="submit" name="<?php echo Data::button_flush; ?>"
+                       id="<?php echo Data::button_flush; ?>"
+                       value="<?php _e('Clear cache', 'wc-mfpc') ?>"
+                />
+              </td>
+              <td style="padding-left: 1rem;">
+                      <span class="description">
+                        Clear all entries in the storage, including the ones that were set by other processes.
+                      </span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input class="button button-warning" type="submit" name="<?php echo Data::button_delete; ?>"
+                       id="<?php echo Data::button_delete; ?>"
+                       value="<?php _e('Reset options', 'wc-mfpc') ?>"
+                />
+              </td>
+              <td style="padding-left: 1rem;">
+                <span class="description">Reset settings to defaults.</span>
+              </td>
+            </tr>
+          </table>
+        </form>
         <?php
     }
 
