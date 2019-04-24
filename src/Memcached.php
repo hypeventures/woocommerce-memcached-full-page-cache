@@ -71,9 +71,9 @@ class Memcached
         if (isset($_SERVER[ 'HTTP_X_FORWARDED_PROTO' ]) && $_SERVER[ 'HTTP_X_FORWARDED_PROTO' ] == 'https') {
             $_SERVER[ 'HTTPS' ] = 'on';
         }
-        $scheme       = (isset($_SERVER[ 'HTTPS' ]) && ((strtolower($_SERVER[ 'HTTPS' ]) == 'on') || ($_SERVER[ 'HTTPS' ] == '1'))) ? 'https://' : 'http://';
+        $scheme       = (! empty($_SERVER[ 'HTTPS' ])) ? 'https' : 'http';
         $this->urimap = [
-            '$scheme'           => str_replace('://', '', $scheme),
+            '$scheme'           => $scheme,
             '$host'             => $rhost,
             '$request_uri'      => $ruri,
             '$remote_user'      => $ruser,
@@ -82,7 +82,7 @@ class Memcached
         /* split single line hosts entry */
         $this->set_servers();
         /* info level */
-        $this->log('init starting');
+        error_log('init starting');
         /* call backend initiator based on cache type */
         $init = $this->_init();
         if (is_admin() && function_exists('add_filter')) {
@@ -131,30 +131,6 @@ class Memcached
     }
 
     /**
-     * log wrapper to include options
-     *
-     * @var mixed $message   Message to log
-     * @var int   $log_level Log level
-     */
-    protected function log($message, $level = LOG_NOTICE)
-    {
-        if (@is_array($message) || @is_object($message)) {
-            $message = json_encode($message);
-        }
-        switch ($level) {
-            case LOG_ERR :
-                wp_die('<h1>Error:</h1>' . '<p>' . $message . '</p>');
-                exit;
-            default:
-                if (! defined('WP_DEBUG') || WP_DEBUG != true || ! defined('WC_MFPC__DEBUG_MODE') || WC_MFPC__DEBUG_MODE != true) {
-                    return;
-                }
-                break;
-        }
-        error_log(__CLASS__ . ": " . $message);
-    }
-
-    /**
      * @return bool
      */
     protected function _init()
@@ -162,7 +138,7 @@ class Memcached
         /* Memcached class does not exist, Memcached extension is not available */
         if (! class_exists('Memcached')) {
 
-            $this->log(' Memcached extension missing, wc-mfpc will not be able to function correctly!', LOG_WARNING);
+            error_log(' Memcached extension missing, wc-mfpc will not be able to function correctly!', LOG_WARNING);
 
             return false;
         }
@@ -170,7 +146,7 @@ class Memcached
         /* check for existing server list, otherwise we cannot add backends */
         if (empty ($this->options[ 'servers' ]) && ! $this->alive) {
 
-            $this->log("Memcached servers list is empty, init failed", LOG_WARNING);
+            error_log("Memcached servers list is empty, init failed", LOG_WARNING);
 
             return false;
         }
@@ -200,7 +176,7 @@ class Memcached
         /* check if initialization was success or not */
         if ($this->connection === null) {
 
-            $this->log('error initializing Memcached PHP extension, exiting');
+            error_log('error initializing Memcached PHP extension, exiting');
 
             return false;
         }
@@ -233,7 +209,7 @@ class Memcached
             if (! @array_key_exists($server_id, $servers_alive)) {
 
                 $this->connection->addServer($server[ 'host' ], $server[ 'port' ]);
-                $this->log(sprintf('%s added', $server_id));
+                error_log($server_id . ' added');
 
             }
 
@@ -250,7 +226,7 @@ class Memcached
     protected function _status()
     {
         /* server status will be calculated by getting server stats */
-        $this->log("checking server statuses");
+        error_log("checking server statuses");
         /* get server list from connection */
         $servers = $this->connection->getServerList();
         foreach ($servers as $server) {
@@ -258,7 +234,7 @@ class Memcached
             /* reset server status to offline */
             $this->status[ $server_id ] = 0;
             if ($this->connection->set('wc-mfpc', time())) {
-                $this->log(sprintf('%s server is up & running', $server_id));
+                error_log(sprintf('%s server is up & running', $server_id));
                 $this->status[ $server_id ] = 1;
             }
         }
@@ -280,9 +256,9 @@ class Memcached
             $key_base = sha1($key_base);
         }
         $key = $prefix . $key_base;
-        $this->log(sprintf('original key configuration: %s', $this->options[ 'key' ]));
-        $this->log(sprintf('setting key for: %s', $key_base));
-        $this->log(sprintf('setting key to: %s', $key));
+        error_log(sprintf('original key configuration: %s', $this->options[ 'key' ]));
+        error_log(sprintf('setting key for: %s', $key_base));
+        error_log(sprintf('setting key to: %s', $key));
 
         return $key;
     }
@@ -309,15 +285,15 @@ class Memcached
     {
         /* look for backend aliveness, exit on inactive backend */
         if (! $this->is_alive()) {
-            $this->log('WARNING: Backend offline');
+            error_log('WARNING: Backend offline');
 
             return false;
         }
         /* log the current action */
-        $this->log(sprintf('GET %s', $key));
+        error_log(sprintf('GET %s', $key));
         $result = $this->_get($key);
         if ($result === false || $result === null) {
-            $this->log(sprintf('failed to get entry: %s', $key));
+            error_log(sprintf('failed to get entry: %s', $key));
         }
 
         return $result;
@@ -331,7 +307,7 @@ class Memcached
     protected function is_alive()
     {
         if (! $this->alive) {
-            $this->log("backend is not active, exiting function " . __FUNCTION__, LOG_WARNING);
+            error_log("backend is not active, exiting function " . __FUNCTION__, LOG_WARNING);
 
             return false;
         }
@@ -366,7 +342,7 @@ class Memcached
             return false;
         }
         /* log the current action */
-        $this->log(sprintf('set %s expiration time: %s', $key, $this->options[ 'expire' ]));
+        error_log(sprintf('set %s expiration time: %s', $key, $this->options[ 'expire' ]));
         /* expiration time based is based on type from now on */
         /* fallback */
         if ($expire === false) {
@@ -378,12 +354,12 @@ class Memcached
             $expire = (int) $this->options[ 'expire_taxonomy' ];
         }
         /* log the current action */
-        $this->log(sprintf('SET %s', $key));
+        error_log(sprintf('SET %s', $key));
         /* proxy to internal function */
         $result = $this->_set($key, $data, $expire);
         /* check result validity */
         if ($result === false || $result === null) {
-            $this->log(sprintf('failed to set entry: %s', $key), LOG_WARNING);
+            error_log(sprintf('failed to set entry: %s', $key), LOG_WARNING);
         }
 
         return $result;
@@ -403,8 +379,8 @@ class Memcached
         /* if storing failed, log the error code */
         if ($result === false) {
             $code = $this->connection->getResultCode();
-            $this->log(sprintf('unable to set entry: %s', $key));
-            $this->log(sprintf('Memcached error code: %s', $code));
+            error_log(sprintf('unable to set entry: %s', $key));
+            error_log(sprintf('Memcached error code: %s', $code));
             //throw new Exception ( 'Unable to store Memcached entry ' . $key .  ', error code: ' . $code );
         }
 
@@ -434,25 +410,24 @@ class Memcached
      */
     public function clear($post_id = false, $force = false)
     {
-
         /* look for backend aliveness, exit on inactive backend */
         if (! $this->is_alive()) {
             return false;
         }
         /* exit if no post_id is specified */
         if (empty ($post_id) && $force === false) {
-            $this->log('not clearing unidentified post', LOG_WARNING);
+            error_log('not clearing unidentified post', LOG_WARNING);
 
             return false;
         }
         /* if invalidation method is set to full, flush cache */
         if (($this->options[ 'invalidation_method' ] === 0 || $force === true)) {
             /* log action */
-            $this->log('flushing cache');
+            error_log('flushing cache');
             /* proxy to internal function */
             $result = $this->_flush();
             if ($result === false) {
-                $this->log('failed to flush cache', LOG_WARNING);
+                error_log('failed to flush cache', LOG_WARNING);
             }
 
             return $result;
@@ -483,7 +458,7 @@ class Memcached
             $permalink = get_permalink($post_id);
             /* no path, don't do anything */
             if (empty($permalink) && $permalink != false) {
-                $this->log(sprintf('unable to determine path from Post Permalink, post ID: %s', $post_id), LOG_WARNING);
+                error_log(sprintf('unable to determine path from Post Permalink, post ID: %s', $post_id), LOG_WARNING);
 
                 return false;
             }
@@ -629,10 +604,10 @@ class Memcached
             $kresult = $this->connection->delete($key);
             if ($kresult === false) {
                 $code = $this->connection->getResultCode();
-                $this->log(sprintf('unable to delete entry: %s', $key));
-                $this->log(sprintf('Memcached error code: %s', $code));
+                error_log(sprintf('unable to delete entry: %s', $key));
+                error_log(sprintf('Memcached error code: %s', $code));
             } else {
-                $this->log(sprintf('entry deleted: %s', $key));
+                error_log(sprintf('entry deleted: %s', $key));
             }
         }
     }
@@ -662,22 +637,26 @@ class Memcached
     /**
      * get backend aliveness
      *
-     * @return array Array of configured servers with aliveness value
+     * @return bool|array Array of configured servers with aliveness value
      */
     public function status()
     {
 
         /* look for backend aliveness, exit on inactive backend */
         if (! $this->is_alive()) {
+
             return false;
+
         }
-        $internal = $this->_status();
+
+        $this->_status();
 
         return $this->status;
     }
 
     /**
      * get current array of servers
+     * ToDo: Remove - this seems to be unused...
      *
      * @return array Server list in current config
      */
