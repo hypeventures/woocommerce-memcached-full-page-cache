@@ -74,6 +74,7 @@
 
 .button {
   font-weight: bold;
+  min-width: 100%;
 }
 
 .button-warning {
