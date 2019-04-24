@@ -52,37 +52,52 @@ class Data
     /**
      * @var array
      */
-    public static $defaults = [];
+    public $defaults = [];
 
     /**
      * @var string
      */
-    public static $plugin_url = '';
+    public $plugin_url = '';
 
     /**
      * @var string
      */
-    public static $plugin_dir = '';
+    public $plugin_dir = '';
 
     /**
      * @var string
      */
-    public static $admin_css_url = '';
+    public $admin_css_url = '';
 
     /**
      * @var string
      */
-    public static $precache_logfile = '';
+    public $precache_logfile = '';
 
     /**
      * @var string
      */
-    public static $precache_phpfile = '';
+    public $precache_phpfile = '';
 
     /**
      * @var mixed|string
      */
     public $shell_function = false;
+
+    /**
+     * @var string
+     */
+    public $acache_worker = '';
+
+    /**
+     * @var string
+     */
+    public $acache = '';
+
+    /**
+     * @var string
+     */
+    public $global_config_key = '';
 
     /**
      * @var bool
@@ -107,12 +122,14 @@ class Data
         $defaultConfig              = new Config();
 
         $this->plugin_file          = basename(dirname(__FILE__, 2)) . '/' . self::plugin_constant . '.php';
-        self::$defaults             = $defaultConfig->getConfig();
-        self::$plugin_url           = plugin_dir_url(dirname(__FILE__));
-        self::$plugin_dir           = plugin_dir_path(dirname(__FILE__));
-        self::$admin_css_url        = self::$plugin_url . 'assets/admin.css';
-        self::$precache_logfile     = sys_get_temp_dir() . '/' . self::precache_log;
-        self::$precache_phpfile     = sys_get_temp_dir() . '/' . self::precache_php;
+        $this->defaults             = $defaultConfig->getConfig();
+        $this->plugin_url           = plugin_dir_url(dirname(__FILE__));
+        $this->plugin_dir           = plugin_dir_path(dirname(__FILE__));
+        $this->admin_css_url        = $this->plugin_url . 'assets/admin.css';
+        $this->precache_logfile     = sys_get_temp_dir() . '/' . self::precache_log;
+        $this->precache_phpfile     = sys_get_temp_dir() . '/' . self::precache_php;
+        $this->acache_worker        = $this->plugin_dir . self::plugin_constant . '-advanced-cache.php';
+        $this->acache               = WP_CONTENT_DIR . '/advanced-cache.php';
 
         $this->setShellFunction();
         $this->setSettingsLinkAndSlug();
@@ -148,7 +165,7 @@ class Data
     {
         $this->settings_slug = 'options-general.php';
 
-        if (! function_exists('is_plugin_active_for_network') && @is_plugin_active_for_network(self::$plugin_file)) {
+        if (! function_exists('is_plugin_active_for_network') && @is_plugin_active_for_network($this->plugin_file)) {
 
             require_once(ABSPATH . 'wp-admin/includes/plugin.php');
 
