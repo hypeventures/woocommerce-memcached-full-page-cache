@@ -24,16 +24,6 @@ class Admin
     private $global_config = [];
 
     /**
-     * @var string
-     */
-    private $global_config_key = '';
-
-    /**
-     * @var array
-     */
-    private $shell_possibilities = [];
-
-    /**
      * @var int
      */
     private $status = 0;
@@ -42,21 +32,6 @@ class Admin
      * @var bool
      */
     private $global_saved = false;
-
-    /**
-     * @var string
-     */
-    private $acache_worker = '';
-
-    /**
-     * @var string
-     */
-    private $acache = '';
-
-    /**
-     * @var array
-     */
-    private $select_cache_type = [];
 
     /**
      * @var array
@@ -115,11 +90,12 @@ class Admin
      */
     public function enqueue_admin_css_js()
     {
-        /* jquery ui tabs is provided by WordPress */
+        global $wcMfpcData;
+
         wp_enqueue_script("jquery-ui-tabs");
         wp_enqueue_script("jquery-ui-slider");
-        /* additional admin styling */
-        wp_register_style(Data::admin_css_handle, Data::$admin_css_url, [ 'dashicons' ], false, 'all');
+
+        wp_register_style(Data::admin_css_handle, $wcMfpcData->admin_css_url, [ 'dashicons' ], false, 'all');
         wp_enqueue_style(Data::admin_css_handle);
     }
 
@@ -130,11 +106,6 @@ class Admin
     {
         global $wcMfpcData;
 
-        /* advanced cache "worker" file */
-        $this->acache_worker = Data::$plugin_dir . Data::plugin_constant . '-advanced-cache.php';
-        /* WordPress advanced-cache.php file location */
-        $this->acache = WP_CONTENT_DIR . '/advanced-cache.php';
-
         if (! isset($_SERVER[ 'HTTP_HOST' ])) {
 
             $_SERVER[ 'HTTP_HOST' ] = '127.0.0.1';
@@ -144,7 +115,7 @@ class Admin
         /* set global config key; here, because it's needed for migration */
         if ($wcMfpcData->network) {
 
-            $this->global_config_key = 'network';
+            $wcMfpcData->global_config_key = 'network';
 
         } else {
 
@@ -156,19 +127,9 @@ class Admin
 
             }
 
-            $this->global_config_key = $_SERVER[ 'HTTP_HOST' ];
+            $wcMfpcData->global_config_key = $_SERVER[ 'HTTP_HOST' ];
 
         }
-
-        /* cache type possible values array */
-        $this->select_cache_type = [
-            'memcached' => __('PHP Memcached', 'wc-mfpc'),
-        ];
-
-        /* check for required functions / classes for the cache types */
-        $this->valid_cache_type = [
-            'memcached' => class_exists('Memcached') ? true : false,
-        ];
 
         /* invalidation method possible values array */
         $this->select_invalidation_method = [
@@ -206,14 +167,14 @@ class Admin
      */
     public function plugin_admin_init()
     {
-        global $wcMfpcData, $wcMfpcConfig;
+        global $wcMfpcData;
 
         /* save parameter updates, if there are any */
         if (isset($_POST[ Data::button_save ]) && check_admin_referer('wc-mfpc')) {
 
             $this->plugin_options_save();
             $this->status = 1;
-            header("Location: " . $wcMfpcData->settings_link . Data::slug_save);
+            header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_save);
 
         }
 
@@ -222,7 +183,7 @@ class Admin
 
             self::plugin_options_delete();
             $this->status = 2;
-            header("Location: " . $wcMfpcData->settings_link . Data::slug_delete);
+            header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_delete);
 
         }
 
@@ -260,27 +221,22 @@ class Admin
         }
 
         /* look for writable acache file */
-        if (file_exists($this->acache) && ! is_writable($this->acache)) {
+        if (file_exists($wcMfpcData->acache) && ! is_writable($wcMfpcData->acache)) {
 
-            $this->errors[ 'no_acache_write' ] = sprintf(__('Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.', 'wc-mfpc'), $this->acache);
+            $this->errors[ 'no_acache_write' ] = sprintf(__('Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.', 'wc-mfpc'), $wcMfpcData->acache);
 
         }
 
         /* look for acache file */
-        if (! file_exists($this->acache)) {
+        if (! file_exists($wcMfpcData->acache)) {
 
             $this->errors[ 'no_acache_saved' ] = sprintf(__('Advanced cache file is yet to be generated, please save %s', 'wc-mfpc'), $settings_link);
 
         }
 
-        /* look for extensions that should be available */
-        foreach ($this->valid_cache_type as $backend => $status) {
+        if (class_exists('Memcached') ? true : false) {
 
-            if ($wcMfpcConfig->getCacheType() == $backend && ! $status) {
-
-                $this->errors[ 'no_backend' ] = sprintf(__('%s cache backend activated but no PHP %s extension was found.<br />Please either use different backend or activate the module!', 'wc-mfpc'), $backend, $backend);
-
-            }
+            $this->errors[ 'no_backend' ] = 'Memcached activated but no PHP %s extension was found.<br />Please activate the module!';
 
         }
 
@@ -308,7 +264,7 @@ class Admin
             /* remove precache log entry */
             self::_delete_option(Data::precache_log);
             /* remove precache timestamp entry */
-            self::_delete_option(Data::precache_timestamp);
+            self::_delete_option($wcMfpcData->precache_timestamp);
 
 
             /* remove precache logfile */
@@ -329,7 +285,7 @@ class Admin
             /* flush backend */
             $wcMfpc->backend->clear(false, true);
             $this->status = 3;
-            header("Location: " . $wcMfpcData->settings_link . Data::slug_flush);
+            header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_flush);
 
         }
 
@@ -340,14 +296,14 @@ class Admin
             if ($wcMfpcData->shell_function === false) {
 
                 $this->status = 5;
-                header("Location: " . $wcMfpcData->settings_link . Data::slug_precache_disabled);
+                header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_precache_disabled);
 
             } else {
 
                 #$this->precache_message = $wcMfpc->precache_coldrun(); // ToDo: check this - method returns void!
                 $wcMfpc->precache_coldrun();
                 $this->status           = 4;
-                header("Location: " . $wcMfpcData->settings_link . Data::slug_precache);
+                header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_precache);
 
             }
 
@@ -375,9 +331,13 @@ class Admin
     public static function _delete_option($optionID, $network = false)
     {
         if ($network) {
+          
             delete_site_option($optionID);
+            
         } else {
+          
             delete_option($optionID);
+            
         }
     }
 
@@ -396,7 +356,7 @@ class Admin
      */
     protected function plugin_options_save($activating = false)
     {
-        global $wcMfpc, $wcMfpcData, $wcMfpcConfig;
+        global $wcMfpcData, $wcMfpcConfig;
 
         /* only try to update defaults if it's not activation hook, $_POST is not empty and the post is ours */
         if (! $activating && ! empty ($_POST) && isset($_POST[ Data::button_save ])) {
@@ -438,8 +398,7 @@ class Admin
 
             }
 
-            /* update the options array */
-            #$wcMfpc->options = $options; # ToDo: remove this line if there are no errors anymore.
+            /* update the options entity */
             $wcMfpcConfig->setConfig($options);
 
         }
@@ -457,20 +416,22 @@ class Admin
      */
     public function plugin_extend_options_save($activating)
     {
+        global $wcMfpcData;
+
         /* schedule cron if posted */
-        $schedule = wp_get_schedule(Data::precache_id);
+        $schedule = wp_get_schedule($wcMfpcData->precache_id);
 
         global $wcMfpcConfig;
 
         if ($wcMfpcConfig->getPrecacheSchedule() != 'null') {
 
             /* clear all other schedules before adding a new in order to replace */
-            wp_clear_scheduled_hook(Data::precache_id);
-            $this->scheduled = wp_schedule_event(time(), $wcMfpcConfig->getPrecacheSchedule(), Data::precache_id);
+            wp_clear_scheduled_hook($wcMfpcData->precache_id);
+            $this->scheduled = wp_schedule_event(time(), $wcMfpcConfig->getPrecacheSchedule(), $wcMfpcData->precache_id);
 
         } elseif (! empty($wcMfpcConfig->getPrecacheSchedule()) && ! empty($schedule)) {
 
-            wp_clear_scheduled_hook(Data::precache_id);
+            wp_clear_scheduled_hook($wcMfpcData->precache_id);
 
         }
 
@@ -524,7 +485,7 @@ class Admin
         $options = self::_get_option(Data::plugin_constant, $wcMfpcData->network);
 
         /* map missing values from default */
-        foreach (Data::$defaults as $key => $default) {
+        foreach ($wcMfpcData->defaults as $key => $default) {
 
             if (! @array_key_exists($key, $options)) {
 
@@ -552,6 +513,11 @@ class Admin
 
     /**
      * read option; will handle network wide or standalone site options
+     *
+     * @param      $optionID
+     * @param bool $network
+     *
+     * @return mixed
      */
     public static function _get_option($optionID, $network = false)
     {
@@ -575,17 +541,17 @@ class Admin
      */
     public function plugin_extend_options_read(&$options)
     {
-        /* read the global options, network compatibility */
+        global $wcMfpcData;
+
         $this->global_config = get_site_option(Data::global_option);
 
-        /* check if current site present in global config */
-        if (! empty ($this->global_config[ $this->global_config_key ])) {
+        if (! empty ($this->global_config[ $wcMfpcData->global_config_key ])) {
 
             $this->global_saved = true;
 
         }
 
-        $this->global_config[ $this->global_config_key ] = $options;
+        $this->global_config[ $wcMfpcData->global_config_key ] = $options;
     }
 
     /**
@@ -595,18 +561,16 @@ class Admin
      */
     public function update_global_config($remove_site = false)
     {
-        global $wcMfpcConfig;
+        global $wcMfpcConfig, $wcMfpcData;
 
         /* remove or add current config to global config */
         if ($remove_site) {
 
-            unset ($this->global_config[ $this->global_config_key ]);
+            unset ($this->global_config[ $wcMfpcData->global_config_key ]);
 
         } else {
 
-            global $wcMfpc;
-
-            $this->global_config[ $this->global_config_key ] = $wcMfpcConfig->getConfig();
+            $this->global_config[ $wcMfpcData->global_config_key ] = $wcMfpcConfig->getConfig();
 
         }
 
@@ -621,7 +585,9 @@ class Admin
      */
     private function deploy_advanced_cache()
     {
-        if (! touch($this->acache)) {
+        global $wcMfpcData;
+
+        if (! touch($wcMfpcData->acache)) {
 
             error_log('Generating advanced-cache.php failed: ' . $this->acache . ' is not writable');
 
@@ -638,12 +604,12 @@ class Admin
 
         /* add the required includes and generate the needed code */
         $string[] = "<?php";
-        $string[] = Data::global_config_var . ' = ' . var_export($this->global_config, true) . ';';
-        $string[] = "include_once ('" . $this->acache_worker . "');";
+        $string[] = $wcMfpcData->global_config_var . ' = ' . var_export($this->global_config, true) . ';';
+        $string[] = "include_once ('" . $wcMfpcData->acache_worker . "');";
 
         /* write the file and start caching from this point */
 
-        return file_put_contents($this->acache, join("\n", $string));
+        return file_put_contents($wcMfpcData->acache, join("\n", $string));
     }
 
     /**
@@ -665,13 +631,12 @@ class Admin
     /**
      * display formatted alert message
      *
-     * @param string  $msg     Error message
-     * @param string  $error   "level" of error
-     * @param boolean $network WordPress network or not, DEPRECATED
+     * @param string $msg     Error message
+     * @param int    $level   "level" of error
      *
      * @return bool
      */
-    static public function alert($msg, $level = LOG_WARNING, $network = false)
+    static public function alert($msg, $level = LOG_WARNING)
     {
         if (empty($msg)) {
 
@@ -715,22 +680,13 @@ class Admin
      *
      * @param array $elements  Array to build <option> values of
      * @param mixed $current   The current active element
+     * @param bool  $valid
      * @param bool  $print     Is true, the options will be printed, otherwise the string will be returned
      *
      * @return mixed $opt      Prints or returns the options string
      */
     protected function print_select_options($elements, $current, $valid = false, $print = true)
     {
-        if (is_array($valid)) {
-
-            $check_disabled = true;
-
-        } else {
-
-            $check_disabled = false;
-
-        }
-
         $opt = '';
 
         foreach ($elements as $value => $name) {
@@ -814,7 +770,7 @@ class Admin
                 <ul class="tabs">
                     <?php foreach ($switcher_tabs AS $tab_section => $tab_label) { ?>
 
-                        <li><a href="#<?= Data::plugin_constant ?>-<?= $tab_section ?>" class="wp-switch-editor"><?= $tab_label ?></a></li>
+                        <li><a href="#<?php echo Data::plugin_constant . '-' . $tab_section ?>" class="wp-switch-editor"><?= $tab_label ?></a></li>
 
                     <?php } ?>
                 </ul>
@@ -822,16 +778,6 @@ class Admin
                 <fieldset id="<?php echo Data::plugin_constant; ?>-type">
                     <legend><?php _e('Set cache type', 'wc-mfpc'); ?></legend>
                     <dl>
-                        <dt>
-                            <label for="cache_type"><?php _e('Select backend', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <select name="cache_type" id="cache_type">
-                                <?php $this->print_select_options($this->select_cache_type, $wcMfpcConfig->getCacheType(), $this->valid_cache_type); ?>
-                            </select>
-                            <span class="description"><?php _e('Select backend storage driver', 'wc-mfpc'); ?></span>
-                        </dd>
-
                         <dt>
                             <label for="expire"><?php _e('Expiration time for posts', 'wc-mfpc'); ?></label>
                         </dt>
@@ -1197,8 +1143,8 @@ class Admin
                         /* update precache log in DB if needed */
                         if ($logtime > $gentime) {
                             $log = file($wcMfpcData->precache_logfile);
-                            self::_update_option(Data::precache_log, $log, $wcMfpcData->network);
-                            self::_update_option(Data::precache_timestamp, $logtime, $wcMfpcData->network);
+                            self::_update_option($wcMfpcData->precache_log, $log, $wcMfpcData->network);
+                            self::_update_option($wcMfpcData->precache_timestamp, $logtime, $wcMfpcData->network);
                         }
                     }
                     if (empty ($log)) {
