@@ -237,5 +237,34 @@ class PreCache
 
         return $return;
     }
+
+    /**
+     * Deletes pre-cache temp files & db entries.
+     *
+     * @return void
+     */
+    public static function delete()
+    {
+        global $wcMfpcData;
+
+        /* remove precache log entry */
+        Admin::_delete_option(Data::precache_log);
+        /* remove precache timestamp entry */
+        Admin::_delete_option($wcMfpcData->precache_timestamp);
+
+        /* remove precache logfile */
+        if (@file_exists($wcMfpcData->precache_logfile)) {
+
+            unlink($wcMfpcData->precache_logfile);
+
+        }
+
+        /* remove precache PHP worker */
+        if (@file_exists($wcMfpcData->precache_phpfile)) {
+
+            unlink($wcMfpcData->precache_phpfile);
+
+        }
+    }
     
 }
