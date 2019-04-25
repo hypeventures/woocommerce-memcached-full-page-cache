@@ -224,9 +224,9 @@ class Admin
 
         }
 
-        if (class_exists('Memcached') ? true : false) {
+        if (! extension_loaded('memcached')) {
 
-            $this->errors[ 'no_backend' ] = 'Memcached activated but no PHP %s extension was found.<br />Please activate the module!';
+            $this->errors[ 'no_backend' ] = 'Memcached activated but the PHP extension was not found.<br />Please activate the module!';
 
         }
 
