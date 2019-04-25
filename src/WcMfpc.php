@@ -30,6 +30,11 @@ class WcMfpc
         register_activation_hook($wcMfpcData->plugin_file, [ &$this, 'pluginActivate' ]);
         register_deactivation_hook($wcMfpcData->plugin_file, [ &$this, 'pluginDeactivate' ]);
 
+        /*
+         * initiate backend
+         */
+        $this->backend = new Memcached($wcMfpcConfig->getConfig());
+
         if (is_admin()) {
 
             $admin = new Admin();
@@ -37,12 +42,9 @@ class WcMfpc
             $admin->plugin_pre_init();
             $admin->plugin_options_read();
 
-        }
+            add_action('plugins_loaded', [ &$this, 'loadTextdomain' ]);
 
-        /*
-         * initiate backend
-         */
-        $this->backend = new Memcached($wcMfpcConfig->getConfig());
+        }
 
         /*
          * cache invalidation hooks
