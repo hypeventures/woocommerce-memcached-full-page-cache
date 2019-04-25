@@ -43,4 +43,3 @@ $wcMfpcData   = new Data();
 $wcMfpc       = new WcMfpc();
 
 add_action('init', [ &$wcMfpc, 'init' ]);
-add_action('plugins_loaded', [ &$wcMfpc, 'loadTextdomain' ]);
