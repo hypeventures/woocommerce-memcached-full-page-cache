@@ -378,19 +378,6 @@ class Admin
 
         }
 
-        /* call hook function for additional moves before saving the values */
-        $this->plugin_extend_options_save($activating);
-        /* save options to database */
-        self::_update_option(Data::plugin_constant, $wcMfpcConfig->getConfig(), $wcMfpcData->network);
-    }
-
-    /**
-     * extending options_save
-     *
-     * @param $activating
-     */
-    public function plugin_extend_options_save($activating)
-    {
         // ToDo: Remove if pre-caching is deemed unnecessary!
         PreCache::handleSchedule();
 
@@ -412,6 +399,9 @@ class Admin
             $this->deploy_advanced_cache();
 
         }
+
+        /* save options to database */
+        self::_update_option(Data::plugin_constant, $wcMfpcConfig->getConfig(), $wcMfpcData->network);
     }
 
     /**
