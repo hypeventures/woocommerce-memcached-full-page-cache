@@ -14,11 +14,6 @@ class Admin
 {
 
     /**
-     * @var bool
-     */
-    private $scheduled = false;
-
-    /**
      * @var array
      */
     private $global_config = [];
@@ -42,11 +37,6 @@ class Admin
      * @var array
      */
     private $select_schedules = [];
-
-    /**
-     * @var array
-     */
-    private $valid_cache_type = [];
 
     /**
      * @var array
