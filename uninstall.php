@@ -1,7 +1,7 @@
 <?php
 /**
  * Uninstall file for WC-MFPC;
- * (!) Hook does not remove the databse options
+ * (!) Hook does not remove the database options.
  */
 
 /*
