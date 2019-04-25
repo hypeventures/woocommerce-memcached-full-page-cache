@@ -7,6 +7,8 @@ if (! defined('ABSPATH')) { exit; }
 
 include_once 'vendor\autoload.php';
 
+error_log('worker running');
+
 /* check for WP cache enabled*/
 if (! defined('WP_CACHE') || WP_CACHE != true) {
 
@@ -83,8 +85,10 @@ if (! empty ($wcMfpcConfig[ 'network' ])) {
 
 /* no cache for WooCommerce URL patterns */
 if (
-    isset($wcMfpcConfig[ 'nocache_woocommerce' ]) && ! empty($wcMfpcConfig[ 'nocache_woocommerce' ]) &&
-    isset($wcMfpcConfig[ 'nocache_woocommerce_url' ]) && trim($wcMfpcConfig[ 'nocache_woocommerce_url' ])
+    isset($wcMfpcConfig[ 'nocache_woocommerce' ])
+    && ! empty($wcMfpcConfig[ 'nocache_woocommerce' ])
+    && isset($wcMfpcConfig[ 'nocache_woocommerce_url' ])
+    && trim($wcMfpcConfig[ 'nocache_woocommerce_url' ])
 ) {
 
     $pattern = sprintf('#%s#', trim($wcMfpcConfig[ 'nocache_woocommerce_url' ]));
@@ -107,7 +111,7 @@ if (isset($wcMfpcConfig[ 'nocache_dyn' ]) && ! empty($wcMfpcConfig[ 'nocache_dyn
 }
 
 /* check for cookies that will make us not cache the content, like logged in WordPress cookie */
-if (isset($wcMfpcConfig[ 'nocache_cookies' ]) && ! empty($wcMfpcConfig[ 'nocache_cookies' ])) {
+if (! empty($wcMfpcConfig[ 'nocache_cookies' ])) {
 
     $nocache_cookies = array_map('trim', explode(",", $wcMfpcConfig[ 'nocache_cookies' ]));
 
@@ -155,7 +159,7 @@ $wc_mfpc_backend = new \InvincibleBrands\WcMfpc\Memcached($wcMfpcConfig);
 /*
  * no cache for for logged in users unless it's set identifier cookies are listed in backend as var for easier usage
  */
-if (! isset($wcMfpcConfig[ 'cache_loggedin' ]) || $wcMfpcConfig[ 'cache_loggedin' ] == 0 || empty($wcMfpcConfig[ 'cache_loggedin' ])) {
+if (empty($wcMfpcConfig[ 'cache_loggedin' ])) {
 
     foreach ($_COOKIE as $n => $v) {
 
@@ -171,6 +175,10 @@ if (! isset($wcMfpcConfig[ 'cache_loggedin' ]) || $wcMfpcConfig[ 'cache_loggedin
         }
 
     }
+
+} elseif(current_user_can('administrator')) {
+
+    error_log('No cache for administrators');
 
 }
 
@@ -361,6 +369,14 @@ function wc_mfpc_start( ) {
 
 	$mtime = explode ( " ", microtime() );
 	$wc_mfpc_gentime = $mtime[1] + $mtime[0];
+
+	// ToDo: Check if this might be useful!!!
+    if (! current_user_can('administrator') && ! is_admin()) {
+    #if (! is_admin()) {
+
+        show_admin_bar(false);
+
+    }
 
 	/* start object "colleting" and pass it the the actual storer function  */
 	ob_start('wc_mfpc_callback');
