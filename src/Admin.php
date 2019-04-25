@@ -63,16 +63,49 @@ class Admin
         if ($wcMfpcData->network) {
 
             add_filter("network_admin_plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
-            add_action('network_admin_menu', [ &$this, 'plugin_admin_init' ]);
+            add_action('network_admin_menu', [ &$this, 'addMenu' ]);
 
         } else {
 
             add_filter("plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
-            add_action('admin_menu', [ &$this, 'plugin_admin_init' ]);
+            add_action('admin_menu', [ &$this, 'addMenu' ]);
 
         }
 
+        add_action('plugins_loaded', [ &$this, 'plugin_admin_init' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueue_admin_css_js' ]);
+
+        /*
+         * Check WP_CACHE and add a warning if it's disabled.
+         */
+        if (! defined('WP_CACHE') || empty(WP_CACHE)) {
+
+            Alert::alert(
+                '(!) WP_CACHE is disabled. Woocommerce-Memcached-Full-Page-Cache does not work without.<br>' .
+                'Please add <i>define(\'WP_CACHE\', true);</i> to the beginning of wp-config.php file to enable caching.',
+                LOG_WARNING, true
+            );
+
+        }
+    }
+
+    /**
+     * Adding the submenu page.
+     *
+     * @return void
+     */
+    public function addMenu()
+    {
+        global $wcMfpcData;
+
+        add_submenu_page(
+            $wcMfpcData->settings_slug,
+            Data::plugin_name . ' options',
+            Data::plugin_name,
+            Data::capability,
+            Data::plugin_settings_page,
+            [ &$this, 'plugin_admin_panel' ]
+        );
     }
 
     /**
@@ -179,66 +212,6 @@ class Admin
 
         /* load additional moves */
         $this->plugin_extend_admin_init();
-
-        /* add submenu to settings pages */
-        add_submenu_page(
-            $wcMfpcData->settings_slug,
-            Data::plugin_name . ' options',
-            Data::plugin_name,
-            Data::capability,
-            Data::plugin_settings_page,
-            [ &$this, 'plugin_admin_panel' ]
-        );
-
-
-        /* link on to settings for plugins page */
-        $settings_link = ' &raquo; <a href="' . $wcMfpcData->settings_link . '">' . __('WC-MFPC Settings', 'wc-mfpc') . '</a>';
-
-        /* look for WP_CACHE */
-        if (! WP_CACHE) {
-
-            $this->errors[ 'no_wp_cache' ] = __("WP_CACHE is disabled. Without that, cache plugins, like this, will not work. Please add `define ( 'WP_CACHE', true );` to the beginning of wp-config.php.", 'wc-mfpc');
-
-        }
-
-        /* look for global settings array */
-        if (! $this->global_saved) {
-
-            $this->errors[ 'no_global_saved' ] = sprintf(__('This site was reached as %s ( according to PHP HTTP_HOST ) and there are no settings present for this domain in the WC-MFPC configuration yet. Please save the %s for the domain or fix the webserver configuration!', 'wc-mfpc'),
-                $_SERVER[ 'HTTP_HOST' ], $settings_link
-            );
-
-        }
-
-        /* look for writable acache file */
-        if (file_exists($wcMfpcData->acache) && ! is_writable($wcMfpcData->acache)) {
-
-            $this->errors[ 'no_acache_write' ] = sprintf(__('Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.', 'wc-mfpc'), $wcMfpcData->acache);
-
-        }
-
-        /* look for acache file */
-        if (! file_exists($wcMfpcData->acache)) {
-
-            $this->errors[ 'no_acache_saved' ] = sprintf(__('Advanced cache file is yet to be generated, please save %s', 'wc-mfpc'), $settings_link);
-
-        }
-
-        if (! extension_loaded('memcached')) {
-
-            $this->errors[ 'no_backend' ] = 'Memcached activated but the PHP extension was not found.<br />Please activate the module!';
-
-        }
-
-        if ($this->errors && php_sapi_name() != "cli") {
-
-            foreach ($this->errors as $e => $msg) {
-
-                self::alert($msg, LOG_WARNING, $wcMfpcData->network);
-
-            }
-
-        }
     }
 
     /**
@@ -569,40 +542,6 @@ class Admin
     }
 
     /**
-     * display formatted alert message
-     *
-     * @param string $msg     Error message
-     * @param int    $level   "level" of error
-     *
-     * @return bool
-     */
-    static public function alert($msg, $level = LOG_WARNING)
-    {
-        if (empty($msg)) {
-
-            return false;
-        }
-
-        switch ($level) {
-
-            case LOG_ERR:
-            case LOG_WARNING:
-                $css = "error";
-                break;
-            default:
-                $css = "updated";
-                break;
-
-        }
-
-        $r = '<div class="' . $css . '"><p>' . sprintf(__('%s', 'PluginUtils'), $msg) . '</p></div>';
-
-        add_action('admin_notices', function () use ($r) {
-            echo $r;
-        }, 10);
-    }
-
-    /**
      * Select options field processor
      *
      * @param array $elements  Array to build <option> values of
@@ -665,6 +604,8 @@ class Admin
      */
     public function plugin_admin_panel()
     {
+        global $wcMfpcConfig, $wcMfpcData;
+
         /*
          * security, if somehow we're running without WordPress security functions
          */
@@ -673,8 +614,6 @@ class Admin
             die();
 
         }
-
-        global $wcMfpcConfig, $wcMfpcData;
 
         ?>
 
@@ -1118,108 +1057,128 @@ class Admin
      */
     private function renderMessages()
     {
-        global $wcMfpc, $wcMfpcConfig;
-
-        /*
-         * if options were saved, display saved message
-         */
-        if (isset($_GET[ Data::key_save ]) && $_GET[ Data::key_save ] == 'true' || $this->status == 1) { ?>
-
-            <div class='updated settings-error'>
-              <p>
-                <strong>
-                  Settings saved.
-                </strong>
-              </p>
-            </div>
-
-        <?php }
-
-        /*
-         * if options were delete, display delete message
-         */
-        if (isset($_GET[ Data::key_delete ]) && $_GET[ Data::key_delete ] == 'true' || $this->status == 2) { ?>
-
-            <div class='error'>
-              <p>
-                <strong>
-                  Plugin options deleted.
-                </strong>
-              </p>
-            </div>
-
-        <?php }
+        global $wcMfpcData;
 
         /*
          * if options were saved
          */
-        if (isset($_GET[ Data::key_flush ]) && $_GET[ Data::key_flush ] == 'true' || $this->status == 3) { ?>
+        if (isset($_GET[ Data::key_save ]) && $_GET[ Data::key_save ] == 'true' || $this->status == 1) {
 
-            <div class='updated settings-error'>
-              <p>
-                <strong>
-                  Cache flushed.
-                </strong>
-              </p>
-            </div>
+            Alert::alert('<strong>Settings saved.</strong>');
 
-        <?php }
+        }
+
+        /*
+         * if options were deleted
+         */
+        if (isset($_GET[ Data::key_delete ]) && $_GET[ Data::key_delete ] == 'true' || $this->status == 2) {
+
+            Alert::alert('<strong>Plugin options deleted. </strong>');
+
+        }
+
+        /*
+         * if flushed
+         */
+        if (isset($_GET[ Data::key_flush ]) && $_GET[ Data::key_flush ] == 'true' || $this->status == 3) {
+
+            Alert::alert('<strong>Cache flushed.</strong>');
+
+        }
+
+        $settings_link = ' &raquo; <a href="' . $wcMfpcData->settings_link . '">WC-MFPC Settings</a>';
+
+        /*
+         * look for global settings array
+         */
+        if (! $this->global_saved) {
+
+            Alert::alert(sprintf(
+                'This site was reached as %s ( according to PHP HTTP_HOST ) and there are no settings present for this domain in the WC-MFPC configuration yet. Please save the %s for the domain or fix the webserver configuration!',
+                $_SERVER[ 'HTTP_HOST' ], $settings_link
+            ), LOG_WARNING);
+
+        }
+
+        /*
+         * look for writable acache file
+         */
+        if (file_exists($wcMfpcData->acache) && ! is_writable($wcMfpcData->acache)) {
+
+            Alert::alert(sprintf('Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.', $wcMfpcData->acache), LOG_WARNING);
+
+        }
+
+        /*
+         * look for acache file
+         */
+        if (! file_exists($wcMfpcData->acache)) {
+
+            Alert::alert(sprintf('Advanced cache file is yet to be generated, please save %s', $settings_link), LOG_WARNING);
+
+        }
+
+        /*
+         * check if php memcached extension is active
+         */
+        if (! extension_loaded('memcached')) {
+
+            Alert::alert('Memcached activated but the PHP extension was not found.<br />Please activate the module!', LOG_WARNING);
+
+        }
 
         /*
          * if options were saved, display saved message
-         */
-        if ((isset($_GET[ Data::key_precache ]) && $_GET[ Data::key_precache ] == 'true') || $this->status == 4) { ?>
+         * ToDo: Remove if PreCache is deemed unnecessary.
+         * /
+        if ((isset($_GET[ Data::key_precache ]) && $_GET[ Data::key_precache ] == 'true') || $this->status == 4) {
 
-            <div class='updated settings-error'>
-              <p>
-                <strong>
-                  Precache process was started, it is now running in the background, please be patient, it may take a
-                  very long time to finish.
-                </strong>
-              </p>
-            </div>
+            Alert::alert('<strong>Precache process was started in the background.</strong>');
 
-        <?php } ?>
+        }*/
 
-        <div class="updated">
-          <p>
-            <strong>
-              Driver: <?php echo $wcMfpcConfig->getCacheType(); ?>
-            </strong>
-          </p>
-          <p>
-          <strong>Backend status:</strong><br />
-          <?php
-          /* we need to go through all servers */
-          $servers = $wcMfpc->backend->status();
+        Alert::alert($this->getServersStatusAlert());
+    }
 
-          if (is_array($servers) && ! empty ($servers)) {
+    /**
+     * Generates the Alert message string to show Memcached Servers status.
+     *
+     * @return string
+     */
+    private function getServersStatusAlert()
+    {
+        global $wcMfpc, $wcMfpcConfig;
 
-              foreach ($servers as $server_string => $status) {
+        $servers = $wcMfpc->backend->status();
 
-                  echo $server_string . " => ";
+        if (empty ($servers) || ! is_array($servers)) {
 
-                  if ($status == 0) {
+            return '';
+        }
 
-                      echo '<span class="error-msg">Down</span><br />';
+        $message = '<strong>Driver: ' . $wcMfpcConfig->getCacheType() . '</strong><br><strong>Backend status:</strong></p><p>';
 
-                  } elseif ($status == 1) {
+        foreach ($servers as $server_string => $status) {
 
-                      echo '<span class="ok-msg">Up & running</span><br />';
+            $message .= $server_string . " => ";
 
-                  } else {
+            if ($status == 0) {
 
-                      echo '<span class="error-msg">Unknown, please try re-saving settings!</span><br />';
+                $message .= '<span class="error-msg">Down</span><br />';
 
-                  }
+            } elseif ($status == 1) {
 
-              }
+                $message .= '<span class="ok-msg">Up & running</span><br />';
 
-          }
-          ?>
-          </p>
-        </div>
-        <?php
+            } else {
+
+                $message .= '<span class="error-msg">Unknown, please try re-saving settings!</span><br />';
+
+            }
+
+        }
+
+        return $message;
     }
 
     /**
