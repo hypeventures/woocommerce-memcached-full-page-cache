@@ -266,5 +266,30 @@ class PreCache
 
         }
     }
+
+    /**
+     * Handles the pre-caching schedule.
+     *
+     * @return void
+     */
+    public static function handleSchedule()
+    {
+        global $wcMfpcConfig;
+
+        /* schedule cron if posted */
+        $schedule = wp_get_schedule(Data::precache_id);
+
+        if ($wcMfpcConfig->getPrecacheSchedule() != 'null') {
+
+            /* clear all other schedules before adding a new in order to replace */
+            wp_clear_scheduled_hook(Data::precache_id);
+            wp_schedule_event(time(), $wcMfpcConfig->getPrecacheSchedule(), Data::precache_id);
+
+        } elseif (! empty($wcMfpcConfig->getPrecacheSchedule()) && ! empty($schedule)) {
+
+            wp_clear_scheduled_hook(Data::precache_id);
+
+        }
+    }
     
 }
