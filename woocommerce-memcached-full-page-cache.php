@@ -32,12 +32,15 @@ if (! defined('ABSPATH')) { exit; }
 
 include_once('vendor/autoload.php');
 
-global $wcMfpcConfig, $wcMfpcData, $wcMfpc;
-
 use InvincibleBrands\WcMfpc\Config;
 use InvincibleBrands\WcMfpc\Data;
 use InvincibleBrands\WcMfpc\WcMfpc;
 
+global $wcMfpcConfig, $wcMfpcData, $wcMfpc;
+
 $wcMfpcConfig = new Config();
 $wcMfpcData   = new Data();
 $wcMfpc       = new WcMfpc();
+
+add_action('init', [ &$wcMfpc, 'init' ]);
+add_action('plugins_loaded', [ &$wcMfpc, 'loadTextdomain' ]);
