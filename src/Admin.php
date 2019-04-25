@@ -261,26 +261,8 @@ class Admin
         /* save parameter updates, if there are any */
         if (isset($_POST[ Data::button_flush ]) && check_admin_referer('wc-mfpc')) {
 
-            /* remove precache log entry */
-            self::_delete_option(Data::precache_log);
-            /* remove precache timestamp entry */
-            self::_delete_option($wcMfpcData->precache_timestamp);
-
-
-            /* remove precache logfile */
-            if (@file_exists($wcMfpcData->precache_logfile)) {
-
-                unlink($wcMfpcData->precache_logfile);
-
-            }
-
-            /* remove precache PHP worker */
-            if (@file_exists($wcMfpcData->precache_phpfile)) {
-
-                unlink($wcMfpcData->precache_phpfile);
-
-            }
-
+            // ToDo: Remove if pre-caching is deemed unnecessary
+            // PreCache::delete();
 
             /* flush backend */
             $wcMfpc->backend->clear(false, true);
@@ -300,8 +282,10 @@ class Admin
 
             } else {
 
-                #$this->precache_message = $wcMfpc->precache_coldrun(); // ToDo: check this - method returns void!
-                $wcMfpc->precache_coldrun();
+                // ToDo: Remove if pre-caching is deemed unnecessary
+                //$preCache = new PreCache();
+                //$preCache->precache_coldrun();
+
                 $this->status           = 4;
                 header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_precache);
 
@@ -318,8 +302,7 @@ class Admin
         global $wcMfpcData;
 
         self::_delete_option(Data::plugin_constant, $wcMfpcData->network);
-        /* additional moves */
-        self::plugin_extend_options_delete();
+        delete_site_option(Data::global_option);
     }
 
     /**
@@ -339,14 +322,6 @@ class Admin
             delete_option($optionID);
             
         }
-    }
-
-    /**
-     * options delete hook; needs to be implemented
-     */
-    public static function plugin_extend_options_delete()
-    {
-        delete_site_option(Data::global_option);
     }
 
     /**
@@ -416,22 +391,8 @@ class Admin
      */
     public function plugin_extend_options_save($activating)
     {
-        /* schedule cron if posted */
-        $schedule = wp_get_schedule(Data::precache_id);
-
-        global $wcMfpcConfig;
-
-        if ($wcMfpcConfig->getPrecacheSchedule() != 'null') {
-
-            /* clear all other schedules before adding a new in order to replace */
-            wp_clear_scheduled_hook(Data::precache_id);
-            $this->scheduled = wp_schedule_event(time(), $wcMfpcConfig->getPrecacheSchedule(), Data::precache_id);
-
-        } elseif (! empty($wcMfpcConfig->getPrecacheSchedule()) && ! empty($schedule)) {
-
-            wp_clear_scheduled_hook(Data::precache_id);
-
-        }
+        // ToDo: Remove if pre-caching is deemed unnecessary!
+        PreCache::handleSchedule();
 
         /* flush the cache when new options are saved, not needed on activation */
         if (! $activating) {
