@@ -13,9 +13,7 @@ if (! defined('ABSPATH')) { exit; }
 class Alert
 {
 
-    public static $notices = '';
-
-    private static $levels = [
+    const levels = [
         LOG_ERR     => 1,
         LOG_WARNING => 1,
     ];
@@ -25,37 +23,36 @@ class Alert
      *
      * @param string $msg     Error message
      * @param int    $level   "level" of error
+     * @param bool   $notice
      *
-     * @return bool
+     * @return void
      */
-    static public function alert($msg = '', $level = 0)
+    public static function alert($msg = '', $level = 0, $notice = false)
     {
-        if (empty($msg)) {
+        if (empty($msg) || php_sapi_name() === "cli") {
 
-            return false;
+            return;
         }
 
         $css = 'updated';
 
-        if (isset(self::$levels[ $level ])) {
+        if (isset(self::levels[ $level ])) {
 
             $css = 'error';
 
         }
 
-        self::$notices .= '<div class="' . $css . '"><p>' . esc_html($msg) . '</p></div>';
+        $msg = '<div class="' . $css . '"><p>' . $msg . '</p></div>';
 
-        return add_action('admin_notices', [ self::class, 'renderNotices' ]);
-    }
+        if ($notice) {
 
-    /**
-     * Renders the notices when "admin_notices" hook is called.
-     *
-     * @return void
-     */
-    public static function renderNotices()
-    {
-        echo self::$notices;
+            add_action('admin_notices', function() use ($msg) { echo $msg; }, 10 );
+
+        } else {
+
+            echo $msg;
+
+        }
     }
 
 }
