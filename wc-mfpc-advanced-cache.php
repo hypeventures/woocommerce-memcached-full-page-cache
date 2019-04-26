@@ -5,7 +5,6 @@
 
 if (! defined('ABSPATH')) { exit; }
 
-include_once __DIR__ . '/vendor/autoload.php';
 
 error_log('worker running');
 
@@ -141,7 +140,9 @@ if (isset($wcMfpcConfig[ 'nocache_url' ]) && trim($wcMfpcConfig[ 'nocache_url' ]
 
 /* canonical redirect storage */
 $wc_mfpc_redirect = null;
+
 /* fires up the backend storage array with current config */
+include_once __DIR__ . '/src/Memcached.php';
 $wc_mfpc_backend = new \InvincibleBrands\WcMfpc\Memcached($wcMfpcConfig);
 
 /*
@@ -359,12 +360,12 @@ function wc_mfpc_start( ) {
 	$wc_mfpc_gentime = $mtime[1] + $mtime[0];
 
 	// ToDo: Check if this might be useful!!!
-    #if (! current_user_can('administrator') && ! is_admin()) {
+    if (! current_user_can('administrator') && ! is_admin()) {
     #if (! is_admin()) {
 
-    #    show_admin_bar(false);
+        show_admin_bar(false);
 
-    #}
+    }
 
 	/* start object "colleting" and pass it the the actual storer function  */
 	ob_start('wc_mfpc_callback');
