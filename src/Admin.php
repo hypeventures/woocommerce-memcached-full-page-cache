@@ -190,7 +190,10 @@ class Admin
      */
     public function plugin_admin_init()
     {
-        global $wcMfpc, $wcMfpcData;
+        global $wcMfpc, $wcMfpcData, $wcMfpcConfig;
+
+        $this->plugin_pre_init();
+        $this->plugin_extend_options_read($wcMfpcConfig->getConfig());
 
         /* save parameter updates, if there are any */
         if (isset($_POST[ Data::button_save ]) && check_admin_referer('wc-mfpc')) {
