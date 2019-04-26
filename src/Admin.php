@@ -528,7 +528,7 @@ class Admin
             'debug'      => __('Debug & in-depth', 'wc-mfpc'),
             'exceptions' => __('Cache exceptions', 'wc-mfpc'),
             'servers'    => __('Backend settings', 'wc-mfpc'),
-            'precache'   => __('Precache & precache log', 'wc-mfpc'),
+            #'precache'   => __('Precache & precache log', 'wc-mfpc'),
         ];
 
         return apply_filters('wc_mfpc_admin_panel_tabs', $default_tabs);
@@ -926,11 +926,13 @@ class Admin
                         <dd>
                             <input type="text" name="hosts" id="hosts" value="<?php echo $wcMfpcConfig->getHosts(); ?>"/>
                             <span class="description">
-					        <?php _e('List of backends, with the following syntax: <br />- in case of TCP based connections, list the servers as host1:port1,host2:port2,... . Do not add trailing , and always separate host and port with : .<br />- for a unix socket enter: unix://[socket_path]', 'wc-mfpc'); ?>
-                </span>
+					                    List of backends, with the following syntax: <br />- in case of TCP based connections,
+                              list the servers as host1:port1,host2:port2,... . Do not add trailing , and always
+                              separate host and port with : .<br />- for a unix socket enter: unix://[socket_path]
+                            </span>
                         </dd>
 
-                        <h3><?php _e('Authentication ( only for SASL enabled Memcached)') ?></h3>
+                        <h3>Authentication ( only for SASL enabled Memcached)</h3>
                         <?php if (! ini_get('memcached.use_sasl') && (! empty($wcMfpcConfig->getAuthuser()) || ! empty($wcMfpcConfig->getAuthpass()))) { ?>
                             <div class="error">
                               <p>
@@ -972,64 +974,7 @@ class Admin
                             </span>
                         </dd>
 
-
                     </dl>
-                </fieldset>
-
-                <fieldset id="<?php echo Data::plugin_constant ?>-precache">
-                    <legend><?php _e('Precache settings & log from previous pre-cache generation', 'wc-mfpc'); ?></legend>
-
-                    <dt>
-                        <label for="precache_schedule"><?php _e('Precache schedule', 'wc-mfpc'); ?></label>
-                    </dt>
-                    <dd>
-                        <select name="precache_schedule" id="precache_schedule">
-                            <?php $this->print_select_options($this->select_schedules, $wcMfpcConfig->getPrecacheSchedule()) ?>
-                        </select>
-                        <span class="description"><?php _e('Schedule autorun for precache with WP-Cron', 'wc-mfpc'); ?></span>
-                    </dd>
-
-                    <?php
-                    global $wcMfpc;
-
-                    $gentime = self::_get_option(Data::precache_timestamp, $wcMfpcData->network);
-                    $log     = self::_get_option(Data::precache_log, $wcMfpcData->network);
-
-                    if (@file_exists($wcMfpc->precache_logfile)) {
-                        $logtime = filemtime($wcMfpcData->precache_logfile);
-                        /* update precache log in DB if needed */
-                        if ($logtime > $gentime) {
-                            $log = file($wcMfpcData->precache_logfile);
-                            self::_update_option($wcMfpcData->precache_log, $log, $wcMfpcData->network);
-                            self::_update_option($wcMfpcData->precache_timestamp, $logtime, $wcMfpcData->network);
-                        }
-                    }
-                    if (empty ($log)) {
-                        _e('No precache log was found!', 'wc-mfpc');
-                    } else { ?>
-                        <p><strong><?php _e('Time of run: ') ?><?php echo date('r', $gentime); ?></strong></p>
-                        <div style="overflow: auto; max-height: 20em;">
-                            <table style="width:100%; border: 1px solid #ccc;">
-                                <thead>
-                                <tr>
-                                    <?php $head = explode("	", array_shift($log));
-                                    foreach ($head as $column) { ?>
-                                        <th><?php echo $column; ?></th>
-                                    <?php } ?>
-                                </tr>
-                                </thead>
-                                <?php
-                                foreach ($log as $line) { ?>
-                                    <tr>
-                                        <?php $line = explode("	", $line);
-                                        foreach ($line as $column) { ?>
-                                            <td><?php echo $column; ?></td>
-                                        <?php } ?>
-                                    </tr>
-                                <?php } ?>
-                            </table>
-                        </div>
-                    <?php } ?>
                 </fieldset>
 
                 <p class="clear">
@@ -1040,6 +985,73 @@ class Admin
                 </p>
             </form>
         </div>
+        <?php
+    }
+
+    /**
+     * Renders the PreCache Tab.
+     *
+     * @todo Remove if pre-caching is deemed unnecessary.
+     */
+    private function renderTabPrecache()
+    {
+        global $wcMfpc, $wcMfpcConfig, $wcMfpcData;
+
+        ?>
+        <fieldset id="<?php echo Data::plugin_constant ?>-precache">
+          <legend><?php _e('Precache settings & log from previous pre-cache generation', 'wc-mfpc'); ?></legend>
+
+          <dt>
+            <label for="precache_schedule"><?php _e('Precache schedule', 'wc-mfpc'); ?></label>
+          </dt>
+          <dd>
+            <select name="precache_schedule" id="precache_schedule">
+                <?php $this->print_select_options($this->select_schedules, $wcMfpcConfig->getPrecacheSchedule()) ?>
+            </select>
+            <span class="description"><?php _e('Schedule autorun for precache with WP-Cron', 'wc-mfpc'); ?></span>
+          </dd>
+
+            <?php
+
+            $gentime = self::_get_option(Data::precache_timestamp, $wcMfpcData->network);
+            $log     = self::_get_option(Data::precache_log, $wcMfpcData->network);
+
+            if (@file_exists($wcMfpc->precache_logfile)) {
+                $logtime = filemtime($wcMfpcData->precache_logfile);
+                /* update precache log in DB if needed */
+                if ($logtime > $gentime) {
+                    $log = file($wcMfpcData->precache_logfile);
+                    self::_update_option($wcMfpcData->precache_log, $log, $wcMfpcData->network);
+                    self::_update_option($wcMfpcData->precache_timestamp, $logtime, $wcMfpcData->network);
+                }
+            }
+            if (empty ($log)) {
+                _e('No precache log was found!', 'wc-mfpc');
+            } else { ?>
+              <p><strong><?php _e('Time of run: ') ?><?php echo date('r', $gentime); ?></strong></p>
+              <div style="overflow: auto; max-height: 20em;">
+                <table style="width:100%; border: 1px solid #ccc;">
+                  <thead>
+                  <tr>
+                      <?php $head = explode("	", array_shift($log));
+                      foreach ($head as $column) { ?>
+                        <th><?php echo $column; ?></th>
+                      <?php } ?>
+                  </tr>
+                  </thead>
+                    <?php
+                    foreach ($log as $line) { ?>
+                      <tr>
+                          <?php $line = explode("	", $line);
+                          foreach ($line as $column) { ?>
+                            <td><?php echo $column; ?></td>
+                          <?php } ?>
+                      </tr>
+                    <?php } ?>
+                </table>
+              </div>
+            <?php } ?>
+        </fieldset>
         <?php
     }
 
