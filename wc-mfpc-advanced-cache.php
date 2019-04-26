@@ -46,7 +46,10 @@ if (! isset($wcMfpcConfig)) {
 /* request uri */
 $wc_mfpc_uri = $_SERVER[ 'REQUEST_URI' ];
 
-/* no cache for robots.txt */
+/*
+ * no cache for robots.txt
+ * ToDo: WTF??? This should most likely be removed as requests for files will NOT run through wordpress.
+ */
 if (stripos($wc_mfpc_uri, 'robots.txt')) {
 
     error_log('Skippings robots.txt hit');
@@ -78,7 +81,7 @@ if (! empty ($wcMfpcConfig[ $_SERVER[ 'HTTP_HOST' ] ])) {
 /* no cache for WooCommerce URL patterns */
 if (! empty($wcMfpcConfig[ 'nocache_woocommerce' ]) && isset($wcMfpcConfig[ 'nocache_woocommerce_url' ])) {
 
-    $pattern = sprintf('#%s#', trim($wcMfpcConfig[ 'nocache_woocommerce_url' ]));
+    $pattern = sprintf('#%s#', $wcMfpcConfig[ 'nocache_woocommerce_url' ]);
 
     if (preg_match($pattern, $wc_mfpc_uri)) {
 
@@ -90,7 +93,7 @@ if (! empty($wcMfpcConfig[ 'nocache_woocommerce' ]) && isset($wcMfpcConfig[ 'noc
 }
 
 /* no cache for uri with query strings, things usually go bad that way */
-if (isset($wcMfpcConfig[ 'nocache_dyn' ]) && ! empty($wcMfpcConfig[ 'nocache_dyn' ]) && stripos($wc_mfpc_uri, '?') !== false) {
+if (! empty($wcMfpcConfig[ 'nocache_dyn' ]) && stripos($wc_mfpc_uri, '?') !== false) {
 
     error_log('Dynamic url cache is disabled ( url with "?" ), skipping');
 
@@ -125,7 +128,7 @@ if (! empty($wcMfpcConfig[ 'nocache_cookies' ])) {
 }
 
 /* no cache for excluded URL patterns */
-if (isset($wcMfpcConfig[ 'nocache_url' ]) && trim($wcMfpcConfig[ 'nocache_url' ])) {
+if (! empty($wcMfpcConfig[ 'nocache_url' ])) {
 
     $pattern = sprintf('#%s#', trim($wcMfpcConfig[ 'nocache_url' ]));
 
@@ -168,6 +171,7 @@ if (empty($wcMfpcConfig[ 'cache_loggedin' ])) {
 } elseif(current_user_can('administrator')) {
 
     error_log('No cache for administrators');
+    return false;
 
 }
 
@@ -175,7 +179,7 @@ if (empty($wcMfpcConfig[ 'cache_loggedin' ])) {
 $wc_mfpc_gentime = 0;
 
 /* backend connection failed, no caching :( */
-if ($wc_mfpc_backend->status() === false) {
+if (empty($wc_mfpc_backend->status())) {
 
     error_log("Backend offline");
 
@@ -192,7 +196,7 @@ foreach ($wc_mfpc_keys as $internal => $key) {
     $key   = $wc_mfpc_backend->key($key);
     $value = $wc_mfpc_backend->get($key);
 
-    if (! $value) {
+    if (empty($value)) {
 
         error_log("No cached data found");
         /* does not matter which is missing, we need both, if one fails, no caching */
@@ -220,8 +224,9 @@ if (isset($wc_mfpc_values[ 'meta' ][ 'status' ]) && $wc_mfpc_values[ 'meta' ][ '
      */
 
 }
+
 /* server redirect cache */
-if (isset($wc_mfpc_values[ 'meta' ][ 'redirect' ]) && $wc_mfpc_values[ 'meta' ][ 'redirect' ]) {
+if (! empty($wc_mfpc_values[ 'meta' ][ 'redirect' ])) {
 
     error_log("Serving redirect to {$wc_mfpc_values['meta']['redirect']}");
     header('Location: ' . $wc_mfpc_values[ 'meta' ][ 'redirect' ]);
@@ -232,7 +237,7 @@ if (isset($wc_mfpc_values[ 'meta' ][ 'redirect' ]) && $wc_mfpc_values[ 'meta' ][
 }
 
 /* page is already cached on client side (chrome likes to do this, anyway, it's quite efficient) */
-if (array_key_exists("HTTP_IF_MODIFIED_SINCE", $_SERVER) && ! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
+if (isset($_SERVER[ 'HTTP_IF_MODIFIED_SINCE' ]) && ! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
 
     $if_modified_since = strtotime(preg_replace('/;.*$/', '', $_SERVER[ "HTTP_IF_MODIFIED_SINCE" ]));
 
@@ -260,7 +265,7 @@ if (! empty ($wc_mfpc_values[ 'meta' ][ 'mime' ])) {
 }
 
 /* set expiry date */
-if (isset($wc_mfpc_values[ 'meta' ][ 'expire' ]) && ! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
+if (! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
 
     $hash = md5($wc_mfpc_uri . $wc_mfpc_values[ 'meta' ][ 'expire' ]);
 
@@ -298,35 +303,35 @@ if (isset($wc_mfpc_values[ 'meta' ][ 'expire' ]) && ! empty ($wc_mfpc_values[ 'm
 }
 
 /* if shortlinks were set */
-if (isset($wc_mfpc_values['meta']['shortlink']) && !empty ( $wc_mfpc_values['meta']['shortlink'] ) ) {
+if (! empty($wc_mfpc_values[ 'meta' ][ 'shortlink' ])) {
 
 	header( 'Link:<'. $wc_mfpc_values['meta']['shortlink'] .'>; rel=shortlink' );
 
 }
 
 /* if last modifications were set (for posts & pages) */
-if (isset($wc_mfpc_values['meta']['lastmodified']) && !empty($wc_mfpc_values['meta']['lastmodified']) ) {
+if (! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
 
 	header( 'Last-Modified: ' . gmdate("D, d M Y H:i:s", $wc_mfpc_values['meta']['lastmodified'] ). " GMT" );
 
 }
 
 /* pingback urls, if existx */
-if ( isset($wc_mfpc_values['meta']['pingback']) && !empty( $wc_mfpc_values['meta']['pingback'] ) && isset($wcMfpcConfig['pingback_header']) && $wcMfpcConfig['pingback_header'] ) {
+if (! empty( $wc_mfpc_values['meta']['pingback'] ) && ! empty($wcMfpcConfig['pingback_header'])) {
 
 	header( 'X-Pingback: ' . $wc_mfpc_values['meta']['pingback'] );
 
 }
 
 /* for debugging */
-if ( isset($wcMfpcConfig['response_header']) && $wcMfpcConfig['response_header'] ) {
+if (! empty($wcMfpcConfig['response_header'])) {
 
 	header( 'X-Cache-Engine: WC-MFPC with ' . $wcMfpcConfig['cache_type'] .' via PHP');
 
 }
 
 /* HTML data */
-if ( isset($wcMfpcConfig['generate_time']) && $wcMfpcConfig['generate_time'] == '1' && stripos($wc_mfpc_values['data'], '</body>') ) {
+if (! empty($wcMfpcConfig['generate_time']) && stripos($wc_mfpc_values['data'], '</body>') ) {
 
 	$mtime = explode ( " ", microtime() );
 	$wc_mfpc_gentime = ( $mtime[1] + $mtime[0] ) - $wc_mfpc_gentime;
@@ -360,12 +365,7 @@ function wc_mfpc_start( ) {
 	$wc_mfpc_gentime = $mtime[1] + $mtime[0];
 
 	// ToDo: Check if this might be useful!!!
-    if (! current_user_can('administrator') && ! is_admin()) {
-    #if (! is_admin()) {
-
-        show_admin_bar(false);
-
-    }
+    show_admin_bar(false);
 
 	/* start object "colleting" and pass it the the actual storer function  */
 	ob_start('wc_mfpc_callback');
@@ -413,7 +413,7 @@ function wc_mfpc_callback( $buffer ) {
     }
 
 	/* no <body> close tag = not HTML, also no <rss>, not feed, don't cache */
-	if ( stripos($buffer, '</body>') === false && stripos($buffer, '</rss>') === false ) {
+	if (stripos($buffer, '</body>') === false && stripos($buffer, '</rss>') === false) {
 
 		return $buffer;
     }
@@ -431,9 +431,9 @@ function wc_mfpc_callback( $buffer ) {
 		return '';
     }
 
-	if (! empty($config[ 'nocache_comment' ]) && trim($config[ 'nocache_comment' ])) {
+	if (! empty($config[ 'nocache_comment' ])) {
 
-		$pattern = sprintf('#%s#', trim($config['nocache_comment']));
+		$pattern = sprintf('#%s#', $config['nocache_comment']);
 		error_log ( sprintf("Testing comment with pattern: %s", $pattern));
 
 		if ( preg_match($pattern, $buffer) ) {
@@ -457,7 +457,7 @@ function wc_mfpc_callback( $buffer ) {
 
 		}
 
-		if (isset($config['browsercache_home']) && !empty($config['browsercache_home']) && $config['browsercache_home'] > 0) {
+		if (! empty($config['browsercache_home'])) {
 
 			$meta['expire'] = time() + $config['browsercache_home'];
 
@@ -540,10 +540,10 @@ function wc_mfpc_callback( $buffer ) {
 		 */
 		global $post;
 
-		if ( !empty($post) && !empty ( $post->post_modified_gmt ) ) {
+		if (! empty($post) && ! empty($post->post_modified_gmt)) {
 
 			/* get last modification data */
-			$meta['lastmodified'] = strtotime ( $post->post_modified_gmt );
+			$meta['lastmodified'] = strtotime($post->post_modified_gmt);
 
 			/* get shortlink, if possible */
 			if (function_exists('wp_get_shortlink')) {
@@ -614,7 +614,7 @@ function wc_mfpc_callback( $buffer ) {
 	$to_store = $buffer;
 
 	/* add generation info is option is set, but only to HTML */
-	if ( $config['generate_time'] == '1' && stripos($buffer, '</body>') ) {
+	if (! empty($config['generate_time']) && stripos($buffer, '</body>') ) {
 
 		global $wc_mfpc_gentime;
 
