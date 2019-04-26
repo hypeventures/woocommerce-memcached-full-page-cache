@@ -258,7 +258,7 @@ class Memcached
     {
         $urimap   = $customUrimap ?: $this->urimap;
         $key_base = self::map_urimap($urimap, $this->options[ 'key' ]);
-        if ((isset($this->options[ 'hashkey' ]) && $this->options[ 'hashkey' ] == true) || $this->options[ 'cache_type' ] == 'redis') {
+        if (! empty($this->options[ 'hashkey' ])) {
             $key_base = sha1($key_base);
         }
         $key = $prefix . $key_base;
