@@ -335,7 +335,7 @@ class Admin
         }
 
         // ToDo: Remove if pre-caching is deemed unnecessary!
-        PreCache::handleSchedule();
+        // PreCache::handleSchedule();
 
         /* flush the cache when new options are saved, not needed on activation */
         if (! $activating) {
@@ -381,42 +381,6 @@ class Admin
     }
 
     /**
-     * reads options stored in database and reads merges them with default values
-     */
-    public function plugin_options_read()
-    {
-        global $wcMfpcConfig, $wcMfpcData;
-
-        $options = self::_get_option(Data::plugin_constant, $wcMfpcData->network);
-
-        /* map missing values from default */
-        foreach ($wcMfpcData->defaults as $key => $default) {
-
-            if (! @array_key_exists($key, $options)) {
-
-                $options[ $key ] = $default;
-
-            }
-
-        }
-
-        /* removed unused keys, rare, but possible */
-        foreach (@array_keys($options) as $key) {
-
-            if (! @array_key_exists($key, $wcMfpcData->defaults)) {
-
-                unset ($options[ $key ]);
-
-            }
-
-        }
-
-        /* any additional read hook */
-        $this->plugin_extend_options_read($options);
-        $wcMfpcConfig->setConfig($options);
-    }
-
-    /**
      * read option; will handle network wide or standalone site options
      *
      * @param      $optionID
@@ -444,7 +408,7 @@ class Admin
      *
      * @param $options
      */
-    public function plugin_extend_options_read(&$options)
+    public function plugin_extend_options_read($options)
     {
         global $wcMfpcData;
 
@@ -509,8 +473,7 @@ class Admin
 
         /* add the required includes and generate the needed code */
         $string[] = "<?php";
-        $string[] = "global " . Data::global_config_var . ';';
-        $string[] = Data::global_config_var . '->setConfig(' . var_export($this->global_config, true) . ');';
+        $string[] = Data::global_config_var . " = " . var_export($this->global_config, true) . ';';
         $string[] = "include_once ('" . $wcMfpcData->acache_worker . "');";
 
         /* write the file and start caching from this point */
