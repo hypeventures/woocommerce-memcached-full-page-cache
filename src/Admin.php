@@ -302,7 +302,7 @@ class Admin
                 /* $_POST element is available */
                 if (! empty($_POST[ $key ])) {
 
-                    $update = $_POST[ $key ];
+                    $update = trim($_POST[ $key ]);
 
                     /* get rid of slashes in strings, just in case */
                     if (is_string($update)) {
