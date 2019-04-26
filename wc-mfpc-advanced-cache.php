@@ -365,7 +365,8 @@ function wc_mfpc_start( ) {
 	$wc_mfpc_gentime = $mtime[1] + $mtime[0];
 
 	// ToDo: Check if this might be useful!!!
-    show_admin_bar(false);
+    global $show_admin_bar;
+    $show_admin_bar = false;
 
 	/* start object "colleting" and pass it the the actual storer function  */
 	ob_start('wc_mfpc_callback');
