@@ -198,7 +198,6 @@ class Admin
         /* save parameter updates, if there are any */
         if (isset($_POST[ Data::button_save ]) && check_admin_referer('wc-mfpc')) {
 
-            error_log('SAVE DA SHIT!!!');
             $this->plugin_options_save();
             $this->status = 1;
             header("Location: " . $wcMfpcData->settings_link . Data::slug_save);
