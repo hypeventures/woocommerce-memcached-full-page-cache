@@ -192,12 +192,6 @@ class Admin
     {
         global $wcMfpc, $wcMfpcData;
 
-        error_log(print_r([
-            Data::button_save,
-            $_POST,
-            #check_admin_referer('wc-mfpc'),
-        ], true));
-
         /* save parameter updates, if there are any */
         if (isset($_POST[ Data::button_save ]) && check_admin_referer('wc-mfpc')) {
 
