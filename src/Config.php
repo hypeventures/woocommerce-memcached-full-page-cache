@@ -238,6 +238,48 @@ class Config
     }
 
     /**
+     * reads options stored in database and reads merges them with default values
+     */
+    public function read()
+    {
+        global $wcMfpcData;
+
+        if ($wcMfpcData->network) {
+
+            $options = get_site_option(Data::plugin_constant);
+
+        } else {
+
+            $options = get_option(Data::plugin_constant);
+
+        }
+
+        /* map missing values from default */
+        foreach ($wcMfpcData->defaults as $key => $default) {
+
+            if (! @array_key_exists($key, $options)) {
+
+                $options[ $key ] = $default;
+
+            }
+
+        }
+
+        /* removed unused keys, rare, but possible */
+        foreach (@array_keys($options) as $key) {
+
+            if (! @array_key_exists($key, $wcMfpcData->defaults)) {
+
+                unset ($options[ $key ]);
+
+            }
+
+        }
+
+        $this->setConfig($options);
+    }
+
+    /**
      * @return string
      */
     public function getHosts()
