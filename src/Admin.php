@@ -72,7 +72,7 @@ class Admin
 
         }
 
-        add_action('plugins_loaded', [ &$this, 'plugin_admin_init' ]);
+        add_action('admin_init', [ &$this, 'plugin_admin_init' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueue_admin_css_js' ]);
 
         /*
@@ -190,11 +190,18 @@ class Admin
      */
     public function plugin_admin_init()
     {
-        global $wcMfpcData;
+        global $wcMfpc, $wcMfpcData;
+
+        error_log(print_r([
+            Data::button_save,
+            $_POST,
+            #check_admin_referer('wc-mfpc'),
+        ], true));
 
         /* save parameter updates, if there are any */
         if (isset($_POST[ Data::button_save ]) && check_admin_referer('wc-mfpc')) {
 
+            error_log('SAVE DA SHIT!!!');
             $this->plugin_options_save();
             $this->status = 1;
             header("Location: " . $wcMfpcData->settings_link . Data::slug_save);
@@ -210,17 +217,6 @@ class Admin
 
         }
 
-        /* load additional moves */
-        $this->plugin_extend_admin_init();
-    }
-
-    /**
-     * extending admin init
-     */
-    public function plugin_extend_admin_init()
-    {
-        global $wcMfpc, $wcMfpcData;
-
         /* save parameter updates, if there are any */
         if (isset($_POST[ Data::button_flush ]) && check_admin_referer('wc-mfpc')) {
 
@@ -234,10 +230,13 @@ class Admin
 
         }
 
-        /* save parameter updates, if there are any */
+        /*
+         * save parameter updates, if there are any
+         * ToDo: Remove if pre-caching is deemed unnecessary
+         * /
         if (isset($_POST[ Data::button_precache ]) && check_admin_referer('wc-mfpc')) {
 
-            /* is no shell function is possible, fail */
+            // is no shell function is possible, fail
             if ($wcMfpcData->shell_function === false) {
 
                 $this->status = 5;
@@ -245,9 +244,8 @@ class Admin
 
             } else {
 
-                // ToDo: Remove if pre-caching is deemed unnecessary
-                //$preCache = new PreCache();
-                //$preCache->precache_coldrun();
+                $preCache = new PreCache();
+                $preCache->precache_coldrun();
 
                 $this->status           = 4;
                 header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_precache);
@@ -255,6 +253,7 @@ class Admin
             }
 
         }
+        */
     }
 
     /**
