@@ -105,26 +105,34 @@ class Memcached
      */
     protected function set_servers()
     {
-        if (empty ($this->options[ 'hosts' ])) {
+        if (empty($this->options[ 'hosts' ])) {
+
             return false;
         }
+
         /* replace servers array in config according to hosts field */
         $servers              = explode(self::host_separator, $this->options[ 'hosts' ]);
         $options[ 'servers' ] = [];
+
         foreach ($servers as $snum => $sstring) {
 
             if (stristr($sstring, 'unix://')) {
+
                 $host = str_replace('unix:/', '', $sstring);
                 $port = 0;
+
             } else {
+
                 $separator = strpos($sstring, self::port_separator);
                 $host      = substr($sstring, 0, $separator);
                 $port      = substr($sstring, $separator + 1);
+
             }
             $this->options[ 'servers' ][ $sstring ] = [
                 'host' => $host,
                 'port' => $port,
             ];
+
         }
     }
 
