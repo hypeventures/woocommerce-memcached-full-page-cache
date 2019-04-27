@@ -34,8 +34,10 @@ class WcMfpc
 
         if (is_admin()) {
 
-            $admin = new Admin();
-            $admin->setHooks();
+            global $wcMfpcAdmin;
+
+            $wcMfpcAdmin = new Admin();
+            $wcMfpcAdmin->setHooks();
 
             add_action('plugins_loaded', [ &$this, 'loadTextdomain' ]);
 
