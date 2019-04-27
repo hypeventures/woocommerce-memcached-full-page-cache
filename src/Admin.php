@@ -604,63 +604,70 @@ class Admin
 
                 <fieldset id="<?php echo Data::plugin_constant; ?>-type">
                     <legend>Cache settings</legend>
+                    <?php
+                    woocommerce_wp_text_input([
+                        'id'          => 'expire',
+                        'label'       => 'Expiration of Posts',
+                        'type'        => 'number',
+                        'data_type'   => 'decimal',
+                        'class'       => 'short',
+                        'description' => 'Sets validity time of post entry in seconds, including custom post types and pages.',
+                        'value'       => $wcMfpcConfig->getExpire(),
+                    ]);
+                    woocommerce_wp_text_input([
+                        'id'          => 'browsercache',
+                        'label'       => 'Browser cache expiration of Posts',
+                        'type'        => 'number',
+                        'data_type'   => 'decimal',
+                        'class'       => 'short',
+                        'description' => 'Sets validity time of posts/pages/singles for the browser cache.',
+                        'value'       => $wcMfpcConfig->getBrowsercache(),
+                    ]);
+                    woocommerce_wp_text_input([
+                        'id'          => 'expire_taxonomy',
+                        'label'       => 'Expiration of Taxonomies',
+                        'type'        => 'number',
+                        'data_type'   => 'decimal',
+                        'class'       => 'short',
+                        'description' => 'Sets validity time of taxonomy entry in seconds, including custom taxonomy.',
+                        'value'       => $wcMfpcConfig->getExpireTaxonomy(),
+                    ]);
+                    woocommerce_wp_text_input([
+                        'id'          => 'browsercache_taxonomy',
+                        'label'       => 'Browser cache expiration of Taxonomies',
+                        'type'        => 'number',
+                        'data_type'   => 'decimal',
+                        'class'       => 'short',
+                        'description' => 'Sets validity time of taxonomy for the browser cache.',
+                        'value'       => $wcMfpcConfig->getBrowsercacheTaxonomy(),
+                    ]);
+                    woocommerce_wp_text_input([
+                        'id'          => 'expire_home',
+                        'label'       => 'Expiration of Home',
+                        'type'        => 'number',
+                        'data_type'   => 'decimal',
+                        'class'       => 'short',
+                        'description' => 'Sets validity time of home on server side.',
+                        'value'       => $wcMfpcConfig->getExpireHome(),
+                    ]);
+                    woocommerce_wp_text_input([
+                        'id'          => 'browsercache_home',
+                        'label'       => 'Browser cache expiration of Home',
+                        'type'        => 'number',
+                        'data_type'   => 'decimal',
+                        'class'       => 'short',
+                        'description' => 'Sets validity time of home for the browser cache.',
+                        'value'       => $wcMfpcConfig->getBrowsercacheHome(),
+                    ]);
+                    woocommerce_wp_text_input([
+                        'id'          => 'charset',
+                        'label'       => 'Charset',
+                        'class'       => 'short',
+                        'description' => 'Charset of HTML and XML (pages and feeds) data.',
+                        'value'       => $wcMfpcConfig->getCharset(),
+                    ]);
+                    ?>
                     <dl>
-                        <dt>
-                            <label for="expire"><?php _e('Expiration time for posts', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="number" name="expire" id="expire" value="<?php echo $wcMfpcConfig->getExpire(); ?>"/>
-                            <span class="description"><?php _e('Sets validity time of post entry in seconds, including custom post types and pages.', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="browsercache"><?php _e('Browser cache expiration time of posts', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="number" name="browsercache" id="browsercache" value="<?php echo $wcMfpcConfig->getBrowsercache(); ?>"/>
-                            <span class="description"><?php _e('Sets validity time of posts/pages/singles for the browser cache.', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="expire_taxonomy"><?php _e('Expiration time for taxonomy', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="number" name="expire_taxonomy" id="expire_taxonomy" value="<?php echo $wcMfpcConfig->getExpireTaxonomy(); ?>"/>
-                            <span class="description"><?php _e('Sets validity time of taxonomy entry in seconds, including custom taxonomy.', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="browsercache_taxonomy"><?php _e('Browser cache expiration time of taxonomy', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="number" name="browsercache_taxonomy" id="browsercache_taxonomy" value="<?php echo $wcMfpcConfig->getBrowsercacheTaxonomy(); ?>"/>
-                            <span class="description"><?php _e('Sets validity time of taxonomy for the browser cache.', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="expire_home"><?php _e('Expiration time for home', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="number" name="expire_home" id="expire_home" value="<?php echo $wcMfpcConfig->getExpireHome() ?>"/>
-                            <span class="description"><?php _e('Sets validity time of home on server side.', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="browsercache_home"><?php _e('Browser cache expiration time of home', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="number" name="browsercache_home" id="browsercache_home" value="<?php echo $wcMfpcConfig->getBrowsercacheHome(); ?>"/>
-                            <span class="description"><?php _e('Sets validity time of home for the browser cache.', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="charset"><?php _e('Charset', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="text" name="charset" id="charset" value="<?php echo $wcMfpcConfig->getCharset(); ?>"/>
-                            <span class="description"><?php _e('Charset of HTML and XML (pages and feeds) data.', 'wc-mfpc'); ?></span>
-                        </dd>
-
                         <dt>
                             <label for="invalidation_method"><?php _e('Cache invalidation method', 'wc-mfpc'); ?></label>
                         </dt>
