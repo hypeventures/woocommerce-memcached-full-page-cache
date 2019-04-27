@@ -22,7 +22,6 @@ class Data
     const slug_flush             = '&flushed=true';
     const slug_save              = '&saved=true';
     const slug_delete            = '&deleted=true';
-    const common_slug            = 'wp-common/';
     const plugin_constant        = 'woocommerce-memcached-full-page-cache';
     const plugin_name            = 'WC-MFPC';
     const capability             = 'manage_options';
