@@ -48,12 +48,12 @@ class Admin
         if ($wcMfpcData->network) {
 
             add_filter("network_admin_plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
-            add_action('network_admin_menu', [ &$this, 'addMenu' ]);
+            add_action('network_admin_menu', [ &$this, 'addMenu' ], 101);
 
         } else {
 
             add_filter("plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
-            add_action('admin_menu', [ &$this, 'addMenu' ]);
+            add_action('admin_menu', [ &$this, 'addMenu' ], 101);
 
         }
 
@@ -86,7 +86,7 @@ class Admin
         add_submenu_page(
             'woocommerce',
             Data::plugin_name . ' options',
-            Data::plugin_name,
+            'Full Page Cache',
             Data::capability,
             Data::plugin_settings_page,
             [ &$view, 'render' ]
