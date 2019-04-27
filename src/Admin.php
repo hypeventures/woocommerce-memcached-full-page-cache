@@ -872,31 +872,26 @@ class Admin
 
                 <fieldset id="<?php echo Data::plugin_constant; ?>-debug">
                   <legend>Header / Debug settings</legend>
-                  <dl>
-                    <dt>
-                      <label for="pingback_header"><?php _e('Enable X-Pingback header preservation', 'wc-mfpc'); ?></label>
-                    </dt>
-                    <dd>
-                      <input type="checkbox" name="pingback_header" id="pingback_header" value="1" <?php checked($wcMfpcConfig->isPingbackHeader(), true); ?> />
-                      <span class="description"><?php _e('Preserve X-Pingback URL in response header.', 'wc-mfpc'); ?></span>
-                    </dd>
-
-                    <dt>
-                      <label for="response_header"><?php _e("Add X-Cache-Engine header", 'wc-mfpc'); ?></label>
-                    </dt>
-                    <dd>
-                      <input type="checkbox" name="response_header" id="response_header" value="1" <?php checked($wcMfpcConfig->isResponseHeader(), true); ?> />
-                      <span class="description"><?php _e('Add X-Cache-Engine HTTP header to HTTP responses.', 'wc-mfpc'); ?></span>
-                    </dd>
-
-                    <dt>
-                      <label for="generate_time"><?php _e("Add HTML debug comment", 'wc-mfpc'); ?></label>
-                    </dt>
-                    <dd>
-                      <input type="checkbox" name="generate_time" id="generate_time" value="1" <?php checked($wcMfpcConfig->isGenerateTime(), true); ?> />
-                      <span class="description"><?php _e('Adds comment string including plugin name, cache engine and page generation time to every generated entry before closing <body> tag.', 'wc-mfpc'); ?></span>
-                    </dd>
-                  </dl>
+                    <?php
+                    woocommerce_wp_checkbox([
+                        'id'          => 'pingback_header',
+                        'label'       => 'X-Pingback header preservation',
+                        'description' => 'Enable to preserve X-Pingback URL in response header.',
+                        'value'       => $wcMfpcConfig->isPingbackHeader() ? 'yes' : 'no',
+                    ]);
+                    woocommerce_wp_checkbox([
+                        'id'          => 'response_header',
+                        'label'       => 'X-Cache-Engine HTTP header',
+                        'description' => 'Enable to add X-Cache-Engine HTTP header to HTTP responses.',
+                        'value'       => $wcMfpcConfig->isResponseHeader() ? 'yes' : 'no',
+                    ]);
+                    woocommerce_wp_checkbox([
+                        'id'          => 'generate_time',
+                        'label'       => 'HTML debug comment',
+                        'description' => 'Adds comment string including plugin name, cache engine and page generation time to every generated entry before closing <b>body</b> tag.',
+                        'value'       => $wcMfpcConfig->isGenerateTime() ? 'yes' : 'no',
+                    ]);
+                    ?>
                 </fieldset>
 
                 <?php submit_button('Save Changes', 'primary', Data::button_save); ?>
