@@ -763,15 +763,16 @@ class Admin
 
                 <fieldset id="<?php echo Data::plugin_constant ?>-exceptions">
                     <legend>Exception settings</legend>
+                    <?php
+                    woocommerce_wp_checkbox([
+                        'id'          => 'cache_loggedin',
+                        'label'       => 'cache for logged in users',
+                        'description' => 'Enable to cache pages even if user is logged in.',
+                        'value'       => $wcMfpcConfig->isCacheLoggedin() ? 'yes' : 'no',
+                    ]);
+                    // ToDo: FINISH THIS TOMORROW !!!
+                    ?>
                     <dl>
-                        <dt>
-                            <label for="cache_loggedin"><?php _e('Enable cache for logged in users', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="checkbox" name="cache_loggedin" id="cache_loggedin" value="1" <?php checked($wcMfpcConfig->isCacheLoggedin(), true); ?> />
-                            <span class="description"><?php _e('Cache pages even if user is logged in.', 'wc-mfpc'); ?></span>
-                        </dd>
-
                         <dt>
                             <label><?php _e("Excludes", 'wc-mfpc'); ?></label>
                         </dt>
