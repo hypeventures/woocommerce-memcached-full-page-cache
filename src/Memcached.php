@@ -258,9 +258,6 @@ class Memcached
     {
         $urimap   = $customUrimap ?: $this->urimap;
         $key_base = self::map_urimap($urimap, $this->options[ 'key' ]);
-        if (! empty($this->options[ 'hashkey' ])) {
-            $key_base = sha1($key_base);
-        }
         $key = $prefix . $key_base;
         error_log(sprintf('original key configuration: %s', $this->options[ 'key' ]));
         error_log(sprintf('setting key for: %s', $key_base));
@@ -501,7 +498,7 @@ class Memcached
     }
 
     /**
-     * to collect all permalinks of all taxonomy terms used in invalidation & precache
+     * to collect all permalinks of all taxonomy terms used in invalidation
      *
      * @param array &$links Passed by reference array that has to be filled up with the links
      * @param mixed $site   Site ID or false; used in WordPress Network

@@ -66,7 +66,7 @@ class WcMfpc
         }
 
         /*
-         * invalidation on some other ocasions as well
+         * invalidation on some other occasions as well
          */
         add_action('switch_theme', [ &$this->backend, 'clear' ], 0);
         add_action('deleted_post', [ &$this->backend, 'clear' ], 0);

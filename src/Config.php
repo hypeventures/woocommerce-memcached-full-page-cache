@@ -174,11 +174,6 @@ class Config
     public $pingback_header         = false;
 
     /**
-     * @var bool
-     */
-    public $hashkey                 = false;
-
-    /**
      * Config constructor.
      *
      * @param array $config  Optional array with config from DB;
@@ -792,22 +787,6 @@ class Config
     public function setPingbackHeader(bool $pingback_header)
     {
         $this->pingback_header = $pingback_header;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isHashkey()
-    {
-        return $this->hashkey;
-    }
-
-    /**
-     * @param bool $hashkey
-     */
-    public function setHashkey(bool $hashkey)
-    {
-        $this->hashkey = $hashkey;
     }
 
 }

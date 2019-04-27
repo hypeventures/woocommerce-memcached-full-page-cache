@@ -10,7 +10,7 @@ if (! defined('ABSPATH')) { exit; }
  *
  * @package InvincibleBrands\WcMfpc\Admin
  */
-class Admin
+class AdminView
 {
 
     /**
