@@ -23,8 +23,12 @@
   font-size: 1.2rem;
 }
 
+.plugin-admin .form-field {
+  margin: 2rem 0;
+}
+
 .form-field label {
-  width: 200px;
+  width: 240px;
   display: inline-block;
   font-weight: bold;
 }
@@ -34,7 +38,7 @@
   font-style: italic;
 }
 
-.form-field .short {
+.wrap .form-field input.short {
   max-width: 400px;
 }
 
