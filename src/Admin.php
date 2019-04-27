@@ -568,7 +568,7 @@ class Admin
                 <?php wp_nonce_field('wc-mfpc'); ?>
 
                 <fieldset id="<?php echo Data::plugin_constant ?>-servers">
-                  <legend>Connection Server settings</legend>
+                  <legend>Memcached connection settings</legend>
                   <?php
                   woocommerce_wp_text_input([
                       'id'          => 'hosts',
@@ -734,7 +734,7 @@ class Admin
                       If you are caching with nginx, you should update your nginx configuration and reload nginx after
                       changing this value.
                     </div>
-                    <table class="description-addon" style="margin-top: -0.5rem;" cellspacing="0" cellpadding="0">
+                    <table class="description-addon" style="margin-top: 0;" cellspacing="0" cellpadding="0">
                       <tr><th colspan="2" style="text-align: left;"><h3>Possible variables:</h3></th></tr>
                       <?php
                       foreach ($this->list_uri_vars as $uri => $desc) {
@@ -766,107 +766,76 @@ class Admin
                     <?php
                     woocommerce_wp_checkbox([
                         'id'          => 'cache_loggedin',
-                        'label'       => 'cache for logged in users',
+                        'label'       => 'Cache for logged in users',
                         'description' => 'Enable to cache pages even if user is logged in.',
                         'value'       => $wcMfpcConfig->isCacheLoggedin() ? 'yes' : 'no',
                     ]);
-                    // ToDo: FINISH THIS TOMORROW !!!
+                    woocommerce_wp_checkbox([
+                        'id'          => 'nocache_home',
+                        'label'       => 'Exclude home',
+                        'description' => 'Enable to never cache home.',
+                        'value'       => $wcMfpcConfig->isNocacheHome() ? 'yes' : 'no',
+                    ]);
+                    woocommerce_wp_checkbox([
+                        'id'          => 'nocache_feed',
+                        'label'       => 'Exclude feeds',
+                        'description' => 'Enable to never cache feeds.',
+                        'value'       => $wcMfpcConfig->isNocacheFeed() ? 'yes' : 'no',
+                    ]);
+                    woocommerce_wp_checkbox([
+                        'id'          => 'nocache_archive',
+                        'label'       => 'Exclude archives',
+                        'description' => 'Enable to never cache archives.',
+                        'value'       => $wcMfpcConfig->isNocacheArchive() ? 'yes' : 'no',
+                    ]);
+                    woocommerce_wp_checkbox([
+                        'id'          => 'nocache_page',
+                        'label'       => 'Exclude pages',
+                        'description' => 'Enable to never cache pages.',
+                        'value'       => $wcMfpcConfig->isNocachePage() ? 'yes' : 'no',
+                    ]);
+                    woocommerce_wp_checkbox([
+                        'id'          => 'nocache_single',
+                        'label'       => 'Exclude singulars',
+                        'description' => 'Enable to never cache singulars.',
+                        'value'       => $wcMfpcConfig->isNocacheSingle() ? 'yes' : 'no',
+                    ]);
+                    woocommerce_wp_checkbox([
+                        'id'          => 'nocache_dyn',
+                        'label'       => 'Exclude dynamic requests',
+                        'description' => 'Enable to exclude every dynamic request URL with GET parameters.',
+                        'value'       => $wcMfpcConfig->isNocacheDyn() ? 'yes' : 'no',
+                    ]);
+                    woocommerce_wp_checkbox([
+                        'id'          => 'nocache_woocommerce',
+                        'label'       => 'Exclude dynamic WooCommerce pages',
+                        'description' => 'Enable to exclude every dynamic WooCommerce page.',
+                        'value'       => $wcMfpcConfig->isNocacheWoocommerce() ? 'yes' : 'no',
+                    ]);
                     ?>
-                    <dl>
-                        <dt>
-                            <label><?php _e("Excludes", 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <table style="width:100%">
-                                <thead>
-                                <tr>
-                                    <th style="width:13%; text-align:left"><label for="nocache_home"><?php _e("Exclude home", 'wc-mfpc'); ?></label></th>
-                                    <th style="width:13%; text-align:left"><label for="nocache_feed"><?php _e("Exclude feeds", 'wc-mfpc'); ?></label></th>
-                                    <th style="width:13%; text-align:left"><label for="nocache_archive"><?php _e("Exclude archives", 'wc-mfpc'); ?></label></th>
-                                    <th style="width:13%; text-align:left"><label for="nocache_page"><?php _e("Exclude pages", 'wc-mfpc'); ?></label></th>
-                                    <th style="width:13%; text-align:left"><label for="nocache_single"><?php _e("Exclude singulars", 'wc-mfpc'); ?></label></th>
-                                    <th style="width:17%; text-align:left"><label for="nocache_dyn"><?php _e("Dynamic requests", 'wc-mfpc'); ?></label></th>
-                                    <th style="width:18%; text-align:left"><label for="nocache_woocommerce"><?php _e("WooCommerce", 'wc-mfpc'); ?></label></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td>
-                                        <input type="checkbox" name="nocache_home" id="nocache_home" value="1" <?php checked($wcMfpcConfig->isNocacheHome(), true); ?> />
-                                        <span class="description"><?php _e('Never cache home.', 'wc-mfpc'); ?>
-                                    </td>
-                                    <td>
-                                        <input type="checkbox" name="nocache_feed" id="nocache_feed" value="1" <?php checked($wcMfpcConfig->isNocacheFeed(), true); ?> />
-                                        <span class="description"><?php _e('Never cache feeds.', 'wc-mfpc'); ?>
-                                    </td>
-                                    <td>
-                                        <input type="checkbox" name="nocache_archive" id="nocache_archive" value="1" <?php checked($wcMfpcConfig->isNocacheArchive(), true); ?> />
-                                        <span class="description"><?php _e('Never cache archives.', 'wc-mfpc'); ?>
-                                    </td>
-                                    <td>
-                                        <input type="checkbox" name="nocache_page" id="nocache_page" value="1" <?php checked($wcMfpcConfig->isNocachePage(), true); ?> />
-                                        <span class="description"><?php _e('Never cache pages.', 'wc-mfpc'); ?>
-                                    </td>
-                                    <td>
-                                        <input type="checkbox" name="nocache_single" id="nocache_single" value="1" <?php checked($wcMfpcConfig->isNocacheSingle(), true); ?> />
-                                        <span class="description"><?php _e('Never cache singulars.', 'wc-mfpc'); ?>
-                                    </td>
-                                    <td>
-                                        <input type="checkbox" name="nocache_dyn" id="nocache_dyn" value="1" <?php checked($wcMfpcConfig->isNocacheDyn(), true); ?> />
-                                        <span class="description"><?php _e('Exclude every URL with "?" in it.', 'wc-mfpc'); ?></span>
-                                    </td>
-                                    <td>
-                                        <input type="hidden" name="nocache_woocommerce_url" id="nocache_woocommerce_url"
-                                               value="<?php echo $wcMfpcConfig->getNocacheWoocommerceUrl(); ?>"
-                                        />
-                                        <input type="checkbox" name="nocache_woocommerce" id="nocache_woocommerce" value="1" <?php checked($wcMfpcConfig->isNocacheWoocommerce(), true); ?> />
-                                        <span class="description">
-                                            <?php _e('Exclude dynamic WooCommerce page.', 'wc-mfpc'); ?>
-                                            <?php echo "<br />Url:" . $wcMfpcConfig->getNocacheWoocommerceUrl(); ?>
-                                        </span>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </dd>
-                        <dt>
-                            <label for="nocache_cookies"><?php _e("Exclude based on cookies", 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="text" name="nocache_cookies" id="nocache_cookies"
-                                   value="<?php echo $wcMfpcConfig->isNocacheCookies(); ?>"
-                            />
-                            <span class="description">
-                              Exclude content based on cookies names starting with this from caching. Separate multiple
-                              cookies names with commas.<br />If you are caching with nginx, you should update your
-                              nginx configuration and reload nginx after changing this value.
-                            </span>
-                        </dd>
-
-                        <dt>
-                            <label for="nocache_url"><?php _e("Don't cache following URL paths - use with caution!", 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-					                <textarea name="nocache_url" id="nocache_url" rows="3" cols="100" class="large-text code"><?php echo $wcMfpcConfig->getNocacheUrl(); ?></textarea>
-                          <span class="description"><?php _e('Regular expressions use you must! e.g. <em>pattern1|pattern2|etc</em>', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="nocache_comment"><?php _e("Exclude from cache based on content", 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input name="nocache_comment" id="nocache_comment" type="text"
-                                   value="<?php echo $wcMfpcConfig->getNocacheComment(); ?>"
-                            />
-                            <span class="description">
-                              Enter a regex pattern that will trigger excluding content from caching. Eg. <!--nocache-->.
-                              Regular expressions use you must! e.g. <em>pattern1|pattern2|etc</em><br />
-                              <strong>WARNING:</strong>
-                              be careful where you display this, because it will apply to any content, including
-                              archives, collection pages, singles, anything. If empty, this setting will be ignored.
-                            </span>
-                        </dd>
-                    </dl>
+                    <div class="description-addon"><b>Pattern:</b> <i><?php echo $wcMfpcConfig->getNocacheWoocommerceUrl(); ?></i></div>
+                    <?php
+                    woocommerce_wp_text_input([
+                        'id'          => 'nocache_cookies',
+                        'label'       => 'Exclude based on cookies',
+                        'class'       => 'short',
+                        'description' => 'Exclude content based on cookies names starting with this from caching. Separate multiple cookies names with commas.',
+                        'value'       => $wcMfpcConfig->getNocacheCookies(),
+                    ]);
+                    ?>
+                    <div class="description-addon">
+                      <b>WARNING:</b>
+                      <i>If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value. </i>
+                    </div>
+                    <?php
+                    woocommerce_wp_textarea_input([
+                        'id'          => 'nocache_url',
+                        'label'       => 'Exclude URLs',
+                        'class'       => 'short',
+                        'description' => '<b>WARINING: Use with caution!</b> Use multiple RegEx patterns like e.g. <em>pattern1|pattern2|etc</em>',
+                        'value'       => $wcMfpcConfig->getNocacheUrl(),
+                    ]);
+                    ?>
                 </fieldset>
 
                 <?php submit_button('Save Changes', 'primary', Data::button_save); ?>
