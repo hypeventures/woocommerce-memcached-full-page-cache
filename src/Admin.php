@@ -1009,6 +1009,7 @@ class Admin
                 ]);
                 echo '<span class="error-msg"><b>Resets ALL settings on this page to DEFAULT.</b></span>';
 
+            }
             ?>
           </p>
         </form>
