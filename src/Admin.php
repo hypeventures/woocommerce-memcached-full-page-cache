@@ -1009,33 +1009,6 @@ class Admin
                 ]);
                 echo '<span class="error-msg"><b>Resets ALL settings on this page to DEFAULT.</b></span>';
 
-                /*
-                global $wcMfpcData;
-
-                $args = [
-                    'title' => '
-                        Start a background process that visits all permalinks of all blogs it can found thus forces
-                        WordPress to generate cached version of all the pages.<br />The plugin tries to visit links
-                        of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be
-                        prepared for these in your logfiles if you plan to pre-cache.
-                    ',
-                ]
-
-                if (
-                  (isset($_GET[ Data::key_precache_disabled ]) && $_GET[ Data::key_precache_disabled ] == 'true')
-                  || $this->status == 5
-                  || $wcMfpcData->shell_function == false
-                ) {
-
-                    $args[ 'disabled' ] = 'disabled';
-
-                }
-
-                echo '<br>';
-                submit_button('Run pre-caching', 'secondary', Data::button_precache, true, $args);
-                */
-
-            }
             ?>
           </p>
         </form>
