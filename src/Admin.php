@@ -99,7 +99,7 @@ class Admin
         global $wcMfpcData;
 
         add_submenu_page(
-            $wcMfpcData->settings_slug,
+            'woocommerce',
             Data::plugin_name . ' options',
             Data::plugin_name,
             Data::capability,
