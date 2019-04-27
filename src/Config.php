@@ -124,9 +124,9 @@ class Config
     public $nocache_page            = false;
 
     /**
-     * @var bool
+     * @var string
      */
-    public $nocache_cookies         = false;
+    public $nocache_cookies         = '';
 
     /**
      * @var bool
@@ -147,11 +147,6 @@ class Config
      * @var string
      */
     public $nocache_url             = '^/wc-|^/wp-|addons|removed|gdsr|wp_rg|wp_session​|wc_session​';
-
-    /**
-     * @var string
-     */
-    public $nocache_comment         = '';
 
     /**
      * @var bool
@@ -632,17 +627,17 @@ class Config
     }
 
     /**
-     * @return bool
+     * @return string
      */
-    public function isNocacheCookies()
+    public function getNocacheCookies()
     {
         return $this->nocache_cookies;
     }
 
     /**
-     * @param bool $nocache_cookies
+     * @param string $nocache_cookies
      */
-    public function setNocacheCookies(bool $nocache_cookies)
+    public function setNocacheCookies(string $nocache_cookies = '')
     {
         $this->nocache_cookies = $nocache_cookies;
     }
@@ -722,22 +717,6 @@ class Config
     public function setNocacheUrl(string $nocache_url)
     {
         $this->nocache_url = $nocache_url;
-    }
-
-    /**
-     * @return string
-     */
-    public function getNocacheComment()
-    {
-        return $this->nocache_comment;
-    }
-
-    /**
-     * @param string $nocache_comment
-     */
-    public function setNocacheComment(string $nocache_comment)
-    {
-        $this->nocache_comment = $nocache_comment;
     }
 
     /**
