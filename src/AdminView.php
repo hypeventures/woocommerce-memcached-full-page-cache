@@ -37,317 +37,59 @@ class AdminView
     /**
      * admin panel, the admin page displayed for plugin settings
      */
-    public function plugin_admin_panel()
+    public function render()
     {
-        global $wcMfpcConfig;
-
         /*
          * security, if somehow we're running without WordPress security functions
          */
         if (! function_exists('current_user_can') || ! current_user_can('manage_options')) {
 
-            die();
+            wp_redirect(admin_url());
+            exit;
 
         }
 
         ?>
         <div class="wrap">
-            <h1>WooCommerce Memcached Full Page Cache</h1>
+          <h1>WooCommerce Memcached Full Page Cache</h1>
 
-            <?php $this->renderMessages()->renderActionButtons('flush'); ?>
+          <?php $this->renderMessages()->renderActionButtons('flush'); ?>
 
-            <form autocomplete="off" method="post" action="#" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin">
+          <form autocomplete="off" method="post" action="#" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin">
 
-                <?php wp_nonce_field('wc-mfpc'); ?>
+            <?php wp_nonce_field('wc-mfpc'); ?>
 
-                <fieldset id="<?php echo Data::plugin_constant ?>-servers">
-                  <legend>Memcached connection settings</legend>
-                  <?php
-                  woocommerce_wp_text_input([
-                      'id'          => 'hosts',
-                      'label'       => 'Host(s)',
-                      'class'       => 'short',
-                      'description' => '<b>host1:port1,host2:port2,...</b> - OR - <b>unix://[socket_path]</b>',
-                      'value'       => $wcMfpcConfig->getHosts(),
-                  ]);
-                  woocommerce_wp_text_input([
-                      'id'          => 'authuser',
-                      'label'       => 'Username',
-                      'class'       => 'short',
-                      'description' => 'Username for authentication with Memcached <span class="error-msg">(Only if SASL is enabled)</span>',
-                      'value'       => $wcMfpcConfig->getAuthuser(),
-                  ]);
-                  woocommerce_wp_text_input([
-                      'id'          => 'authpass',
-                      'label'       => 'Password',
-                      'class'       => 'short',
-                      'description' => 'Username for authentication with Memcached <span class="error-msg">(Only if SASL is enabled)</span>',
-                      'value'       => $wcMfpcConfig->getAuthpass(),
-                  ]);
-                  woocommerce_wp_checkbox([
-                      'id'          => 'memcached_binary',
-                      'label'       => 'Enable binary mode',
-                      'description' => 'Some memcached proxies and implementations only support the ASCII protocol.',
-                      'value'       => $wcMfpcConfig->isMemcachedBinary() ? 'yes' : 'no',
-                  ]);
-                  ?>
-                </fieldset>
+            <fieldset id="<?php echo Data::plugin_constant ?>-servers">
+              <legend>Memcached connection settings</legend>
+              <?php $this->renderMemcachedConnectionSettings(); ?>
+            </fieldset>
 
-                <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
+            <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
 
-                <fieldset id="<?php echo Data::plugin_constant; ?>-type">
-                    <legend>Cache settings</legend>
-                    <?php
-                    woocommerce_wp_text_input([
-                        'id'          => 'expire',
-                        'label'       => 'Expiration of Posts',
-                        'type'        => 'number',
-                        'data_type'   => 'decimal',
-                        'class'       => 'short',
-                        'description' => 'Sets validity time of post entry in seconds, including custom post types and pages.',
-                        'value'       => $wcMfpcConfig->getExpire(),
-                    ]);
-                    woocommerce_wp_text_input([
-                        'id'          => 'browsercache',
-                        'label'       => 'Browser cache expiration of Posts',
-                        'type'        => 'number',
-                        'data_type'   => 'decimal',
-                        'class'       => 'short',
-                        'description' => 'Sets validity time of posts/pages/singles for the browser cache.',
-                        'value'       => $wcMfpcConfig->getBrowsercache(),
-                    ]);
-                    woocommerce_wp_text_input([
-                        'id'          => 'expire_taxonomy',
-                        'label'       => 'Expiration of Taxonomies',
-                        'type'        => 'number',
-                        'data_type'   => 'decimal',
-                        'class'       => 'short',
-                        'description' => 'Sets validity time of taxonomy entry in seconds, including custom taxonomy.',
-                        'value'       => $wcMfpcConfig->getExpireTaxonomy(),
-                    ]);
-                    woocommerce_wp_text_input([
-                        'id'          => 'browsercache_taxonomy',
-                        'label'       => 'Browser cache expiration of Taxonomies',
-                        'type'        => 'number',
-                        'data_type'   => 'decimal',
-                        'class'       => 'short',
-                        'description' => 'Sets validity time of taxonomy for the browser cache.',
-                        'value'       => $wcMfpcConfig->getBrowsercacheTaxonomy(),
-                    ]);
-                    woocommerce_wp_text_input([
-                        'id'          => 'expire_home',
-                        'label'       => 'Expiration of Home',
-                        'type'        => 'number',
-                        'data_type'   => 'decimal',
-                        'class'       => 'short',
-                        'description' => 'Sets validity time of home on server side.',
-                        'value'       => $wcMfpcConfig->getExpireHome(),
-                    ]);
-                    woocommerce_wp_text_input([
-                        'id'          => 'browsercache_home',
-                        'label'       => 'Browser cache expiration of Home',
-                        'type'        => 'number',
-                        'data_type'   => 'decimal',
-                        'class'       => 'short',
-                        'description' => 'Sets validity time of home for the browser cache.',
-                        'value'       => $wcMfpcConfig->getBrowsercacheHome(),
-                    ]);
-                    woocommerce_wp_text_input([
-                        'id'          => 'charset',
-                        'label'       => 'Charset',
-                        'class'       => 'short',
-                        'description' => 'Charset of HTML and XML (pages and feeds) data.',
-                        'value'       => $wcMfpcConfig->getCharset(),
-                    ]);
-                    woocommerce_wp_select([
-                        'id'          => 'invalidation_method',
-                        'label'       => 'Cache invalidation method',
-                        'class'       => 'short',
-                        'description' => 'Select cache invalidation method.',
-                        'options'     => $this->select_invalidation_method,
-                        'value'       => $wcMfpcConfig->getInvalidationMethod(),
-                    ]);
-                    ?>
-                    <ol class="description-addon">
-                      <li>
-                        <b><?php echo $this->select_invalidation_method[ 0 ]; ?></b>
-                        - Clears everything in storage, <span class="error-msg">including values set by other applications.</span>
-                      </li>
-                      <li>
-                        <b><?php echo $this->select_invalidation_method[ 1 ]; ?></b>
-                        - Clear only the modified posts entry, everything else remains in cache.
-                      </li>
-                      <li>
-                        <b><?php echo $this->select_invalidation_method[ 2 ]; ?></b>
-                        - Unvalidates post and the taxonomy related to the Post.
-                      </li>
-                    </ol>
-                    <?php
-                    woocommerce_wp_checkbox([
-                        'id'          => 'comments_invalidate',
-                        'label'       => 'Invalidate on comment actions',
-                        'description' => 'Trigger cache invalidation when a comments is posted, edited, trashed.',
-                        'value'       => $wcMfpcConfig->isCommentsInvalidate() ? 'yes' : 'no',
-                    ]);
-                    woocommerce_wp_text_input([
-                        'id'          => 'prefix_data',
-                        'label'       => 'Data prefix',
-                        'class'       => 'short',
-                        'description' => 'Prefix for HTML content keys, can be used in nginx.',
-                        'value'       => $wcMfpcConfig->getPrefixData(),
-                    ]);
-                    ?>
-                    <div class="description-addon">
-                      <b>WARNING</b>: changing this will result the previous cache to becomes invalid!<br />
-                      If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value.
-                    </div>
-                    <?php
-                    woocommerce_wp_text_input([
-                        'id'          => 'prefix_meta',
-                        'label'       => 'Meta prefix',
-                        'class'       => 'short',
-                        'description' => 'Prefix for meta content keys, used only with PHP processing.',
-                        'value'       => $wcMfpcConfig->getPrefixMeta(),
-                    ]);
-                    ?>
-                    <div class="description-addon">
-                      <b>WARNING</b>: changing this will result the previous cache to becomes invalid!
-                    </div>
-                    <?php
-                    woocommerce_wp_text_input([
-                        'id'          => 'key',
-                        'label'       => 'Key scheme',
-                        'class'       => 'short',
-                        'description' => 'Key layout: <b>please use the guide below to change it.</b>',
-                        'value'       => $wcMfpcConfig->getKey(),
-                    ]);
-                    ?>
-                    <div class="description-addon">
-                      <b>WARNING</b>: changing this will result the previous cache to becomes invalid!<br />
-                      If you are caching with nginx, you should update your nginx configuration and reload nginx after
-                      changing this value.
-                    </div>
-                    <table class="description-addon" style="margin-top: 0;" cellspacing="0" cellpadding="0">
-                      <tr><th colspan="2" style="text-align: left;"><h3>Possible variables:</h3></th></tr>
-                      <?php
-                      foreach ($this->list_uri_vars as $uri => $desc) {
+            <fieldset id="<?php echo Data::plugin_constant; ?>-type">
+                <legend>Cache settings</legend>
+                <?php $this->renderCacheSettings(); ?>
+            </fieldset>
 
-                          echo '<tr><td><b>' . $uri . '</b>:</td><td><i>' . $desc . '</i></td></tr>';
+            <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
 
-                      }
-                      ?>
-                    </table>
-                </fieldset>
+            <fieldset id="<?php echo Data::plugin_constant ?>-exceptions">
+                <legend>Exception settings</legend>
+                <?php $this->renderExceptionSettings(); ?>
+            </fieldset>
 
-                <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
+            <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
 
-                <fieldset id="<?php echo Data::plugin_constant ?>-exceptions">
-                    <legend>Exception settings</legend>
-                    <?php
-                    woocommerce_wp_checkbox([
-                        'id'          => 'cache_loggedin',
-                        'label'       => 'Cache for logged in users',
-                        'description' => 'Enable to cache pages even if user is logged in.',
-                        'value'       => $wcMfpcConfig->isCacheLoggedin() ? 'yes' : 'no',
-                    ]);
-                    woocommerce_wp_checkbox([
-                        'id'          => 'nocache_home',
-                        'label'       => 'Exclude home',
-                        'description' => 'Enable to never cache home.',
-                        'value'       => $wcMfpcConfig->isNocacheHome() ? 'yes' : 'no',
-                    ]);
-                    woocommerce_wp_checkbox([
-                        'id'          => 'nocache_feed',
-                        'label'       => 'Exclude feeds',
-                        'description' => 'Enable to never cache feeds.',
-                        'value'       => $wcMfpcConfig->isNocacheFeed() ? 'yes' : 'no',
-                    ]);
-                    woocommerce_wp_checkbox([
-                        'id'          => 'nocache_archive',
-                        'label'       => 'Exclude archives',
-                        'description' => 'Enable to never cache archives.',
-                        'value'       => $wcMfpcConfig->isNocacheArchive() ? 'yes' : 'no',
-                    ]);
-                    woocommerce_wp_checkbox([
-                        'id'          => 'nocache_page',
-                        'label'       => 'Exclude pages',
-                        'description' => 'Enable to never cache pages.',
-                        'value'       => $wcMfpcConfig->isNocachePage() ? 'yes' : 'no',
-                    ]);
-                    woocommerce_wp_checkbox([
-                        'id'          => 'nocache_single',
-                        'label'       => 'Exclude singulars',
-                        'description' => 'Enable to never cache singulars.',
-                        'value'       => $wcMfpcConfig->isNocacheSingle() ? 'yes' : 'no',
-                    ]);
-                    woocommerce_wp_checkbox([
-                        'id'          => 'nocache_dyn',
-                        'label'       => 'Exclude dynamic requests',
-                        'description' => 'Enable to exclude every dynamic request URL with GET parameters.',
-                        'value'       => $wcMfpcConfig->isNocacheDyn() ? 'yes' : 'no',
-                    ]);
-                    woocommerce_wp_checkbox([
-                        'id'          => 'nocache_woocommerce',
-                        'label'       => 'Exclude dynamic WooCommerce pages',
-                        'description' => 'Enable to exclude every dynamic WooCommerce page.',
-                        'value'       => $wcMfpcConfig->isNocacheWoocommerce() ? 'yes' : 'no',
-                    ]);
-                    ?>
-                    <div class="description-addon"><b>Pattern:</b> <i><?php echo $wcMfpcConfig->getNocacheWoocommerceUrl(); ?></i></div>
-                    <?php
-                    woocommerce_wp_text_input([
-                        'id'          => 'nocache_cookies',
-                        'label'       => 'Exclude based on cookies',
-                        'class'       => 'short',
-                        'description' => 'Exclude content based on cookies names starting with this from caching. Separate multiple cookies names with commas.',
-                        'value'       => $wcMfpcConfig->getNocacheCookies(),
-                    ]);
-                    ?>
-                    <div class="description-addon">
-                      <b>WARNING:</b>
-                      <i>If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value. </i>
-                    </div>
-                    <?php
-                    woocommerce_wp_textarea_input([
-                        'id'          => 'nocache_url',
-                        'label'       => 'Exclude URLs',
-                        'class'       => 'short',
-                        'description' => '<b>WARINING: Use with caution!</b> Use multiple RegEx patterns like e.g. <em>pattern1|pattern2|etc</em>',
-                        'value'       => $wcMfpcConfig->getNocacheUrl(),
-                    ]);
-                    ?>
-                </fieldset>
+            <fieldset id="<?php echo Data::plugin_constant; ?>-debug">
+              <legend>Header / Debug settings</legend>
+                <?php $this->renderDebugSettings(); ?>
+            </fieldset>
 
-                <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
+            <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
 
-                <fieldset id="<?php echo Data::plugin_constant; ?>-debug">
-                  <legend>Header / Debug settings</legend>
-                    <?php
-                    woocommerce_wp_checkbox([
-                        'id'          => 'pingback_header',
-                        'label'       => 'X-Pingback header preservation',
-                        'description' => 'Enable to preserve X-Pingback URL in response header.',
-                        'value'       => $wcMfpcConfig->isPingbackHeader() ? 'yes' : 'no',
-                    ]);
-                    woocommerce_wp_checkbox([
-                        'id'          => 'response_header',
-                        'label'       => 'X-Cache-Engine HTTP header',
-                        'description' => 'Enable to add X-Cache-Engine HTTP header to HTTP responses.',
-                        'value'       => $wcMfpcConfig->isResponseHeader() ? 'yes' : 'no',
-                    ]);
-                    woocommerce_wp_checkbox([
-                        'id'          => 'generate_time',
-                        'label'       => 'HTML debug comment',
-                        'description' => 'Adds comment string including plugin name, cache engine and page generation time to every generated entry before closing <b>body</b> tag.',
-                        'value'       => $wcMfpcConfig->isGenerateTime() ? 'yes' : 'no',
-                    ]);
-                    ?>
-                </fieldset>
+          </form>
 
-                <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
-            </form>
-
-            <?php $this->renderActionButtons('reset'); ?>
+          <?php $this->renderActionButtons('reset'); ?>
 
         </div>
         <?php
@@ -535,6 +277,306 @@ class AdminView
         <?php
 
         return $this;
+    }
+
+    /**
+     * Renders the "Memcached Connection Settings" fieldset inputs.
+     *
+     * @return void
+     */
+    private function renderMemcachedConnectionSettings()
+    {
+        global $wcMfpcConfig;
+
+        woocommerce_wp_text_input([
+            'id'          => 'hosts',
+            'label'       => 'Host(s)',
+            'class'       => 'short',
+            'description' => '<b>host1:port1,host2:port2,...</b> - OR - <b>unix://[socket_path]</b>',
+            'value'       => $wcMfpcConfig->getHosts(),
+        ]);
+        woocommerce_wp_text_input([
+            'id'          => 'authuser',
+            'label'       => 'Username',
+            'class'       => 'short',
+            'description' => 'Username for authentication with Memcached <span class="error-msg">(Only if SASL is enabled)</span>',
+            'value'       => $wcMfpcConfig->getAuthuser(),
+        ]);
+        woocommerce_wp_text_input([
+            'id'          => 'authpass',
+            'label'       => 'Password',
+            'class'       => 'short',
+            'description' => 'Username for authentication with Memcached <span class="error-msg">(Only if SASL is enabled)</span>',
+            'value'       => $wcMfpcConfig->getAuthpass(),
+        ]);
+        woocommerce_wp_checkbox([
+            'id'          => 'memcached_binary',
+            'label'       => 'Enable binary mode',
+            'description' => 'Some memcached proxies and implementations only support the ASCII protocol.',
+            'value'       => $wcMfpcConfig->isMemcachedBinary() ? 'yes' : 'no',
+        ]);
+    }
+
+    /**
+     * Renders the "Cache Settings" fieldset inputs.
+     *
+     * @return void
+     */
+    private function renderCacheSettings()
+    {
+        global $wcMfpcConfig;
+
+        woocommerce_wp_text_input([
+            'id'          => 'expire',
+            'label'       => 'Expiration of Posts',
+            'type'        => 'number',
+            'data_type'   => 'decimal',
+            'class'       => 'short',
+            'description' => 'Sets validity time of post entry in seconds, including custom post types and pages.',
+            'value'       => $wcMfpcConfig->getExpire(),
+        ]);
+        woocommerce_wp_text_input([
+            'id'          => 'browsercache',
+            'label'       => 'Browser cache expiration of Posts',
+            'type'        => 'number',
+            'data_type'   => 'decimal',
+            'class'       => 'short',
+            'description' => 'Sets validity time of posts/pages/singles for the browser cache.',
+            'value'       => $wcMfpcConfig->getBrowsercache(),
+        ]);
+        woocommerce_wp_text_input([
+            'id'          => 'expire_taxonomy',
+            'label'       => 'Expiration of Taxonomies',
+            'type'        => 'number',
+            'data_type'   => 'decimal',
+            'class'       => 'short',
+            'description' => 'Sets validity time of taxonomy entry in seconds, including custom taxonomy.',
+            'value'       => $wcMfpcConfig->getExpireTaxonomy(),
+        ]);
+        woocommerce_wp_text_input([
+            'id'          => 'browsercache_taxonomy',
+            'label'       => 'Browser cache expiration of Taxonomies',
+            'type'        => 'number',
+            'data_type'   => 'decimal',
+            'class'       => 'short',
+            'description' => 'Sets validity time of taxonomy for the browser cache.',
+            'value'       => $wcMfpcConfig->getBrowsercacheTaxonomy(),
+        ]);
+        woocommerce_wp_text_input([
+            'id'          => 'expire_home',
+            'label'       => 'Expiration of Home',
+            'type'        => 'number',
+            'data_type'   => 'decimal',
+            'class'       => 'short',
+            'description' => 'Sets validity time of home on server side.',
+            'value'       => $wcMfpcConfig->getExpireHome(),
+        ]);
+        woocommerce_wp_text_input([
+            'id'          => 'browsercache_home',
+            'label'       => 'Browser cache expiration of Home',
+            'type'        => 'number',
+            'data_type'   => 'decimal',
+            'class'       => 'short',
+            'description' => 'Sets validity time of home for the browser cache.',
+            'value'       => $wcMfpcConfig->getBrowsercacheHome(),
+        ]);
+        woocommerce_wp_text_input([
+            'id'          => 'charset',
+            'label'       => 'Charset',
+            'class'       => 'short',
+            'description' => 'Charset of HTML and XML (pages and feeds) data.',
+            'value'       => $wcMfpcConfig->getCharset(),
+        ]);
+        woocommerce_wp_select([
+            'id'          => 'invalidation_method',
+            'label'       => 'Cache invalidation method',
+            'class'       => 'short',
+            'description' => 'Select cache invalidation method.',
+            'options'     => $this->select_invalidation_method,
+            'value'       => $wcMfpcConfig->getInvalidationMethod(),
+        ]);
+        ?>
+        <ol class="description-addon">
+          <li>
+            <b><?php echo $this->select_invalidation_method[ 0 ]; ?></b>
+            - Clears everything in storage, <span class="error-msg">including values set by other applications.</span>
+          </li>
+          <li>
+            <b><?php echo $this->select_invalidation_method[ 1 ]; ?></b>
+            - Clear only the modified posts entry, everything else remains in cache.
+          </li>
+          <li>
+            <b><?php echo $this->select_invalidation_method[ 2 ]; ?></b>
+            - Unvalidates post and the taxonomy related to the Post.
+          </li>
+        </ol>
+        <?php
+        woocommerce_wp_checkbox([
+            'id'          => 'comments_invalidate',
+            'label'       => 'Invalidate on comment actions',
+            'description' => 'Trigger cache invalidation when a comments is posted, edited, trashed.',
+            'value'       => $wcMfpcConfig->isCommentsInvalidate() ? 'yes' : 'no',
+        ]);
+        woocommerce_wp_text_input([
+            'id'          => 'prefix_data',
+            'label'       => 'Data prefix',
+            'class'       => 'short',
+            'description' => 'Prefix for HTML content keys, can be used in nginx.',
+            'value'       => $wcMfpcConfig->getPrefixData(),
+        ]);
+        ?>
+        <div class="description-addon">
+          <b>WARNING</b>: changing this will result the previous cache to becomes invalid!<br />
+          If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value.
+        </div>
+        <?php
+        woocommerce_wp_text_input([
+            'id'          => 'prefix_meta',
+            'label'       => 'Meta prefix',
+            'class'       => 'short',
+            'description' => 'Prefix for meta content keys, used only with PHP processing.',
+            'value'       => $wcMfpcConfig->getPrefixMeta(),
+        ]);
+        ?>
+        <div class="description-addon">
+          <b>WARNING</b>: changing this will result the previous cache to becomes invalid!
+        </div>
+        <?php
+        woocommerce_wp_text_input([
+            'id'          => 'key',
+            'label'       => 'Key scheme',
+            'class'       => 'short',
+            'description' => 'Key layout: <b>please use the guide below to change it.</b>',
+            'value'       => $wcMfpcConfig->getKey(),
+        ]);
+        ?>
+        <div class="description-addon">
+          <b>WARNING</b>: changing this will result the previous cache to becomes invalid!<br />
+          If you are caching with nginx, you should update your nginx configuration and reload nginx after
+          changing this value.
+        </div>
+        <table class="description-addon" style="margin-top: 0;" cellspacing="0" cellpadding="0">
+          <tr><th colspan="2" style="text-align: left;"><h3>Possible variables:</h3></th></tr>
+          <?php
+          foreach ($this->list_uri_vars as $uri => $desc) {
+
+              echo '<tr><td><b>' . $uri . '</b>:</td><td><i>' . $desc . '</i></td></tr>';
+
+          }
+          ?>
+        </table>
+        <?php
+    }
+
+    /**
+     * Renders the "Exception Settings" fieldset inputs.
+     *
+     * @return void
+     */
+    private function renderExceptionSettings()
+    {
+        global $wcMfpcConfig;
+
+        woocommerce_wp_checkbox([
+            'id'          => 'cache_loggedin',
+            'label'       => 'Cache for logged in users',
+            'description' => 'Enable to cache pages even if user is logged in.',
+            'value'       => $wcMfpcConfig->isCacheLoggedin() ? 'yes' : 'no',
+        ]);
+        woocommerce_wp_checkbox([
+            'id'          => 'nocache_home',
+            'label'       => 'Exclude home',
+            'description' => 'Enable to never cache home.',
+            'value'       => $wcMfpcConfig->isNocacheHome() ? 'yes' : 'no',
+        ]);
+        woocommerce_wp_checkbox([
+            'id'          => 'nocache_feed',
+            'label'       => 'Exclude feeds',
+            'description' => 'Enable to never cache feeds.',
+            'value'       => $wcMfpcConfig->isNocacheFeed() ? 'yes' : 'no',
+        ]);
+        woocommerce_wp_checkbox([
+            'id'          => 'nocache_archive',
+            'label'       => 'Exclude archives',
+            'description' => 'Enable to never cache archives.',
+            'value'       => $wcMfpcConfig->isNocacheArchive() ? 'yes' : 'no',
+        ]);
+        woocommerce_wp_checkbox([
+            'id'          => 'nocache_page',
+            'label'       => 'Exclude pages',
+            'description' => 'Enable to never cache pages.',
+            'value'       => $wcMfpcConfig->isNocachePage() ? 'yes' : 'no',
+        ]);
+        woocommerce_wp_checkbox([
+            'id'          => 'nocache_single',
+            'label'       => 'Exclude singulars',
+            'description' => 'Enable to never cache singulars.',
+            'value'       => $wcMfpcConfig->isNocacheSingle() ? 'yes' : 'no',
+        ]);
+        woocommerce_wp_checkbox([
+            'id'          => 'nocache_dyn',
+            'label'       => 'Exclude dynamic requests',
+            'description' => 'Enable to exclude every dynamic request URL with GET parameters.',
+            'value'       => $wcMfpcConfig->isNocacheDyn() ? 'yes' : 'no',
+        ]);
+        woocommerce_wp_checkbox([
+            'id'          => 'nocache_woocommerce',
+            'label'       => 'Exclude dynamic WooCommerce pages',
+            'description' => 'Enable to exclude every dynamic WooCommerce page.',
+            'value'       => $wcMfpcConfig->isNocacheWoocommerce() ? 'yes' : 'no',
+        ]);
+        ?>
+        <div class="description-addon"><b>Pattern:</b> <i><?php echo $wcMfpcConfig->getNocacheWoocommerceUrl(); ?></i></div>
+        <?php
+        woocommerce_wp_text_input([
+            'id'          => 'nocache_cookies',
+            'label'       => 'Exclude based on cookies',
+            'class'       => 'short',
+            'description' => 'Exclude content based on cookies names starting with this from caching. Separate multiple cookies names with commas.',
+            'value'       => $wcMfpcConfig->getNocacheCookies(),
+        ]);
+        ?>
+        <div class="description-addon">
+          <b>WARNING:</b>
+          <i>If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value. </i>
+        </div>
+        <?php
+        woocommerce_wp_textarea_input([
+            'id'          => 'nocache_url',
+            'label'       => 'Exclude URLs',
+            'class'       => 'short',
+            'description' => '<b>WARINING: Use with caution!</b> Use multiple RegEx patterns like e.g. <em>pattern1|pattern2|etc</em>',
+            'value'       => $wcMfpcConfig->getNocacheUrl(),
+        ]);
+    }
+
+    /**
+     * Renders the "Header & Debug Settings" fieldset inputs.
+     *
+     * @return void
+     */
+    private function renderDebugSettings()
+    {
+        global $wcMfpcConfig;
+
+        woocommerce_wp_checkbox([
+            'id'          => 'pingback_header',
+            'label'       => 'X-Pingback header preservation',
+            'description' => 'Enable to preserve X-Pingback URL in response header.',
+            'value'       => $wcMfpcConfig->isPingbackHeader() ? 'yes' : 'no',
+        ]);
+        woocommerce_wp_checkbox([
+            'id'          => 'response_header',
+            'label'       => 'X-Cache-Engine HTTP header',
+            'description' => 'Enable to add X-Cache-Engine HTTP header to HTTP responses.',
+            'value'       => $wcMfpcConfig->isResponseHeader() ? 'yes' : 'no',
+        ]);
+        woocommerce_wp_checkbox([
+            'id'          => 'generate_time',
+            'label'       => 'HTML debug comment',
+            'description' => 'Adds comment string including plugin name, cache engine and page generation time to every generated entry before closing <b>body</b> tag.',
+            'value'       => $wcMfpcConfig->isGenerateTime() ? 'yes' : 'no',
+        ]);
     }
 
 }
