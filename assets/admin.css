@@ -9,47 +9,33 @@
 
 .plugin-admin fieldset {
   display:block;
-  margin: 0;
-  padding: 0 1em 0 1em;
+  padding: 0 1rem 0 1rem;
   border: 1px solid #ccc;
   background: #fff;
 }
 
 .plugin-admin legend {
-  display: none;
-  visibility: hidden;
-}
-
-.plugin-admin .description {
-  display: block;
-  padding-top: 0.3em;
-}
-
-.plugin-admin .tabs {
-  padding:0;
-  margin: 0;
-  list-style-type: none;
-}
-
-.plugin-admin .tabs li  {
+  background: white;
+  padding:1rem;
   border: 1px solid #ccc;
-  line-height: 120%;
+  border-bottom: 0;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.form-field label {
+  width: 200px;
   display: inline-block;
-  padding: 0.5em 2em 0.5em 2em;
-  text-decoration: none;
-  margin-bottom: -1px;
-  background: #f1f1f1;
+  font-weight: bold;
 }
 
-.plugin-admin .tabs li a {
-  outline: none;
-  text-decoration: none;
-  font-size: 120%;
+.form-field .description {
+  display: inline-block;
+  font-style: italic;
 }
 
-.plugin-admin .tabs li.ui-state-active {
-  background: #fff;
-  border-bottom-color: #fff;
+.form-field .short {
+  max-width: 400px;
 }
 
 .error p {
@@ -74,27 +60,10 @@
 
 .button {
   font-weight: bold;
-  min-width: 100%;
+  min-width: 120px;
+  margin-right: 2rem;
 }
 
 .button-warning {
   color: #ff0000 !important;
-}
-
-.button-warning:hover,
-.button-warning:focus {
-  background: #f3f3f3;
-  border-color: #900;
-  color: #a00;
-  -webkit-box-shadow: 1px 1px 1px rgba(0,0,0,.2);
-  box-shadow: 1px 1px 1px rgba(0,0,0,.2);
-}
-
-.button-warning:active {
-  background: #eee;
-  border-color: #900;
-  color: #a00;
-  text-shadow: 0 -1px 0 #fff;
-  -webkit-box-shadow: inset 0 2px 5px -3px rgba( 0, 0, 0, 0.5 );
-  box-shadow: inset 0 2px 5px -3px rgba( 0, 0, 0, 0.5 );
 }
