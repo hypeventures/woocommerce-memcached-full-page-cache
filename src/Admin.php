@@ -594,7 +594,7 @@ class Admin
                   woocommerce_wp_checkbox([
                       'id'          => 'memcached_binary',
                       'label'       => 'Enable binary mode',
-                      'description' => 'Username for authentication with Memcached',
+                      'description' => 'Some memcached proxies and implementations only support the ASCII protocol.',
                       'value'       => $wcMfpcConfig->isMemcachedBinary() ? 'yes' : 'no',
                   ]);
                   ?>
