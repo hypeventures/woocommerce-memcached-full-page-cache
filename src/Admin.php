@@ -213,40 +213,12 @@ class Admin
         /* save parameter updates, if there are any */
         if (isset($_POST[ Data::button_flush ]) && check_admin_referer('wc-mfpc')) {
 
-            // ToDo: Remove if pre-caching is deemed unnecessary
-            // PreCache::delete();
-
             /* flush backend */
             $wcMfpc->backend->clear(false, true);
             $this->status = 3;
             header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_flush);
 
         }
-
-        /*
-         * save parameter updates, if there are any
-         * ToDo: Remove if pre-caching is deemed unnecessary
-         * /
-        if (isset($_POST[ Data::button_precache ]) && check_admin_referer('wc-mfpc')) {
-
-            // is no shell function is possible, fail
-            if ($wcMfpcData->shell_function === false) {
-
-                $this->status = 5;
-                header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_precache_disabled);
-
-            } else {
-
-                $preCache = new PreCache();
-                $preCache->precache_coldrun();
-
-                $this->status           = 4;
-                header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_precache);
-
-            }
-
-        }
-        */
     }
 
     /**
@@ -332,9 +304,6 @@ class Admin
             $wcMfpcConfig->setConfig($options);
 
         }
-
-        // ToDo: Remove if pre-caching is deemed unnecessary!
-        // PreCache::handleSchedule();
 
         /* flush the cache when new options are saved, not needed on activation */
         if (! $activating) {
@@ -871,73 +840,6 @@ class Admin
     }
 
     /**
-     * Renders the PreCache Tab.
-     *
-     * @todo Remove if pre-caching is deemed unnecessary.
-     */
-    private function renderTabPrecache()
-    {
-        global $wcMfpc, $wcMfpcConfig, $wcMfpcData;
-
-        ?>
-        <fieldset id="<?php echo Data::plugin_constant ?>-precache">
-          <legend><?php _e('Precache settings & log from previous pre-cache generation', 'wc-mfpc'); ?></legend>
-
-          <dt>
-            <label for="precache_schedule"><?php _e('Precache schedule', 'wc-mfpc'); ?></label>
-          </dt>
-          <dd>
-            <select name="precache_schedule" id="precache_schedule">
-                <?php $this->print_select_options($this->select_schedules, $wcMfpcConfig->getPrecacheSchedule()) ?>
-            </select>
-            <span class="description"><?php _e('Schedule autorun for precache with WP-Cron', 'wc-mfpc'); ?></span>
-          </dd>
-
-            <?php
-
-            $gentime = self::_get_option(Data::precache_timestamp, $wcMfpcData->network);
-            $log     = self::_get_option(Data::precache_log, $wcMfpcData->network);
-
-            if (@file_exists($wcMfpc->precache_logfile)) {
-                $logtime = filemtime($wcMfpcData->precache_logfile);
-                /* update precache log in DB if needed */
-                if ($logtime > $gentime) {
-                    $log = file($wcMfpcData->precache_logfile);
-                    self::_update_option($wcMfpcData->precache_log, $log, $wcMfpcData->network);
-                    self::_update_option($wcMfpcData->precache_timestamp, $logtime, $wcMfpcData->network);
-                }
-            }
-            if (empty ($log)) {
-                _e('No precache log was found!', 'wc-mfpc');
-            } else { ?>
-              <p><strong><?php _e('Time of run: ') ?><?php echo date('r', $gentime); ?></strong></p>
-              <div style="overflow: auto; max-height: 20em;">
-                <table style="width:100%; border: 1px solid #ccc;">
-                  <thead>
-                  <tr>
-                      <?php $head = explode("	", array_shift($log));
-                      foreach ($head as $column) { ?>
-                        <th><?php echo $column; ?></th>
-                      <?php } ?>
-                  </tr>
-                  </thead>
-                    <?php
-                    foreach ($log as $line) { ?>
-                      <tr>
-                          <?php $line = explode("	", $line);
-                          foreach ($line as $column) { ?>
-                            <td><?php echo $column; ?></td>
-                          <?php } ?>
-                      </tr>
-                    <?php } ?>
-                </table>
-              </div>
-            <?php } ?>
-        </fieldset>
-        <?php
-    }
-
-    /**
      * Renders information for administrators if conditions are met.
      *
      * @return Admin
@@ -1025,16 +927,6 @@ class Admin
               LOG_ERR, true
             );
         }
-
-        /*
-         * if options were saved, display saved message
-         * ToDo: Remove if PreCache is deemed unnecessary.
-         * /
-        if ((isset($_GET[ Data::key_precache ]) && $_GET[ Data::key_precache ] == 'true') || $this->status == 4) {
-
-            Alert::alert('<strong>Precache process was started in the background.</strong>');
-
-        }*/
 
         Alert::alert($this->getServersStatusAlert());
 
