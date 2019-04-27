@@ -432,20 +432,6 @@ function wc_mfpc_callback( $buffer ) {
 		return '';
     }
 
-	if (! empty($config[ 'nocache_comment' ])) {
-
-		$pattern = sprintf('#%s#', $config['nocache_comment']);
-		error_log ( sprintf("Testing comment with pattern: %s", $pattern));
-
-		if ( preg_match($pattern, $buffer) ) {
-
-			error_log ( "Cache exception based on content regex pattern matched, skipping");
-
-			return $buffer;
-		}
-
-	}
-
 	if ( is_home() || is_feed() ) {
 
 		if (is_home()) {
