@@ -161,11 +161,6 @@ class Config
     /**
      * @var string
      */
-    public $precache_schedule       = 'daily';
-
-    /**
-     * @var string
-     */
     public $key                     = '$scheme://$host$request_uri';
 
     /**
@@ -749,22 +744,6 @@ class Config
     public function setGenerateTime(bool $generate_time)
     {
         $this->generate_time = $generate_time;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPrecacheSchedule()
-    {
-        return $this->precache_schedule;
-    }
-
-    /**
-     * @param string $precache_schedule
-     */
-    public function setPrecacheSchedule(string $precache_schedule)
-    {
-        $this->precache_schedule = $precache_schedule;
     }
 
     /**
