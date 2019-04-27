@@ -115,9 +115,6 @@ class Admin
     {
         global $wcMfpcData;
 
-        wp_enqueue_script("jquery-ui-tabs");
-        wp_enqueue_script("jquery-ui-slider");
-
         wp_register_style(Data::admin_css_handle, $wcMfpcData->admin_css_url, [ 'dashicons' ], false, 'all');
         wp_enqueue_style(Data::admin_css_handle);
     }
@@ -561,7 +558,7 @@ class Admin
         <div class="wrap">
             <h1>WooCommerce Memcached Full Page Cache</h1>
 
-            <?php $this->renderMessages()->renderActionButtons(); ?>
+            <?php $this->renderMessages()->renderActionButtons('flush'); ?>
 
             <form autocomplete="off" method="post" action="#" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin">
 
@@ -600,7 +597,7 @@ class Admin
                   ?>
                 </fieldset>
 
-                <?php submit_button('Save Changes', 'primary', Data::button_save); ?>
+                <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
 
                 <fieldset id="<?php echo Data::plugin_constant; ?>-type">
                     <legend>Cache settings</legend>
@@ -759,7 +756,7 @@ class Admin
                     ?>
                 </fieldset>
 
-                <?php submit_button('Save Changes', 'primary', Data::button_save); ?>
+                <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
 
                 <fieldset id="<?php echo Data::plugin_constant ?>-exceptions">
                     <legend>Exception settings</legend>
@@ -838,7 +835,7 @@ class Admin
                     ?>
                 </fieldset>
 
-                <?php submit_button('Save Changes', 'primary', Data::button_save); ?>
+                <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
 
                 <fieldset id="<?php echo Data::plugin_constant; ?>-debug">
                   <legend>Header / Debug settings</legend>
@@ -864,8 +861,11 @@ class Admin
                     ?>
                 </fieldset>
 
-                <?php submit_button('Save Changes', 'primary', Data::button_save); ?>
+                <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
             </form>
+
+            <?php $this->renderActionButtons('reset'); ?>
+
         </div>
         <?php
     }
@@ -1083,56 +1083,68 @@ class Admin
     }
 
     /**
-     * Renders the Form with the action buttons for "Pre-Cache", "Clear-Cache" & "Reset-Options".
+     * Renders the Form with the action buttons for "Clear-Cache" & "Reset-Settings".
+     *
+     * @param string $button   'flush'|'reset'
      *
      * @return Admin
      */
-    private function renderActionButtons()
+    private function renderActionButtons($button = 'flush')
     {
-        /*
-        global $wcMfpcData;
+        if (empty($button) || ! in_array($button, [ 'flush', 'reset' ])) {
 
-        $disabled = '';
+            echo '<p class="error-msg"><b>NO or UNKNOWN action button defined to render.</b></p>';
 
-        if (
-            (isset($_GET[ Data::key_precache_disabled ]) && $_GET[ Data::key_precache_disabled ] == 'true')
-            || $this->status == 5
-            || $wcMfpcData->shell_function == false
-        ) {
-
-            $disabled = 'disabled="disabled"';
-
+            return $this;
         }
-         */
         ?>
         <form method="post" action="#" id="<?php echo Data::plugin_constant ?>-commands" class="plugin-admin">
-          <?php wp_nonce_field('wc-mfpc'); ?>
           <p>
-            <!--input class="button button-secondary" type="submit" name="< ?php echo Data::button_precache ?>"
-                   id="< ?php echo Data::button_precache ?>"
-                   value="< ?php _e('Pre-cache', 'wc-mfpc') ?>"
-                   < ?php echo $disabled; ?>
-                   title="Start a background process that visits all permalinks of all blogs it can found thus forces
-              WordPress to generate cached version of all the pages.<br />The plugin tries to visit links
-              of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be
-              prepared for these in your logfiles if you plan to pre-cache."
-            />
-            <span class="description">
-              Start a background process that visits all permalinks of all blogs it can found thus forces
-              WordPress to generate cached version of all the pages.<br />The plugin tries to visit links
-              of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be
-              prepared for these in your logfiles if you plan to pre-cache.
-            </span-->
-            <input class="button button-secondary" type="submit" name="<?php echo Data::button_flush; ?>"
-                   id="<?php echo Data::button_flush; ?>" style="color: #eee; background: #333; width: 180px;"
-                   value="<?php _e('Clear cache', 'wc-mfpc') ?>"
-                   title="Clear all entries in the storage, including the ones that were set by other processes."
-            />
-            <input class="button button-warning" type="submit" name="<?php echo Data::button_delete; ?>"
-                   id="<?php echo Data::button_delete; ?>"
-                   value="<?php _e('Reset options', 'wc-mfpc') ?>"
-                   title="Reset settings to defaults!"
-            />
+            <?php
+            wp_nonce_field('wc-mfpc');
+
+            if ($button === 'flush') {
+
+                submit_button('&#x1f5d1; Flush Cache', 'secondary', Data::button_flush, false, [
+                    'style' => 'color: #f33; font-weight: normal; margin: 1rem 1rem 1rem 0;',
+                ]);
+                echo '<span class="error-msg">Flushes Memcached. All entries in the cache are deleted, <b>including the ones that were set by other processes.</b></span>';
+
+            } else {
+
+                submit_button('&#x21bb; Reset Settings', 'secondary', Data::button_delete, false, [
+                    'style' => 'color: #f33; font-weight: normal; margin: 1rem 1rem 1rem 0;',
+                ]);
+                echo '<span class="error-msg"><b>Resets ALL settings on this page to DEFAULT.</b></span>';
+
+                /*
+                global $wcMfpcData;
+
+                $args = [
+                    'title' => '
+                        Start a background process that visits all permalinks of all blogs it can found thus forces
+                        WordPress to generate cached version of all the pages.<br />The plugin tries to visit links
+                        of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be
+                        prepared for these in your logfiles if you plan to pre-cache.
+                    ',
+                ]
+
+                if (
+                  (isset($_GET[ Data::key_precache_disabled ]) && $_GET[ Data::key_precache_disabled ] == 'true')
+                  || $this->status == 5
+                  || $wcMfpcData->shell_function == false
+                ) {
+
+                    $args[ 'disabled' ] = 'disabled';
+
+                }
+
+                echo '<br>';
+                submit_button('Run pre-caching', 'secondary', Data::button_precache, true, $args);
+                */
+
+            }
+            ?>
           </p>
         </form>
         <?php
