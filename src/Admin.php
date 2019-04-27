@@ -36,11 +36,6 @@ class Admin
     /**
      * @var array
      */
-    private $select_schedules = [];
-
-    /**
-     * @var array
-     */
     private $list_uri_vars = [];
 
     /**
@@ -167,19 +162,6 @@ class Admin
             '$cookie_PHPSESSID' => __('PHP Session Cookie ID, if set ( empty if not )', 'wc-mfpc'),
             '$accept_lang'      => __('First HTTP Accept Lang set in the HTTP request', 'wc-mfpc'),
         ];
-
-        /* get current wp_cron schedules */
-        $wp_schedules = wp_get_schedules();
-        /* add 'null' to switch off timed precache */
-        $schedules[ 'null' ] = __('do not use timed precache');
-
-        foreach ($wp_schedules as $interval => $details) {
-
-            $schedules[ $interval ] = $details[ 'display' ];
-
-        }
-
-        $this->select_schedules = $schedules;
     }
 
     /**
