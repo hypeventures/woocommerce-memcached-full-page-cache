@@ -38,6 +38,11 @@
   font-style: italic;
 }
 
+.description-addon {
+  padding-left: 240px;
+  margin-top: -1.5rem;
+}
+
 .wrap .form-field input.short {
   max-width: 400px;
 }
@@ -59,7 +64,7 @@
 }
 
 .plugin-admin td {
-  height: 3rem;
+  padding: 0.25rem 1rem 0.25rem 0;
 }
 
 .button {
