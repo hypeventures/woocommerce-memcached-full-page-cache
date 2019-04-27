@@ -484,22 +484,6 @@ class Admin
     }
 
     /**
-     * @return mixed
-     */
-    private function plugin_admin_panel_get_tabs()
-    {
-        $default_tabs = [
-            'type'       => __('Cache type', 'wc-mfpc'),
-            'debug'      => __('Debug & in-depth', 'wc-mfpc'),
-            'exceptions' => __('Cache exceptions', 'wc-mfpc'),
-            'servers'    => __('Backend settings', 'wc-mfpc'),
-            #'precache'   => __('Precache & precache log', 'wc-mfpc'),
-        ];
-
-        return apply_filters('wc_mfpc_admin_panel_tabs', $default_tabs);
-    }
-
-    /**
      * Select options field processor
      *
      * @param array $elements  Array to build <option> values of
@@ -562,7 +546,7 @@ class Admin
      */
     public function plugin_admin_panel()
     {
-        global $wcMfpcConfig, $wcMfpcData;
+        global $wcMfpcConfig;
 
         /*
          * security, if somehow we're running without WordPress security functions
@@ -574,33 +558,54 @@ class Admin
         }
 
         ?>
-
-        <script>
-          jQuery(document).ready(function ($) {
-            jQuery("#<?php echo Data::plugin_constant ?>-settings").tabs();
-          });
-        </script>
         <div class="wrap">
+            <h1>WooCommerce Memcached Full Page Cache</h1>
 
-            <?php $this->renderMessages(); ?>
-
-            <h2><?php echo Data::plugin_name . ' settings'; ?></h2>
-
-            <?php $this->renderActionButtons(); ?>
+            <?php $this->renderMessages()->renderActionButtons(); ?>
 
             <form autocomplete="off" method="post" action="#" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin">
+
                 <?php wp_nonce_field('wc-mfpc'); ?>
-                <?php $switcher_tabs = $this->plugin_admin_panel_get_tabs(); ?>
-                <ul class="tabs">
-                    <?php foreach ($switcher_tabs AS $tab_section => $tab_label) { ?>
 
-                        <li><a href="#<?php echo Data::plugin_constant . '-' . $tab_section ?>" class="wp-switch-editor"><?= $tab_label ?></a></li>
+                <fieldset id="<?php echo Data::plugin_constant ?>-servers" class="options_group">
+                  <legend>Connection Server settings</legend>
+                  <?php
+                  woocommerce_wp_text_input([
+                      'id'          => 'hosts',
+                      'label'       => 'Host(s)',
+                      'class'       => 'short',
+                      'description' => '<b>host1:port1,host2:port2,...</b> - OR - <b>unix://[socket_path]</b>',
+                      'value'       => $wcMfpcConfig->getHosts(),
+                  ]);
+                  echo '<br><p><h3 class="error-msg">Authentication (only for SASL enabled Memcached):</h3>';
+                  woocommerce_wp_text_input([
+                      'id'          => 'authuser',
+                      'label'       => 'Username',
+                      'class'       => 'short',
+                      'description' => 'Username for authentication with Memcached',
+                      'value'       => $wcMfpcConfig->getAuthuser(),
+                  ]);
+                  woocommerce_wp_text_input([
+                      'id'          => 'authpass',
+                      'label'       => 'Password',
+                      'class'       => 'short',
+                      'description' => 'Username for authentication with Memcached',
+                      'value'       => $wcMfpcConfig->getAuthpass(),
+                  ]);
+                  echo '</p><br>';
+                  woocommerce_wp_checkbox([
+                      'id'          => 'memcached_binary',
+                      'label'       => 'Enable binary mode',
+                      'description' => 'Username for authentication with Memcached',
+                      'value'       => $wcMfpcConfig->isMemcachedBinary() ? 'yes' : 'no',
+                  ]);
+                  ?>
+                </fieldset>
 
-                    <?php } ?>
-                </ul>
+                <?php submit_button('Save Changes', 'primary', Data::button_save); ?>
 
                 <fieldset id="<?php echo Data::plugin_constant; ?>-type">
-                    <legend><?php _e('Set cache type', 'wc-mfpc'); ?></legend>
+                    <legend>Cache settings</legend>
                     <dl>
                         <dt>
                             <label for="expire"><?php _e('Expiration time for posts', 'wc-mfpc'); ?></label>
@@ -735,47 +740,13 @@ class Admin
                                     'wc-mfpc'
                                 ); ?>
                         </dd>
-
-
                     </dl>
                 </fieldset>
 
-                <fieldset id="<?php echo Data::plugin_constant; ?>-debug">
-                    <legend><?php _e('Debug & in-depth settings', 'wc-mfpc'); ?></legend>
-                    <h3><?php _e('Notes', 'wc-mfpc'); ?></h3>
-                    <p><?php _e('The former method of debug logging flag has been removed. In case you need debug log from WC-MFPC please set both the <a href="http://codex.wordpress.org/WP_DEBUG">WP_DEBUG</a> and the WC_MFPC__DEBUG_MODE constants `true` in wp-config.php.<br /> This will enable NOTICE level messages apart from the WARNING level ones which are always displayed.', 'wc-mfpc'); ?></p>
-
-                    <dl>
-                        <dt>
-                            <label for="pingback_header"><?php _e('Enable X-Pingback header preservation', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="checkbox" name="pingback_header" id="pingback_header" value="1" <?php checked($wcMfpcConfig->isPingbackHeader(), true); ?> />
-                            <span class="description"><?php _e('Preserve X-Pingback URL in response header.', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="response_header"><?php _e("Add X-Cache-Engine header", 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="checkbox" name="response_header" id="response_header" value="1" <?php checked($wcMfpcConfig->isResponseHeader(), true); ?> />
-                            <span class="description"><?php _e('Add X-Cache-Engine HTTP header to HTTP responses.', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="generate_time"><?php _e("Add HTML debug comment", 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="checkbox" name="generate_time" id="generate_time" value="1" <?php checked($wcMfpcConfig->isGenerateTime(), true); ?> />
-                            <span class="description"><?php _e('Adds comment string including plugin name, cache engine and page generation time to every generated entry before closing <body> tag.', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                    </dl>
-
-                </fieldset>
+                <?php submit_button('Save Changes', 'primary', Data::button_save); ?>
 
                 <fieldset id="<?php echo Data::plugin_constant ?>-exceptions">
-                    <legend><?php _e('Set cache additions/excepions', 'wc-mfpc'); ?></legend>
+                    <legend>Exception settings</legend>
                     <dl>
                         <dt>
                             <label for="cache_loggedin"><?php _e('Enable cache for logged in users', 'wc-mfpc'); ?></label>
@@ -878,76 +849,41 @@ class Admin
                               archives, collection pages, singles, anything. If empty, this setting will be ignored.
                             </span>
                         </dd>
-
                     </dl>
                 </fieldset>
 
-                <fieldset id="<?php echo Data::plugin_constant ?>-servers">
-                    <legend><?php _e('Backend server settings', 'wc-mfpc'); ?></legend>
-                    <dl>
-                        <dt>
-                            <label for="hosts"><?php _e('Hosts', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="text" name="hosts" id="hosts" value="<?php echo $wcMfpcConfig->getHosts(); ?>"/>
-                            <span class="description">
-					                    List of backends, with the following syntax: <br />- in case of TCP based connections,
-                              list the servers as host1:port1,host2:port2,... . Do not add trailing , and always
-                              separate host and port with : .<br />- for a unix socket enter: unix://[socket_path]
-                            </span>
-                        </dd>
+                <?php submit_button('Save Changes', 'primary', Data::button_save); ?>
 
-                        <h3>Authentication ( only for SASL enabled Memcached)</h3>
-                        <?php if (! ini_get('memcached.use_sasl') && (! empty($wcMfpcConfig->getAuthuser()) || ! empty($wcMfpcConfig->getAuthpass()))) { ?>
-                            <div class="error">
-                              <p>
-                                <strong>
-                                  WARNING: you\'ve entered username and/or password for memcached authentication ( or
-                                  your browser\'s autocomplete did ) which will not work unless you enable memcached
-                                  sasl in the PHP settings: add `memcached.use_sasl=1` to php.ini', 'wc-mfpc'); ?>
-                                </strong>
-                              </p>
-                            </div>
-                        <?php } ?>
-                        <dt>
-                            <label for="authuser"><?php _e('Authentication: username', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="text" autocomplete="off" name="authuser" id="authuser" value="<?php echo $wcMfpcConfig->getAuthuser(); ?>"/>
-                            <span class="description">
-					                    <?php _e('Username for authentication with backends', 'wc-mfpc'); ?>
-                            </span>
-                        </dd>
+                <fieldset id="<?php echo Data::plugin_constant; ?>-debug">
+                  <legend>Header / Debug settings</legend>
+                  <dl>
+                    <dt>
+                      <label for="pingback_header"><?php _e('Enable X-Pingback header preservation', 'wc-mfpc'); ?></label>
+                    </dt>
+                    <dd>
+                      <input type="checkbox" name="pingback_header" id="pingback_header" value="1" <?php checked($wcMfpcConfig->isPingbackHeader(), true); ?> />
+                      <span class="description"><?php _e('Preserve X-Pingback URL in response header.', 'wc-mfpc'); ?></span>
+                    </dd>
 
-                        <dt>
-                            <label for="authpass"><?php _e('Authentication: password', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="password" autocomplete="off" name="authpass" id="authpass" value="<?php echo $wcMfpcConfig->getAuthpass(); ?>"/>
-                            <span class="description">
-					                    <?php _e('Password for authentication with for backends - WARNING, the password will be stored in an unsecure format!', 'wc-mfpc'); ?>
-                            </span>
-                        </dd>
+                    <dt>
+                      <label for="response_header"><?php _e("Add X-Cache-Engine header", 'wc-mfpc'); ?></label>
+                    </dt>
+                    <dd>
+                      <input type="checkbox" name="response_header" id="response_header" value="1" <?php checked($wcMfpcConfig->isResponseHeader(), true); ?> />
+                      <span class="description"><?php _e('Add X-Cache-Engine HTTP header to HTTP responses.', 'wc-mfpc'); ?></span>
+                    </dd>
 
-                        <dt>
-                            <label for="memcached_binary"><?php _e('Enable memcached binary mode', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="checkbox" name="memcached_binary" id="memcached_binary" value="1" <?php checked($wcMfpcConfig->isMemcachedBinary(), true); ?> />
-                            <span class="description">
-                              <?php _e('Some memcached proxies and implementations only support the ASCII protocol.', 'wc-mfpc'); ?>
-                            </span>
-                        </dd>
-
-                    </dl>
+                    <dt>
+                      <label for="generate_time"><?php _e("Add HTML debug comment", 'wc-mfpc'); ?></label>
+                    </dt>
+                    <dd>
+                      <input type="checkbox" name="generate_time" id="generate_time" value="1" <?php checked($wcMfpcConfig->isGenerateTime(), true); ?> />
+                      <span class="description"><?php _e('Adds comment string including plugin name, cache engine and page generation time to every generated entry before closing <body> tag.', 'wc-mfpc'); ?></span>
+                    </dd>
+                  </dl>
                 </fieldset>
 
-                <p class="clear">
-                    <input class="button-primary" type="submit" name="<?php echo Data::button_save ?>"
-                           id="<?php echo Data::button_save ?>"
-                           value="<?php _e('Save Changes', 'wc-mfpc') ?>"
-                    />
-                </p>
+                <?php submit_button('Save Changes', 'primary', Data::button_save); ?>
             </form>
         </div>
         <?php
@@ -1023,11 +959,11 @@ class Admin
     /**
      * Renders information for administrators if conditions are met.
      *
-     * @return void
+     * @return Admin
      */
     private function renderMessages()
     {
-        global $wcMfpcData;
+        global $wcMfpcData, $wcMfpcConfig;
 
         /*
          * if options were saved
@@ -1098,6 +1034,18 @@ class Admin
         }
 
         /*
+         * If SASL is not used but authentication info was provided.
+         */
+        if (! ini_get('memcached.use_sasl') && (! empty($wcMfpcConfig->getAuthuser()) || ! empty($wcMfpcConfig->getAuthpass()))) {
+            Alert::alert(
+              "WARNING: you've entered username and/or password for memcached authentication ( or your browser's" .
+              "autocomplete did ) which will not work unless you enable memcached sasl in the PHP settings:" .
+              "add `memcached.use_sasl=1` to php.ini",
+              LOG_ERR, true
+            );
+        }
+
+        /*
          * if options were saved, display saved message
          * ToDo: Remove if PreCache is deemed unnecessary.
          * /
@@ -1108,6 +1056,8 @@ class Admin
         }*/
 
         Alert::alert($this->getServersStatusAlert());
+
+        return $this;
     }
 
     /**
@@ -1154,10 +1104,11 @@ class Admin
     /**
      * Renders the Form with the action buttons for "Pre-Cache", "Clear-Cache" & "Reset-Options".
      *
-     * @return void
+     * @return Admin
      */
     private function renderActionButtons()
     {
+        /*
         global $wcMfpcData;
 
         $disabled = '';
@@ -1171,55 +1122,41 @@ class Admin
             $disabled = 'disabled="disabled"';
 
         }
-
+         */
         ?>
         <form method="post" action="#" id="<?php echo Data::plugin_constant ?>-commands" class="plugin-admin">
           <?php wp_nonce_field('wc-mfpc'); ?>
-          <table cellpadding="5" cellspacing="5">
-            <tr>
-              <td>
-                <input class="button button-secondary" type="submit" name="<?php echo Data::button_precache ?>"
-                       id="<?php echo Data::button_precache ?>"
-                       value="<?php _e('Pre-cache', 'wc-mfpc') ?>"
-                       <?php echo $disabled; ?>
-                />
-              </td>
-              <td style="padding-left: 1rem;">
-                      <span class="description">
-                        Start a background process that visits all permalinks of all blogs it can found thus forces
-                        WordPress to generate cached version of all the pages.<br />The plugin tries to visit links
-                        of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be
-                        prepared for these in your logfiles if you plan to pre-cache.
-                      </span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input class="button button-secondary" type="submit" name="<?php echo Data::button_flush; ?>"
-                       id="<?php echo Data::button_flush; ?>"
-                       value="<?php _e('Clear cache', 'wc-mfpc') ?>"
-                />
-              </td>
-              <td style="padding-left: 1rem;">
-                      <span class="description">
-                        Clear all entries in the storage, including the ones that were set by other processes.
-                      </span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input class="button button-warning" type="submit" name="<?php echo Data::button_delete; ?>"
-                       id="<?php echo Data::button_delete; ?>"
-                       value="<?php _e('Reset options', 'wc-mfpc') ?>"
-                />
-              </td>
-              <td style="padding-left: 1rem;">
-                <span class="description">Reset settings to defaults.</span>
-              </td>
-            </tr>
-          </table>
+          <p>
+            <!--input class="button button-secondary" type="submit" name="< ?php echo Data::button_precache ?>"
+                   id="< ?php echo Data::button_precache ?>"
+                   value="< ?php _e('Pre-cache', 'wc-mfpc') ?>"
+                   < ?php echo $disabled; ?>
+                   title="Start a background process that visits all permalinks of all blogs it can found thus forces
+              WordPress to generate cached version of all the pages.<br />The plugin tries to visit links
+              of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be
+              prepared for these in your logfiles if you plan to pre-cache."
+            />
+            <span class="description">
+              Start a background process that visits all permalinks of all blogs it can found thus forces
+              WordPress to generate cached version of all the pages.<br />The plugin tries to visit links
+              of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be
+              prepared for these in your logfiles if you plan to pre-cache.
+            </span-->
+            <input class="button button-primary" type="submit" name="<?php echo Data::button_flush; ?>"
+                   id="<?php echo Data::button_flush; ?>"
+                   value="<?php _e('Clear cache', 'wc-mfpc') ?>"
+                   title="Clear all entries in the storage, including the ones that were set by other processes."
+            />
+            <input class="button button-warning" type="submit" name="<?php echo Data::button_delete; ?>"
+                   id="<?php echo Data::button_delete; ?>"
+                   value="<?php _e('Reset options', 'wc-mfpc') ?>"
+                   title="Reset settings to defaults!"
+            />
+          </p>
         </form>
         <?php
+
+        return $this;
     }
 
 }
