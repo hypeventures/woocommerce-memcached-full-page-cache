@@ -81,7 +81,7 @@ class Admin
      */
     public function addMenu()
     {
-        global $wcMfpcData;
+        $view = new AdminView();
 
         add_submenu_page(
             'woocommerce',
@@ -89,7 +89,7 @@ class Admin
             Data::plugin_name,
             Data::capability,
             Data::plugin_settings_page,
-            [ &$this, 'plugin_admin_panel' ]
+            [ &$view, 'render' ]
         );
     }
 
@@ -473,7 +473,7 @@ class Admin
     }
 
     /**
-     * Returns the indicator if the global save was successful.
+     * Returns true, if the global save was successful.
      *
      * @return bool $status
      */
