@@ -80,13 +80,6 @@ class WcMfpc
             add_filter('redirect_canonical', 'wc_mfpc_redirect_callback', 10, 2);
 
         }
-
-        /*
-         * add precache coldrun action
-         * / ToDo: Remove if pre-caching is deemed unnecessary!
-        $preCache = new PreCache();
-        add_action(Data::precache_id, [ &$preCache, 'precache_coldrun' ]);
-        */
     }
 
     /**
