@@ -666,86 +666,97 @@ class Admin
                         'description' => 'Charset of HTML and XML (pages and feeds) data.',
                         'value'       => $wcMfpcConfig->getCharset(),
                     ]);
+                    woocommerce_wp_select([
+                        'id'          => 'invalidation_method',
+                        'label'       => 'Cache invalidation method',
+                        'class'       => 'short',
+                        'description' => 'Select cache invalidation method.',
+                        'options'     => $this->select_invalidation_method,
+                        'value'       => $wcMfpcConfig->getInvalidationMethod(),
+                    ]);
                     ?>
-                    <dl>
-                        <dt>
-                            <label for="invalidation_method"><?php _e('Cache invalidation method', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <select name="invalidation_method" id="invalidation_method">
-                                <?php $this->print_select_options($this->select_invalidation_method, $wcMfpcConfig->getInvalidationMethod()) ?>
-                            </select>
-                            <div class="description"><?php _e('Select cache invalidation method.', 'wc-mfpc'); ?>
-                                <ol>
-                                    <?php
-                                    $invalidation_method_description = [
-                                        'clears everything in storage, <strong>including values set by other applications</strong>',
-                                        'clear only the modified posts entry, everything else remains in cache',
-                                        'unvalidates post and the taxonomy related to the post',
-                                    ];
+                    <ol class="description-addon">
+                      <li>
+                        <b><?php echo $this->select_invalidation_method[ 0 ]; ?></b>
+                        - Clears everything in storage, <span class="error-msg">including values set by other applications.</span>
+                      </li>
+                      <li>
+                        <b><?php echo $this->select_invalidation_method[ 1 ]; ?></b>
+                        - Clear only the modified posts entry, everything else remains in cache.
+                      </li>
+                      <li>
+                        <b><?php echo $this->select_invalidation_method[ 2 ]; ?></b>
+                        - Unvalidates post and the taxonomy related to the Post.
+                      </li>
+                    </ol>
+                    <?php
+                    woocommerce_wp_checkbox([
+                        'id'          => 'comments_invalidate',
+                        'label'       => 'Invalidate on comment actions',
+                        'description' => 'Trigger cache invalidation when a comments is posted, edited, trashed.',
+                        'value'       => $wcMfpcConfig->isCommentsInvalidate() ? 'yes' : 'no',
+                    ]);
+                    woocommerce_wp_text_input([
+                        'id'          => 'prefix_data',
+                        'label'       => 'Data prefix',
+                        'class'       => 'short',
+                        'description' => 'Prefix for HTML content keys, can be used in nginx.',
+                        'value'       => $wcMfpcConfig->getPrefixData(),
+                    ]);
+                    ?>
+                    <div class="description-addon">
+                      <b>WARNING</b>: changing this will result the previous cache to becomes invalid!<br />
+                      If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value.
+                    </div>
+                    <?php
+                    woocommerce_wp_text_input([
+                        'id'          => 'prefix_meta',
+                        'label'       => 'Meta prefix',
+                        'class'       => 'short',
+                        'description' => 'Prefix for meta content keys, used only with PHP processing.',
+                        'value'       => $wcMfpcConfig->getPrefixMeta(),
+                    ]);
+                    ?>
+                    <div class="description-addon">
+                      <b>WARNING</b>: changing this will result the previous cache to becomes invalid!
+                    </div>
+                    <?php
+                    woocommerce_wp_text_input([
+                        'id'          => 'key',
+                        'label'       => 'Key scheme',
+                        'class'       => 'short',
+                        'description' => 'Key layout: <b>please use the guide below to change it.</b>',
+                        'value'       => $wcMfpcConfig->getKey(),
+                    ]);
+                    ?>
+                    <div class="description-addon">
+                      <b>WARNING</b>: changing this will result the previous cache to becomes invalid!<br />
+                      If you are caching with nginx, you should update your nginx configuration and reload nginx after
+                      changing this value.
+                    </div>
+                    <table class="description-addon" style="margin-top: -0.5rem;" cellspacing="0" cellpadding="0">
+                      <tr><th colspan="2" style="text-align: left;"><h3>Possible variables:</h3></th></tr>
+                      <?php
+                      foreach ($this->list_uri_vars as $uri => $desc) {
 
-                                    foreach ($this->select_invalidation_method AS $current_key => $current_invalidation_method) {
+                          echo '<tr><td><b>' . $uri . '</b>:</td><td><i>' . $desc . '</i></td></tr>';
 
-                                        printf('<li><em>%1$s</em> - %2$s</li>', $current_invalidation_method, $invalidation_method_description[ $current_key ]);
-
-                                    }
-
-                                    ?>
-                                </ol>
-                            </div>
-                        </dd>
-
-                        <dt>
-                            <label for="comments_invalidate"><?php _e('Invalidate on comment actions', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="checkbox" name="comments_invalidate" id="comments_invalidate" value="1" <?php checked($wcMfpcConfig->isCommentsInvalidate(), true); ?> />
-                            <span class="description"><?php _e('Trigger cache invalidation when a comments is posted, edited, trashed. ', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="prefix_data"><?php _e('Data prefix', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="text" name="prefix_data" id="prefix_data" value="<?php echo $wcMfpcConfig->getPrefixData(); ?>"/>
-                            <span
-                                class="description"><?php _e('Prefix for HTML content keys, can be used in nginx.<br /><strong>WARNING</strong>: changing this will result the previous cache to becomes invalid!<br />If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value.',
-                                    'wc-mfpc'
-                                ); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="prefix_meta"><?php _e('Meta prefix', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="text" name="prefix_meta" id="prefix_meta" value="<?php echo $wcMfpcConfig->getPrefixMeta(); ?>"/>
-                            <span class="description"><?php _e('Prefix for meta content keys, used only with PHP processing.<br /><strong>WARNING</strong>: changing this will result the previous cache to becomes invalid!', 'wc-mfpc'); ?></span>
-                        </dd>
-
-                        <dt>
-                            <label for="key"><?php _e('Key scheme', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="text" name="key" id="key" value="<?php echo $wcMfpcConfig->getKey(); ?>"/>
-                            <span class="description"><?php _e('Key layout; <strong>use the guide below to change it</strong>.<br /><strong>WARNING</strong>: changing this will result the previous cache to becomes invalid!<br />If you are caching with nginx, you should update your nginx configuration and reload nginx after changing this value.', 'wc-mfpc'); ?></span>
-                            <dl class="description"><?php
-                                foreach ($this->list_uri_vars as $uri => $desc) {
-                                    echo '<dt>' . $uri . '</dt><dd>' . $desc . '</dd>';
-                                }
-                                ?></dl>
-                        </dd>
-
-                        <dt>
-                            <label for="hashkey"><?php _e('SHA1 hash key', 'wc-mfpc'); ?></label>
-                        </dt>
-                        <dd>
-                            <input type="checkbox" name="hashkey" id="hashkey" value="1" <?php checked($wcMfpcConfig->isHashkey(), true); ?> />
-                            <span
-                                class="description"><?php _e('Occasionally URL can be too long to be used as key for the backend storage, especially with memcached. Turn on this feature to use SHA1 hash of the URL as key instead. Please be aware that you have to add ( or uncomment ) a line and a <strong>module</strong> in nginx if you want nginx to fetch the data directly; for details, please see the nginx example tab.',
-                                    'wc-mfpc'
-                                ); ?>
-                        </dd>
-                    </dl>
+                      }
+                      ?>
+                    </table>
+                    <?php
+                    woocommerce_wp_checkbox([
+                        'id'          => 'hashkey',
+                        'label'       => 'SHA1 hash key',
+                        'description' => '
+                            Occasionally URL can be too long to be used as key for the backend storage, especially with 
+                            memcached. Turn on this feature to use SHA1 hash of the URL as key instead. Please be aware 
+                            that you have to add ( or uncomment ) a line and a <strong>module</strong> in nginx if you 
+                            want nginx to fetch the data directly; for details, please see the nginx example tab.
+                        ',
+                        'value'       => $wcMfpcConfig->isHashkey() ? 'yes' : 'no',
+                    ]);
+                    ?>
                 </fieldset>
 
                 <?php submit_button('Save Changes', 'primary', Data::button_save); ?>
@@ -1147,8 +1158,8 @@ class Admin
               of taxonomy terms without the taxonomy name as well. This may generate 404 hits, please be
               prepared for these in your logfiles if you plan to pre-cache.
             </span-->
-            <input class="button button-primary" type="submit" name="<?php echo Data::button_flush; ?>"
-                   id="<?php echo Data::button_flush; ?>"
+            <input class="button button-secondary" type="submit" name="<?php echo Data::button_flush; ?>"
+                   id="<?php echo Data::button_flush; ?>" style="color: #eee; background: #333; width: 180px;"
                    value="<?php _e('Clear cache', 'wc-mfpc') ?>"
                    title="Clear all entries in the storage, including the ones that were set by other processes."
             />
