@@ -567,7 +567,7 @@ class Admin
 
                 <?php wp_nonce_field('wc-mfpc'); ?>
 
-                <fieldset id="<?php echo Data::plugin_constant ?>-servers" class="options_group">
+                <fieldset id="<?php echo Data::plugin_constant ?>-servers">
                   <legend>Connection Server settings</legend>
                   <?php
                   woocommerce_wp_text_input([
@@ -577,22 +577,20 @@ class Admin
                       'description' => '<b>host1:port1,host2:port2,...</b> - OR - <b>unix://[socket_path]</b>',
                       'value'       => $wcMfpcConfig->getHosts(),
                   ]);
-                  echo '<br><p><h3 class="error-msg">Authentication (only for SASL enabled Memcached):</h3>';
                   woocommerce_wp_text_input([
                       'id'          => 'authuser',
                       'label'       => 'Username',
                       'class'       => 'short',
-                      'description' => 'Username for authentication with Memcached',
+                      'description' => 'Username for authentication with Memcached <span class="error-msg">(Only if SASL is enabled)</span>',
                       'value'       => $wcMfpcConfig->getAuthuser(),
                   ]);
                   woocommerce_wp_text_input([
                       'id'          => 'authpass',
                       'label'       => 'Password',
                       'class'       => 'short',
-                      'description' => 'Username for authentication with Memcached',
+                      'description' => 'Username for authentication with Memcached <span class="error-msg">(Only if SASL is enabled)</span>',
                       'value'       => $wcMfpcConfig->getAuthpass(),
                   ]);
-                  echo '</p><br>';
                   woocommerce_wp_checkbox([
                       'id'          => 'memcached_binary',
                       'label'       => 'Enable binary mode',
