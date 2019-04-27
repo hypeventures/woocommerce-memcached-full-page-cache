@@ -49,6 +49,14 @@ class WcMfpc
         $this->backend = new Memcached($wcMfpcConfig->getConfig());
 
         /*
+         * if WP_CACHE is not set or false - abort here and safe your time.
+         */
+        if (! defined('WP_CACHE') || empty(WP_CACHE)) {
+
+            return;
+        }
+
+        /*
          * cache invalidation hooks
          */
         add_action('transition_post_status', [ &$this->backend, 'clear_ng' ], 10, 3);
@@ -77,11 +85,8 @@ class WcMfpc
         /*
          * add filter for catching canonical redirects
          */
-        if (WP_CACHE) {
+        add_filter('redirect_canonical', 'wc_mfpc_redirect_callback', 10, 2);
 
-            add_filter('redirect_canonical', 'wc_mfpc_redirect_callback', 10, 2);
-
-        }
     }
 
     /**
