@@ -35,7 +35,78 @@ class AdminView
     ];
 
     /**
-     * admin panel, the admin page displayed for plugin settings
+     * Renders the "Cache control" meta box on "Post", "Page" & "Product" edit screens.
+     *
+     * @param null|\WP_Post $post
+     *
+     * @return void
+     */
+    public static function renderMetaBox($post = null)
+    {
+        global $wcMfpc, $wcMfpcConfig;
+
+        $permalink     = $wcMfpcConfig->prefix_data . get_permalink($post);
+        $statusMessage = '<b class="error-msg">Not cached</b>';
+        $display       = 'none';
+
+        if (! empty($wcMfpc->backend->get($permalink))) {
+
+            $statusMessage = '<b class="ok-msg">Cached</b>';
+            $display       = 'block';
+
+        }
+        ?>
+        <p>
+          <b>Cache status:</b>
+          <span id="wc-mfpc-cache-status"><?php echo $statusMessage; ?></span>
+        </p>
+        <button id="wc-mfpc-button-clear" class="button button-secondary"
+                style="margin: 0 auto 1rem; width: 100%; display: <?php echo $display; ?>;"
+                data-post-id="<?php echo $post->ID; ?>"
+        >
+          <span class="error-msg">
+            Clear Cache for <?php echo ucfirst($post->post_type) . ': ' . $post->ID; ?>
+          </span>
+        </button>
+        <i>Provided by your DEV-Team</i>
+        <script>
+          (function ($) {
+            let status = $("#wc-mfpc-cache-status");
+            let button = $("#wc-mfpc-button-clear");
+            let id   = button.attr('data-post-id');
+
+            button.click(function (event) {
+              event.preventDefault();
+
+              $.ajax({
+                type: 'POST',
+                url: ajaxurl,
+                data: {
+                  action: '<?php echo Data::cache_control_action; ?>',
+                  nonce:  '<?php echo wp_create_nonce(Data::cache_control_action); ?>',
+                  postId: id
+                },
+                success: function (data, textStatus, XMLHttpRequest) {
+
+                  alert(data);
+                  button.hide();
+                  status.html('<b class="error-msg">Not cached</b>');
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  alert(errorThrown);
+                }
+              });
+            });
+          })(jQuery);
+        </script>
+        <?php
+    }
+
+    /**
+     * Renders the settings page with all of its parts as part of the WooCommerce admin menu tree.
+     *
+     * @return void
      */
     public function render()
     {
