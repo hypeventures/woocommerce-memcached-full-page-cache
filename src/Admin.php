@@ -48,7 +48,6 @@ class Admin
         if ($wcMfpcData->network) {
 
             add_filter("network_admin_plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
-            add_action('network_admin_menu', [ &$this, 'addMenu' ], 101);
 
         } else {
 
@@ -59,6 +58,8 @@ class Admin
 
         add_action('admin_init', [ &$this, 'plugin_admin_init' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueue_admin_css_js' ]);
+        add_action('add_meta_boxes', [ &$this, 'addMetaBox' ], 2);
+        add_action('wp_ajax_wc-mfpc-clear-ng', [ &$this, 'processAjax' ]);
 
         /*
          * Check WP_CACHE and add a warning if it's disabled.
@@ -72,6 +73,66 @@ class Admin
             );
 
         }
+    }
+
+    /**
+     * Adds the "Cache control" meta box to "Post", "Page" & "Producct" edit screens.
+     *
+     * @return void
+     */
+    public function addMetaBox()
+    {
+        $screens = [ 'post', 'page', 'product', ];
+
+        foreach ($screens as $screen) {
+
+            add_meta_box(
+                'wc-mfpc-metabox-' . $screen,
+                'Cache control',
+                [ AdminView::class, 'renderMetaBox' ],
+                $screen,
+                'side',
+                'high'
+            );
+
+        }
+    }
+
+    /**
+     * Processes the "Cache control" AJAX request. Clears cache of given postId if possible.
+     *
+     * @return void
+     */
+    public function processAjax()
+    {
+        global $wcMfpc;
+
+        header('Content-Type: application/json');
+
+        if (
+            ! empty($_POST[ 'action' ])
+            && $_POST[ 'action' ] === Data::cache_control_action
+            && ! empty($_POST[ 'nonce' ])
+            && wp_verify_nonce($_POST[ 'nonce' ], Data::cache_control_action)
+            && isset($_POST[ 'postId' ])
+        ) {
+
+            $result = $wcMfpc->backend->clear(intval($_POST[ 'postId' ]));
+
+
+        } else {
+
+            wp_die(json_encode('ERROR: Bad request!'), '', [ 'response' => 400 ]);
+
+        }
+
+        if (empty($result)) {
+
+            wp_die(json_encode('ERROR: Cached object not found!'), '', [ 'response' => 404 ]);
+
+        }
+
+        wp_die(json_encode('SUCCESS! Cache for ID ' . intval($_POST[ 'postId' ]) . ' was cleared.'));
     }
 
     /**
