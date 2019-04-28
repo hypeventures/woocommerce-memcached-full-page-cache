@@ -584,7 +584,7 @@ class Memcached
         $to_clear = apply_filters('wc_mfpc_to_clear_array', $to_clear, $post_id);
 
         /* run clear */
-        $this->clear_keys($to_clear);
+        return $this->clear_keys($to_clear);
     }
 
     /**
@@ -714,20 +714,27 @@ class Memcached
      * unset entries by key
      *
      * @param array $keys
+     *
+     * @return bool
      */
     public function clear_keys($keys)
     {
         $to_clear = apply_filters('wc_mfpc_clear_keys_array', $keys, $this->options);
-        $this->_clear($to_clear);
+
+        return $this->_clear($to_clear);
     }
 
     /**
      * Removes entry from Memcached or flushes Memcached storage
      *
      * @param mixed $keys String / array of string of keys to delete entries with
+     *
+     * @return bool
      */
     protected function _clear(&$keys)
     {
+        $result = false;
+
         /* make an array if only one string is present, easier processing */
         if (! is_array($keys)) {
 
@@ -748,11 +755,15 @@ class Memcached
 
             } else {
 
+                $result = true;
+
                 error_log(sprintf('entry deleted: %s', $key));
 
             }
 
         }
+
+        return $result;
     }
 
     /**
