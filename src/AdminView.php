@@ -49,6 +49,18 @@ class AdminView
 
         }
 
+        /*
+         * WooCommerce uses in the input functions the global $post->ID which is empty as we are not editing a Post
+         * object. In order to avoid any errors global $post->ID will be set to null. In the unlikely case that $post
+         * does indeed contain something, we store its contents a temp var and reset it to its original value once
+         * rendering is completed.
+         */
+        global $post;
+
+        $postOriginal = $post;
+        $post         = new \stdClass();
+        $post->ID     = null;
+
         ?>
         <div class="wrap">
           <h1>WooCommerce Memcached Full Page Cache</h1>
@@ -93,6 +105,8 @@ class AdminView
 
         </div>
         <?php
+
+        $post = $postOriginal;
     }
 
     /**
@@ -205,12 +219,12 @@ class AdminView
 
         $servers = $wcMfpc->backend->status();
 
+        $message = '<b>Connection status:</b></p><p>';
+
         if (empty ($servers) || ! is_array($servers)) {
 
-            return '';
+            return $message . '<b class="error-msg">WARNING: Could not establish ANY connection. Please review "Memcached Connection Settings"!</b>';
         }
-
-        $message = '<strong>Driver: ' . $wcMfpcConfig->getCacheType() . '</strong><br><strong>Backend status:</strong></p><p>';
 
         foreach ($servers as $server_string => $status) {
 
@@ -218,15 +232,15 @@ class AdminView
 
             if ($status == 0) {
 
-                $message .= '<span class="error-msg">Down</span><br />';
+                $message .= '<span class="error-msg">Down</span><br>';
 
             } elseif ($status == 1) {
 
-                $message .= '<span class="ok-msg">Up & running</span><br />';
+                $message .= '<span class="ok-msg">Up & running</span><br>';
 
             } else {
 
-                $message .= '<span class="error-msg">Unknown, please try re-saving settings!</span><br />';
+                $message .= '<span class="error-msg">Unknown, please try re-saving settings!</span><br>';
 
             }
 
