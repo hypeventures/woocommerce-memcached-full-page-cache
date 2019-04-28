@@ -215,10 +215,9 @@ class AdminView
      */
     private function getServersStatusAlert()
     {
-        global $wcMfpc, $wcMfpcConfig;
+        global $wcMfpc;
 
         $servers = $wcMfpc->backend->status();
-
         $message = '<b>Connection status:</b></p><p>';
 
         if (empty ($servers) || ! is_array($servers)) {
