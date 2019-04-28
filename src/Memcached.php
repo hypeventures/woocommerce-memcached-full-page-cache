@@ -233,7 +233,7 @@ class Memcached
         foreach ($this->options[ 'servers' ] as $server_id => $server) {
 
             /* only add servers that does not exists already  in connection pool */
-            if (! isset($server_id, $servers_alive)) {
+            if (! @array_key_exists($server_id, $servers_alive)) {
 
                 $this->connection->addServer($server[ 'host' ], $server[ 'port' ]);
                 error_log($server_id . ' added');
@@ -243,8 +243,7 @@ class Memcached
         }
 
         /* backend is now alive */
-        $this->alive = true;
-        $this->_status();
+        $this->alive = $this->_status();
     }
 
     /**
@@ -277,7 +276,7 @@ class Memcached
 
         }
 
-        return empty($this->status);
+        return ! empty($this->status);
     }
 
     /**
@@ -770,8 +769,6 @@ class Memcached
             $this->clear($post_id);
 
         }
-
-        unset ($comment, $post_id);
     }
 
     /**
