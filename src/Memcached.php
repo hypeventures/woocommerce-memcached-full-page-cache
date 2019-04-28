@@ -216,7 +216,7 @@ class Memcached
             $servers_alive = $this->connection->getServerList();
 
             /* create check array if backend servers are already connected */
-            if (! empty ($servers)) {
+            if (! empty ($servers_alive)) {
 
                 foreach ($servers_alive as $skey => $server) {
 
@@ -243,11 +243,23 @@ class Memcached
         }
 
         /* backend is now alive */
-        $this->alive = $this->_status();
+        $this->alive = true;
+        $this->_status();
     }
 
     /**
      * sets current backend alive status for Memcached servers
+     *
+     * @todo This is complete BS. It proofs nothing! The key will just be set at the first available server which is
+     *       most likely NOT corresponding with the server which is in the foreach() loop.
+     *       The connection status of each server can only be determined if while saving the following is done:
+     *        - add a single server
+     *        - save a key which is specific for this server like md5(host:port)
+     *        - empty server list
+     *        - rinse and repeat steps above for each server
+     *       THEN we can check each individual server here via \Memcached->getServerByKey(md5(host:port))
+     *
+     * @link https://www.php.net/manual/de/memcached.getserverbykey.php
      */
     protected function _status()
     {
@@ -263,7 +275,6 @@ class Memcached
 
             /*
              * reset server status to offline
-             * ToDo: Check if it would be better to unset($this->status[ $server_id ];
              */
             $this->status[ $server_id ] = 0;
 
@@ -275,8 +286,6 @@ class Memcached
             }
 
         }
-
-        return ! empty($this->status);
     }
 
     /**
