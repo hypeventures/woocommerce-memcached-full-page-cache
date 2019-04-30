@@ -58,9 +58,6 @@ class Admin
 
         add_action('admin_init', [ &$this, 'plugin_admin_init' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueue_admin_css_js' ]);
-        add_action('add_meta_boxes', [ &$this, 'addCacheControlMetaBox' ], 2);
-        add_action('product_cat_edit_form_fields', [ &$this, 'showCategoryBox' ]);
-        add_action('wp_ajax_wc-mfpc-clear-ng', [ &$this, 'processCacheControlAjax' ]);
 
         /*
          * Check WP_CACHE and add a warning if it's disabled.
@@ -73,7 +70,12 @@ class Admin
                 LOG_WARNING, true
             );
 
+            return;
         }
+
+        add_action('add_meta_boxes', [ &$this, 'addCacheControlMetaBox' ], 2);
+        add_action('product_cat_edit_form_fields', [ &$this, 'showCategoryBox' ]);
+        add_action('wp_ajax_wc-mfpc-clear-ng', [ &$this, 'processCacheControlAjax' ]);
     }
 
     /**
