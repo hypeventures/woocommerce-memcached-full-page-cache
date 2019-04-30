@@ -601,9 +601,6 @@ class AdminView
             'description' => 'Enable to never cache singulars.',
             'value'       => $wcMfpcConfig->isNocacheSingle() ? 'yes' : 'no',
         ]);
-        ?>
-        <div class="description-addon"><b>Pattern:</b> <i><?php echo $wcMfpcConfig->getNocacheWoocommerceUrl(); ?></i></div>
-        <?php
         woocommerce_wp_text_input([
             'id'          => 'nocache_cookies',
             'label'       => 'Exclude based on cookies',
@@ -624,6 +621,13 @@ class AdminView
             'description' => '<b>WARINING: Use with caution!</b> Use multiple RegEx patterns like e.g. <em>pattern1|pattern2|etc</em>',
             'value'       => $wcMfpcConfig->getNocacheUrl(),
         ]);
+        ?>
+        <div class="error-msg" style="padding-bottom: 1rem;">
+          <h3>INFO:</h3>
+          Dynamic WooCommerce pages are ignored by default via RegEx on the URL. <b>Pattern:</b> <i><?php echo $wcMfpcConfig->getNocacheWoocommerceUrl(); ?></i><br>
+          <small>(This will be updated to your used urls dynamically after saving the config.)</small>
+        </div>
+        <?php
     }
 
     /**
