@@ -623,11 +623,11 @@ class Config
     }
 
     /**
-     * @return bool
+     * @return string
      */
-    public function isNocacheWoocommerce()
+    public function getNocacheWoocommerceUrl()
     {
-        return $this->nocache_woocommerce;
+        return $this->nocache_woocommerce_url;
     }
 
     /**
@@ -639,14 +639,14 @@ class Config
 
         if (empty($nocache_woocommerce_url) && class_exists('WooCommerce')) {
 
-                $home                  = home_url();
-                $page_wc_checkout      = str_replace($home, '', wc_get_page_permalink('checkout'));
-                $page_wc_myaccount     = str_replace($home, '', wc_get_page_permalink('myaccount'));
-                $page_wc_cart          = str_replace($home, '', wc_get_page_permalink('cart'));
-                $wcapi                 = '^/wc-api|^/\?wc-api=';
-                $noCacheWooCommerceUrl = '^' . $page_wc_checkout . '|^' . $page_wc_myaccount . '|^' . $page_wc_cart . '|' . $wcapi;
+            $home                  = home_url();
+            $page_wc_checkout      = str_replace($home, '', wc_get_page_permalink('checkout'));
+            $page_wc_myaccount     = str_replace($home, '', wc_get_page_permalink('myaccount'));
+            $page_wc_cart          = str_replace($home, '', wc_get_page_permalink('cart'));
+            $wcapi                 = '^/wc-api|^/\?wc-api=';
+            $noCacheWooCommerceUrl = '^' . $page_wc_checkout . '|^' . $page_wc_myaccount . '|^' . $page_wc_cart . '|' . $wcapi;
 
-                $this->nocache_woocommerce_url = $noCacheWooCommerceUrl;
+            $this->nocache_woocommerce_url = $noCacheWooCommerceUrl;
 
         }
     }
