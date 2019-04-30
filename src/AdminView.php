@@ -601,12 +601,6 @@ class AdminView
             'description' => 'Enable to never cache singulars.',
             'value'       => $wcMfpcConfig->isNocacheSingle() ? 'yes' : 'no',
         ]);
-        woocommerce_wp_checkbox([
-            'id'          => 'nocache_woocommerce',
-            'label'       => 'Exclude dynamic WooCommerce pages',
-            'description' => 'Enable to exclude every dynamic WooCommerce page.',
-            'value'       => $wcMfpcConfig->isNocacheWoocommerce() ? 'yes' : 'no',
-        ]);
         ?>
         <div class="description-addon"><b>Pattern:</b> <i><?php echo $wcMfpcConfig->getNocacheWoocommerceUrl(); ?></i></div>
         <?php
