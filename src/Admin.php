@@ -620,47 +620,6 @@ class Admin
     }
 
     /**
-     * Select options field processor
-     *
-     * @param array $elements  Array to build <option> values of
-     * @param mixed $current   The current active element
-     * @param bool  $valid
-     * @param bool  $print     Is true, the options will be printed, otherwise the string will be returned
-     *
-     * @return mixed $opt      Prints or returns the options string
-     */
-    protected function print_select_options($elements, $current, $valid = false, $print = true)
-    {
-        $opt = '';
-
-        foreach ($elements as $value => $name) {
-
-            $opt .= '<option value="' . $value . '" ';
-            $opt .= selected($value, $current);
-
-            // ugly tree level valid check to prevent array warning messages
-            if (is_array($valid) && isset ($valid [ $value ]) && $valid [ $value ] == false) {
-
-                $opt .= ' disabled="disabled"';
-
-            }
-
-            $opt .= '>';
-            $opt .= $name;
-            $opt .= "</option>\n";
-        }
-
-        if ($print) {
-
-            echo $opt;
-
-        } else {
-
-            return $opt;
-        }
-    }
-
-    /**
      * callback function to add settings link to plugins page
      *
      * @param array $links Current links to add ours to
