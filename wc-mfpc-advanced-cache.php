@@ -70,7 +70,7 @@ if (! empty($wcMfpcConfig[ 'nocache_woocommerce' ]) && isset($wcMfpcConfig[ 'noc
 }
 
 /* no cache for uri with query strings, things usually go bad that way */
-if (! empty($wcMfpcConfig[ 'nocache_dyn' ]) && stripos($wc_mfpc_uri, '?') !== false) {
+if (stripos($wc_mfpc_uri, '?') !== false) {
 
     error_log('Dynamic url cache is disabled ( url with "?" ), skipping');
 
