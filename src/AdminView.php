@@ -35,56 +35,68 @@ class AdminView
     ];
 
     /**
-     * Renders the "Cache control" meta box on "Post", "Page" & "Product" edit screens.
+     * Renders the "Cache control" box.
      *
-     * @param null|\WP_Post $post
+     * @param string $status     Cache status string.
+     * @param string $display    CSS display property value which determines whether the Button is displayed or not.
+     * @param string $type       Type of the item to delete.
+     * @param string $identifier Identifier of the Item to delete like Name or ID.
+     * @param string $permalink  The URL of the item to delete.
      *
      * @return void
      */
-    public static function renderMetaBox($post = null)
+    public static function renderCacheControl($status = '', $display = '', $type = '', $identifier = '', $permalink = '')
     {
-        global $wcMfpc, $wcMfpcConfig;
-
-        $permalink     = $wcMfpcConfig->prefix_data . get_permalink($post);
-        $statusMessage = '<b class="error-msg">Not cached</b>';
-        $display       = 'none';
-
-        if (! empty($wcMfpc->backend->get($permalink))) {
-
-            $statusMessage = '<b class="ok-msg">Cached</b>';
-            $display       = 'block';
-
-        }
         ?>
-        <p>
-          <b>Cache status:</b>
-          <span id="wc-mfpc-cache-status"><?php echo $statusMessage; ?></span>
-        </p>
-        <button id="wc-mfpc-button-clear" class="button button-secondary"
-                style="margin: 0 auto 1rem; width: 100%; display: <?php echo $display; ?>;"
-                data-post-id="<?php echo $post->ID; ?>"
-        >
-          <span class="error-msg">
-            Clear Cache for <?php echo ucfirst($post->post_type) . ': ' . $post->ID; ?>
-          </span>
-        </button>
-        <i>Provided by your DEV-Team</i>
+        <div style="background: #fff; padding: 1px 1rem; max-width: 250px; box-sizing: border-box;">
+          <p>
+            <b>Cache status:</b>
+            <span id="wc-mfpc-cache-status"><?php echo $status; ?></span>
+          </p>
+          <button id="wc-mfpc-button-clear" class="button button-secondary"
+                  style="margin: 0 auto 1rem; width: 100%; height: auto; white-space: normal; display: <?php echo $display; ?>;"
+                  data-action="<?php echo Data::cache_control_action; ?>"
+                  data-nonce="<?php echo wp_create_nonce(Data::cache_control_action); ?>"
+                  data-permalink="<?php echo $permalink; ?>"
+          >
+            <span class="error-msg">
+              Clear Cache for <?php echo ucfirst($type) . ': ' . $identifier; ?>
+            </span>
+          </button>
+          <p>Link to Item: <a href="<?php echo $permalink; ?>" target="_blank">Permalink</a></p>
+          <i style="font-size: smaller">Provided by your DEV-Team</i>
+        </div>
+        <?php
+
+        add_action('admin_print_footer_scripts', [ self::class, 'printCacheControlScripts' ]);
+    }
+
+    /**
+     * Prints the Script which creates the AJAX for "Cache Control".
+     *
+     * @return void
+     */
+    public static function printCacheControlScripts()
+    {
+        ?>
         <script>
           (function ($) {
-            let status = $("#wc-mfpc-cache-status");
-            let button = $("#wc-mfpc-button-clear");
-            let id   = button.attr('data-post-id');
+            let status    = $("#wc-mfpc-cache-status");
+            let button    = $("#wc-mfpc-button-clear");
+            let action    = button.attr('data-action');
+            let nonce     = button.attr('data-nonce');
+            let permalink = button.attr('data-permalink');
 
-            button.click(function (event) {
+            button.on('click', function (event) {
               event.preventDefault();
 
               $.ajax({
                 type: 'POST',
                 url: ajaxurl,
                 data: {
-                  action: '<?php echo Data::cache_control_action; ?>',
-                  nonce:  '<?php echo wp_create_nonce(Data::cache_control_action); ?>',
-                  postId: id
+                  action: action,
+                  nonce:  nonce,
+                  permalink: permalink,
                 },
                 success: function (data, textStatus, XMLHttpRequest) {
 
@@ -123,7 +135,7 @@ class AdminView
         /*
          * WooCommerce uses in the input functions the global $post->ID which is empty as we are not editing a Post
          * object. In order to avoid any errors global $post->ID will be set to null. In the unlikely case that $post
-         * does indeed contain something, we store its contents a temp var and reset it to its original value once
+         * does indeed contain something, we store its contents in a temp var and reset it to its original value once
          * rendering is completed.
          */
         global $post;
