@@ -32,7 +32,7 @@ class Data
     const plugin_settings_page   = 'wc-mfpc-settings';
     const admin_css_handle       = 'wc-mfpc-admin-css';
     const shell_possibilities    = [ 'shell_exec', 'exec', 'system', 'passthru' ];
-    const cache_control_action   = 'wc-mfpc-clear-ng';
+    const cache_control_action   = 'wc-mfpc-clear-keys';
 
     /**
      * @var string
