@@ -25,8 +25,7 @@ if ($_SERVER[ "REQUEST_METHOD" ] === 'POST') {
 }
 
 /*
- * Try to avoid enabling the cache if sessions are managed
- * with request parameters and a session is active
+ * Try to avoid enabling the cache if sessions are managed with request parameters and a session is active.
  */
 if (defined('SID') && SID != '') {
 
@@ -45,25 +44,6 @@ if (! isset($wcMfpcConfig)) {
 
 /* request uri */
 $wc_mfpc_uri = $_SERVER[ 'REQUEST_URI' ];
-
-/*
- * no cache for robots.txt
- * ToDo: WTF??? This should most likely be removed as requests for files will NOT run through wordpress.
- */
-if (stripos($wc_mfpc_uri, 'robots.txt')) {
-
-    error_log('Skippings robots.txt hit');
-
-    return false;
-}
-
-/* multisite files can be too large for memcached */
-if (function_exists('is_multisite') && stripos($wc_mfpc_uri, '/files/') && is_multisite()) {
-
-    error_log('Skippings multisite /files/ hit');
-
-    return false;
-}
 
 if (! empty ($wcMfpcConfig[ $_SERVER[ 'HTTP_HOST' ] ])) {
 
