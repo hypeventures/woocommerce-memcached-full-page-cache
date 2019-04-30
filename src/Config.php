@@ -129,11 +129,6 @@ class Config
     public $nocache_cookies         = '';
 
     /**
-     * @var bool
-     */
-    public $nocache_woocommerce     = true;
-
-    /**
      * @var string
      */
     public $nocache_woocommerce_url = '^/checkout/|^/my-account/|^/cart/|^/wc-api|^/\\?wc-api=';
@@ -633,22 +628,6 @@ class Config
     public function isNocacheWoocommerce()
     {
         return $this->nocache_woocommerce;
-    }
-
-    /**
-     * @param bool $nocache_woocommerce
-     */
-    public function setNocacheWoocommerce(bool $nocache_woocommerce)
-    {
-        $this->nocache_woocommerce = $nocache_woocommerce;
-    }
-
-    /**
-     * @return string
-     */
-    public function getNocacheWoocommerceUrl()
-    {
-        return $this->nocache_woocommerce_url;
     }
 
     /**
