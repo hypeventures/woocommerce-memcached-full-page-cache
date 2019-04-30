@@ -81,7 +81,7 @@ class Admin
         add_action('wp_ajax_' . Data::cache_control_action, [ &$this, 'processCacheControlAjax' ]);
 
         /*
-         * Add hooks necessary for Bulk deletion of cache.
+         * Add hooks necessary for Bulk deletion of cache entries.
          */
         add_filter('bulk_actions-edit-product', [ &$this, 'addBulkAction' ]);
         add_filter('bulk_actions-edit-post', [ &$this, 'addBulkAction' ]);
