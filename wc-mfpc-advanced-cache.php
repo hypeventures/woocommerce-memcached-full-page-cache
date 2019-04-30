@@ -56,7 +56,7 @@ $wcMfpcConfig = $wcMfpcConfig[ $_SERVER[ 'HTTP_HOST' ] ];
 error_log("using {$_SERVER[ 'HTTP_HOST' ]} level config");
 
 /* no cache for WooCommerce URL patterns */
-if (! empty($wcMfpcConfig[ 'nocache_woocommerce' ]) && isset($wcMfpcConfig[ 'nocache_woocommerce_url' ])) {
+if (isset($wcMfpcConfig[ 'nocache_woocommerce_url' ])) {
 
     $pattern = sprintf('#%s#', $wcMfpcConfig[ 'nocache_woocommerce_url' ]);
 
