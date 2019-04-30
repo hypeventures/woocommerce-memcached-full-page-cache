@@ -45,18 +45,15 @@ if (! isset($wcMfpcConfig)) {
 /* request uri */
 $wc_mfpc_uri = $_SERVER[ 'REQUEST_URI' ];
 
-if (! empty ($wcMfpcConfig[ $_SERVER[ 'HTTP_HOST' ] ])) {
-
-    $wcMfpcConfig = $wcMfpcConfig[ $_SERVER[ 'HTTP_HOST' ] ];
-    error_log("using {$_SERVER[ 'HTTP_HOST' ]} level config");
-
-/* plugin config not found :( */
-} else {
+if (empty($wcMfpcConfig[ $_SERVER[ 'HTTP_HOST' ] ])) {
 
     error_log("no usable config found");
 
     return false;
 }
+
+$wcMfpcConfig = $wcMfpcConfig[ $_SERVER[ 'HTTP_HOST' ] ];
+error_log("using {$_SERVER[ 'HTTP_HOST' ]} level config");
 
 /* no cache for WooCommerce URL patterns */
 if (! empty($wcMfpcConfig[ 'nocache_woocommerce' ]) && isset($wcMfpcConfig[ 'nocache_woocommerce_url' ])) {
