@@ -73,9 +73,103 @@ class Admin
             return;
         }
 
+        /*
+         * Add hooks necessary for the "Cache control" box.
+         */
         add_action('add_meta_boxes', [ &$this, 'addCacheControlMetaBox' ], 2);
         add_action('product_cat_edit_form_fields', [ &$this, 'showCategoryBox' ]);
-        add_action('wp_ajax_wc-mfpc-clear-ng', [ &$this, 'processCacheControlAjax' ]);
+        add_action('wp_ajax_' . Data::cache_control_action, [ &$this, 'processCacheControlAjax' ]);
+
+        /*
+         * Add hooks necessary for Bulk deletion of cache.
+         */
+        add_filter('bulk_actions-edit-product', [ &$this, 'addBulkAction' ]);
+        add_filter('bulk_actions-edit-post', [ &$this, 'addBulkAction' ]);
+        add_filter('bulk_actions-edit-page', [ &$this, 'addBulkAction' ]);
+        add_filter('bulk_actions-edit-product_cat', [ &$this, 'addBulkAction' ]);
+        add_filter('handle_bulk_actions-edit-product', [ &$this, 'handleBulkAction' ], 10, 3);
+        add_filter('handle_bulk_actions-edit-post', [ &$this, 'handleBulkAction' ], 10, 3);
+        add_filter('handle_bulk_actions-edit-page', [ &$this, 'handleBulkAction' ], 10, 3);
+        add_filter('handle_bulk_actions-edit-product_cat', [ &$this, 'handleBulkAction' ], 10, 3);
+    }
+
+    /**
+     * Adds "Clear cache" action to the bulk edit dropdowns.
+     *
+     * @param array $actions
+     *
+     * @return array
+     */
+    public function addBulkAction($actions = [])
+    {
+        if (get_current_screen()->id !== 'edit-product_cat') {
+
+            $actions[ 'clearCache' ] = 'Clear cache';
+
+        } else {
+
+            $actions[ 'clearCategoryCache' ] = 'Clear cache';
+
+        }
+
+        if (isset($_GET[ 'cache_cleared' ]) && ! empty($_GET[ 'processed' ])) {
+
+            Alert::alert('Cache cleared for: <b>' . urldecode($_GET[ 'processed' ]) . '</b>');
+
+        }
+
+        return $actions;
+    }
+
+    /**
+     * Processes the Bulk Clear Cache actions.
+     *
+     * @param array  $redirectTo
+     * @param string $action
+     * @param array  $ids
+     *
+     * @return array|string
+     */
+    public function handleBulkAction($redirectTo = [], $action = '', $ids = [])
+    {
+        if ($action !== 'clearCache' && $action !== 'clearCategoryCache') {
+
+            return $redirectTo;
+        }
+
+        global $wcMfpc;
+
+        $processed = [];
+
+        foreach ($ids as $id) {
+
+            if ($action === 'clearCache') {
+
+                $result = $wcMfpc->backend->clear($id);
+                $item   = $id;
+
+            } else {
+
+                $term   = get_term($id);
+                $result = $wcMfpc->backend->clear_keys([ get_category_link($term->term_taxonomy_id) => true, ]);
+                $item   = $term->name;
+
+            }
+
+            if ($result) {
+
+                $processed[] = $item;
+
+            }
+
+        }
+
+        $redirectTo = add_query_arg([
+            'cache_cleared' => 1,
+            'processed'     => implode(',', $processed),
+        ], $redirectTo );
+
+        return $redirectTo;
     }
 
     /**
@@ -178,7 +272,6 @@ class Admin
         ) {
 
             $link   = esc_url($_POST[ 'permalink' ]);
-            error_log($link);
             $result = $wcMfpc->backend->clear_keys([ $link => true ]);
 
         } else {
