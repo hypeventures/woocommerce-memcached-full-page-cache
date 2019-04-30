@@ -145,6 +145,8 @@ class AdminView
         $post->ID     = null;
 
         ?>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/solid.css" integrity="sha384-QokYePQSOwpBDuhlHOsX0ymF6R/vLk/UQVz3WHa6wygxI5oGTmDTv8wahFOSspdm" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css" integrity="sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq" crossorigin="anonymous">
         <div class="wrap">
           <h1>WooCommerce Memcached Full Page Cache</h1>
 
@@ -159,28 +161,28 @@ class AdminView
               <?php $this->renderMemcachedConnectionSettings(); ?>
             </fieldset>
 
-            <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
+            <?php $this->renderSubmit(); ?>
 
             <fieldset id="<?php echo Data::plugin_constant; ?>-type">
                 <legend>Cache settings</legend>
                 <?php $this->renderCacheSettings(); ?>
             </fieldset>
 
-            <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
+            <?php $this->renderSubmit(); ?>
 
             <fieldset id="<?php echo Data::plugin_constant ?>-exceptions">
                 <legend>Exception settings</legend>
                 <?php $this->renderExceptionSettings(); ?>
             </fieldset>
 
-            <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
+            <?php $this->renderSubmit(); ?>
 
             <fieldset id="<?php echo Data::plugin_constant; ?>-debug">
               <legend>Header / Debug settings</legend>
                 <?php $this->renderDebugSettings(); ?>
             </fieldset>
 
-            <?php submit_button('&#x1F5AB; Save Changes', 'primary', Data::button_save); ?>
+            <?php $this->renderSubmit(); ?>
 
           </form>
 
@@ -340,12 +342,6 @@ class AdminView
      */
     private function renderActionButtons($button = 'flush')
     {
-        if (empty($button) || ! in_array($button, [ 'flush', 'reset' ])) {
-
-            echo '<p class="error-msg"><b>NO or UNKNOWN action button defined to render.</b></p>';
-
-            return $this;
-        }
         ?>
         <form method="post" action="#" id="<?php echo Data::plugin_constant ?>-commands" class="plugin-admin">
           <p>
@@ -354,16 +350,12 @@ class AdminView
 
             if ($button === 'flush') {
 
-                submit_button('&#x1f5d1; Flush Cache', 'secondary', Data::button_flush, false, [
-                    'style' => 'color: #f33; font-weight: normal; margin: 1rem 1rem 1rem 0;',
-                ]);
+                $this->renderSubmit('Flush Cache', 'secondary', Data::button_flush, false, 'trash-alt', 'color: #f33; margin: 1rem 1rem 1rem 0;');
                 echo '<span class="error-msg">Flushes Memcached. All entries in the cache are deleted, <b>including the ones that were set by other processes.</b></span>';
 
             } else {
 
-                submit_button('&#x21bb; Reset Settings', 'secondary', Data::button_delete, false, [
-                    'style' => 'color: #f33; font-weight: normal; margin: 1rem 1rem 1rem 0;',
-                ]);
+                $this->renderSubmit('Reset Settings', 'secondary', Data::button_delete, false, 'undo-alt', 'color: #f33; margin: 1rem 1rem 1rem 0;');
                 echo '<span class="error-msg"><b>Resets ALL settings on this page to DEFAULT.</b></span>';
 
             }
@@ -673,6 +665,42 @@ class AdminView
             'description' => 'Adds comment string including plugin name, cache engine and page generation time to every generated entry before closing <b>body</b> tag.',
             'value'       => $wcMfpcConfig->isGenerateTime() ? 'yes' : 'no',
         ]);
+    }
+
+    /**
+     * Renders the custom buttons on the settings page.
+     *
+     * @param string $text
+     * @param string $class
+     * @param string $name
+     * @param bool   $wrap
+     * @param string $icon
+     * @param string $style
+     *
+     * @return void
+     */
+    private function renderSubmit($text = 'Save changes', $class = 'primary', $name = Data::button_save, $wrap = true, $icon = 'save', $style = '')
+    {
+        if ($wrap) {
+
+            echo '<p class="submit">';
+
+        }
+
+        ?>
+        <button type="submit" class="button button-<?php echo $class; ?>"
+                name="<?php echo $name; ?>" style="<?php echo $style; ?>"
+        >
+          <i class="fa fa-<?php echo $icon; ?>"></i>
+          <?php echo $text; ?>
+        </button>
+        <?php
+
+        if ($wrap) {
+
+            echo '</p>';
+
+        }
     }
 
 }
