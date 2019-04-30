@@ -70,7 +70,14 @@ class Memcached
         $rhost   = isset ($_SERVER[ 'HTTP_HOST' ]) ? $_SERVER[ 'HTTP_HOST' ] : '';
         $scookie = isset ($_COOKIE[ 'PHPSESSID' ]) ? $_COOKIE[ 'PHPSESSID' ] : '';
 
-        if (isset($_SERVER[ 'HTTP_X_FORWARDED_PROTO' ]) && $_SERVER[ 'HTTP_X_FORWARDED_PROTO' ] === 'https') {
+        /*
+         * Handle typical LoadBalancer scenarios like on AWS.
+         */
+        if (
+            empty($_SERVER[ 'HTTPS' ])
+            && isset($_SERVER[ 'HTTP_X_FORWARDED_PROTO' ])
+            && $_SERVER[ 'HTTP_X_FORWARDED_PROTO' ] === 'https'
+        ) {
 
             $_SERVER[ 'HTTPS' ] = 'on';
 
