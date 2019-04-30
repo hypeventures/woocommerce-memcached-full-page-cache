@@ -35,9 +35,9 @@ if (defined('SID') && SID != '') {
 }
 
 /* check for config */
-if (! isset($wcMfpcConfig)) {
+if (! isset($wc_mfpc_config_array)) {
 
-    error_log('$wcMfpcConfig variable not found');
+    error_log('$wc_mfpc_config_array variable not found');
 
     return false;
 }
@@ -45,20 +45,20 @@ if (! isset($wcMfpcConfig)) {
 /* request uri */
 $wc_mfpc_uri = $_SERVER[ 'REQUEST_URI' ];
 
-if (empty($wcMfpcConfig[ $_SERVER[ 'HTTP_HOST' ] ])) {
+if (empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
 
     error_log("no usable config found");
 
     return false;
 }
 
-$wcMfpcConfig = $wcMfpcConfig[ $_SERVER[ 'HTTP_HOST' ] ];
+$wc_mfpc_config_array = $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ];
 error_log("using {$_SERVER[ 'HTTP_HOST' ]} level config");
 
 /* no cache for WooCommerce URL patterns */
-if (isset($wcMfpcConfig[ 'nocache_woocommerce_url' ])) {
+if (isset($wc_mfpc_config_array[ 'nocache_woocommerce_url' ])) {
 
-    $pattern = sprintf('#%s#', $wcMfpcConfig[ 'nocache_woocommerce_url' ]);
+    $pattern = sprintf('#%s#', $wc_mfpc_config_array[ 'nocache_woocommerce_url' ]);
 
     if (preg_match($pattern, $wc_mfpc_uri)) {
 
@@ -78,9 +78,9 @@ if (stripos($wc_mfpc_uri, '?') !== false) {
 }
 
 /* check for cookies that will make us not cache the content, like logged in WordPress cookie */
-if (! empty($wcMfpcConfig[ 'nocache_cookies' ])) {
+if (! empty($wc_mfpc_config_array[ 'nocache_cookies' ])) {
 
-    $nocache_cookies = array_map('trim', explode(",", $wcMfpcConfig[ 'nocache_cookies' ]));
+    $nocache_cookies = array_map('trim', explode(",", $wc_mfpc_config_array[ 'nocache_cookies' ]));
 
     if (! empty($nocache_cookies)) {
 
@@ -105,9 +105,9 @@ if (! empty($wcMfpcConfig[ 'nocache_cookies' ])) {
 }
 
 /* no cache for excluded URL patterns */
-if (! empty($wcMfpcConfig[ 'nocache_url' ])) {
+if (! empty($wc_mfpc_config_array[ 'nocache_url' ])) {
 
-    $pattern = sprintf('#%s#', trim($wcMfpcConfig[ 'nocache_url' ]));
+    $pattern = sprintf('#%s#', trim($wc_mfpc_config_array[ 'nocache_url' ]));
 
     if (preg_match($pattern, $wc_mfpc_uri)) {
 
@@ -123,7 +123,7 @@ $wc_mfpc_redirect = null;
 
 /* fires up the backend storage array with current config */
 include_once __DIR__ . '/src/Memcached.php';
-$wc_mfpc_backend = new \InvincibleBrands\WcMfpc\Memcached($wcMfpcConfig);
+$wc_mfpc_backend = new \InvincibleBrands\WcMfpc\Memcached($wc_mfpc_config_array);
 
 /* backend connection failed, no caching :( */
 if (empty($wc_mfpc_backend->status())) {
@@ -136,7 +136,7 @@ if (empty($wc_mfpc_backend->status())) {
 /*
  * no cache for for logged in users unless it's set identifier cookies are listed in backend as var for easier usage
  */
-if (empty($wcMfpcConfig[ 'cache_loggedin' ])) {
+if (empty($wc_mfpc_config_array[ 'cache_loggedin' ])) {
 
     foreach ($_COOKIE as $n => $v) {
 
@@ -164,7 +164,7 @@ if (empty($wcMfpcConfig[ 'cache_loggedin' ])) {
 $wc_mfpc_gentime = 0;
 
 /* try to get data & meta keys for current page */
-$wc_mfpc_keys   = [ 'meta' => $wcMfpcConfig[ 'prefix_meta' ], 'data' => $wcMfpcConfig[ 'prefix_data' ] ];
+$wc_mfpc_keys   = [ 'meta' => $wc_mfpc_config_array[ 'prefix_meta' ], 'data' => $wc_mfpc_config_array[ 'prefix_data' ] ];
 $wc_mfpc_values = [];
 error_log("Trying to fetch entries");
 
@@ -232,7 +232,7 @@ if (isset($_SERVER[ 'HTTP_IF_MODIFIED_SINCE' ]) && ! empty($wc_mfpc_values[ 'met
 }
 
 /*
- * SERVING CACHED PAGE -------------------------------------------------------------------------------------------------
+ * BEGIN SERVING CACHED PAGE -------------------------------------------------------------------------------------------
  */
 
 /* if we reach this point it means data was found & correct, serve it */
@@ -251,13 +251,13 @@ if (! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
 
         case 'home':
         case 'feed':
-            $expire = $wcMfpcConfig[ 'browsercache_home' ];
+            $expire = $wc_mfpc_config_array[ 'browsercache_home' ];
             break;
         case 'archive':
-            $expire = $wcMfpcConfig[ 'browsercache_taxonomy' ];
+            $expire = $wc_mfpc_config_array[ 'browsercache_taxonomy' ];
             break;
         case 'single':
-            $expire = $wcMfpcConfig[ 'browsercache' ];
+            $expire = $wc_mfpc_config_array[ 'browsercache' ];
             break;
         default:
             $expire = 0;
@@ -283,41 +283,43 @@ if (! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
 /* if shortlinks were set */
 if (! empty($wc_mfpc_values[ 'meta' ][ 'shortlink' ])) {
 
-	header( 'Link:<'. $wc_mfpc_values['meta']['shortlink'] .'>; rel=shortlink' );
+    header('Link:<' . $wc_mfpc_values[ 'meta' ][ 'shortlink' ] . '>; rel=shortlink');
 
 }
 
 /* if last modifications were set (for posts & pages) */
 if (! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
 
-	header( 'Last-Modified: ' . gmdate("D, d M Y H:i:s", $wc_mfpc_values['meta']['lastmodified'] ). " GMT" );
+    header('Last-Modified: ' . gmdate("D, d M Y H:i:s", $wc_mfpc_values[ 'meta' ][ 'lastmodified' ]) . " GMT");
 
 }
 
 /* pingback urls, if existx */
-if (! empty( $wc_mfpc_values['meta']['pingback'] ) && ! empty($wcMfpcConfig['pingback_header'])) {
+if (! empty( $wc_mfpc_values[ 'meta' ][ 'pingback' ] ) && ! empty($wc_mfpc_config_array['pingback_header' ])) {
 
-	header( 'X-Pingback: ' . $wc_mfpc_values['meta']['pingback'] );
+	header('X-Pingback: ' . $wc_mfpc_values[ 'meta' ][ 'pingback' ]);
 
 }
 
 /* for debugging */
-if (! empty($wcMfpcConfig['response_header'])) {
+if (! empty($wc_mfpc_config_array['response_header'])) {
 
-	header( 'X-Cache-Engine: WC-MFPC with ' . $wcMfpcConfig['cache_type'] .' via PHP');
+	header( 'X-Cache-Engine: WC-MFPC with Memcached via PHP');
 
 }
 
 /* HTML data */
-if (! empty($wcMfpcConfig['generate_time']) && stripos($wc_mfpc_values['data'], '</body>') ) {
+if (! empty($wc_mfpc_config_array[ 'generate_time' ]) && stripos($wc_mfpc_values[ 'data' ], '</body>')) {
 
-	$mtime = explode ( " ", microtime() );
-	$wc_mfpc_gentime = ( $mtime[1] + $mtime[0] ) - $wc_mfpc_gentime;
+    $mtime           = explode(" ", microtime());
+    $wc_mfpc_gentime = ($mtime[ 1 ] + $mtime[ 0 ]) - $wc_mfpc_gentime;
 
-	$insertion = "\n<!-- WC-MFPC cache output stats\n\tcache engine: ". $wcMfpcConfig['cache_type'] ."\n\tUNIX timestamp: ". time() . "\n\tdate: ". date( 'c' ) . "\n\tfrom server: ". $_SERVER['SERVER_ADDR'] . " -->\n";
-	$index = stripos( $wc_mfpc_values['data'] , '</body>' );
+    $insertion = "\n<!-- WC-MFPC cache output stats\n\tcache engine: " . $wc_mfpc_config_array[ 'cache_type' ]
+                 . "\n\tUNIX timestamp: " . time() . "\n\tdate: " . date('c') . "\n\tfrom server: "
+                 . $_SERVER[ 'SERVER_ADDR' ] . " -->\n";
 
-	$wc_mfpc_values['data'] = substr_replace( $wc_mfpc_values['data'], $insertion, $index, 0);
+    $index                    = stripos($wc_mfpc_values[ 'data' ], '</body>');
+    $wc_mfpc_values[ 'data' ] = substr_replace($wc_mfpc_values[ 'data' ], $insertion, $index, 0);
 
 }
 
@@ -327,20 +329,27 @@ echo trim($wc_mfpc_values['data']);
 flush();
 die();
 
-/*** END SERVING CACHED PAGE ***/
+/*
+ * END SERVING CACHED PAGE
+ *
+ * ---------------------------------------------------------------------------------------------------------------------
+ *
+ * BEGIN GENERATING CACHE ENTRY
+ */
 
-
-/*** GENERATING CACHE ENTRY ***/
 /**
  * starts caching function
  *
+ * @return void
+ *
  */
-function wc_mfpc_start( ) {
-	/* set start time */
-	global $wc_mfpc_gentime;
+function wc_mfpc_start()
+{
+    /* set start time */
+    global $wc_mfpc_gentime;
 
-	$mtime = explode ( " ", microtime() );
-	$wc_mfpc_gentime = $mtime[1] + $mtime[0];
+    $mtime           = explode(" ", microtime());
+    $wc_mfpc_gentime = $mtime[ 1 ] + $mtime[ 0 ];
 
 	// ToDo: Check if this might be useful!!!
     global $show_admin_bar;
@@ -358,7 +367,8 @@ function wc_mfpc_start( ) {
  *
  * @return mixed
  */
-function wc_mfpc_redirect_callback ($redirect_url, $requested_url) {
+function wc_mfpc_redirect_callback ($redirect_url, $requested_url)
+{
 	global $wc_mfpc_redirect;
 
 	$wc_mfpc_redirect = $redirect_url;
@@ -373,20 +383,21 @@ function wc_mfpc_redirect_callback ($redirect_url, $requested_url) {
  *
  * @return string
  */
-function wc_mfpc_callback( $buffer ) {
+function wc_mfpc_callback( $buffer )
+{
 	/* use global config */
-	global $wcMfpcConfig;
+	global $wc_mfpc_config_array;
 
 	/* backend was already set up, try to use it */
 	global $wc_mfpc_backend;
 
-	/* check is it's a redirect */
+	/* check if it's a redirect */
 	global $wc_mfpc_redirect;
 
-	$config = $wcMfpcConfig->getConfig();
+	$config = $wc_mfpc_config_array;
 
 	/* no is_home = error, WordPress functions are not availabe */
-	if (!function_exists('is_home')) {
+    if (! function_exists('is_home')) {
 
 		return $buffer;
     }
@@ -398,10 +409,10 @@ function wc_mfpc_callback( $buffer ) {
     }
 
 	/* reset meta to solve conflicts */
-	$meta = array();
+	$meta = [];
 
 	/* trim unneeded whitespace from beginning / ending of buffer */
-	$buffer = trim( $buffer );
+    $buffer = trim($buffer);
 
 	/* Can be a trackback or other things without a body.
 	   We do not cache them, WP needs to get those calls. */
@@ -414,38 +425,38 @@ function wc_mfpc_callback( $buffer ) {
 
 		if (is_home()) {
 
-			$meta['type'] = 'home';
+            $meta[ 'type' ] = 'home';
 
 		} elseif(is_feed()) {
 
-			$meta['type'] = 'feed';
+            $meta[ 'type' ] = 'feed';
 
 		}
 
-		if (! empty($config['browsercache_home'])) {
+        if (! empty($config[ 'browsercache_home' ])) {
 
-			$meta['expire'] = time() + $config['browsercache_home'];
+            $meta[ 'expire' ] = time() + $config[ 'browsercache_home' ];
 
 		}
 
 		error_log( 'Getting latest post for for home & feed');
 
 		/* get newest post and set last modified accordingly */
-		$args = array(
-			'numberposts' => 1,
-			'orderby' => 'modified',
-			'order' => 'DESC',
-			'post_status' => 'publish',
-		);
-		$recent_post = wp_get_recent_posts( $args, OBJECT );
+        $args = [
+            'numberposts' => 1,
+            'orderby'     => 'modified',
+            'order'       => 'DESC',
+            'post_status' => 'publish',
+        ];
+        $recent_post = wp_get_recent_posts( $args, OBJECT );
 
 		if (! empty($recent_post)) {
 
 			$recent_post = array_pop($recent_post);
 
-			if (! empty ( $recent_post->post_modified_gmt ) ) {
+            if (! empty ($recent_post->post_modified_gmt)) {
 
-				$meta['lastmodified'] = strtotime ( $recent_post->post_modified_gmt );
+                $meta[ 'lastmodified' ] = strtotime($recent_post->post_modified_gmt);
 
 			}
 
@@ -467,22 +478,22 @@ function wc_mfpc_callback( $buffer ) {
 
 			error_log( 'Getting latest post for taxonomy: ' . json_encode($wp_query->tax_query));
 
-			$args = array(
-				'numberposts' => 1,
-				'orderby' => 'modified',
-				'order' => 'DESC',
-				'post_status' => 'publish',
-				'tax_query' => $wp_query->tax_query,
-			);
-			$recent_post =  get_posts( $args, OBJECT );
+            $args = [
+                'numberposts' => 1,
+                'orderby'     => 'modified',
+                'order'       => 'DESC',
+                'post_status' => 'publish',
+                'tax_query'   => $wp_query->tax_query,
+            ];
+            $recent_post = get_posts($args, OBJECT);
 
-			if (! empty($recent_post)) {
+            if (! empty($recent_post)) {
 
 				$recent_post = array_pop($recent_post);
 
-				if (! empty ( $recent_post->post_modified_gmt ) ) {
+                if (! empty ($recent_post->post_modified_gmt)) {
 
-					$meta['lastmodified'] = strtotime ( $recent_post->post_modified_gmt );
+                    $meta[ 'lastmodified' ] = strtotime($recent_post->post_modified_gmt);
 
 				}
 
@@ -492,11 +503,11 @@ function wc_mfpc_callback( $buffer ) {
 
 	} elseif ( is_single() || is_page() ) {
 
-		$meta['type'] = 'single';
+        $meta[ 'type' ] = 'single';
 
-		if (! empty($config['browsercache'])) {
+        if (! empty($config[ 'browsercache' ])) {
 
-			$meta['expire'] = time() + $config['browsercache'];
+            $meta[ 'expire' ] = time() + $config[ 'browsercache' ];
 
 		}
 
@@ -508,89 +519,90 @@ function wc_mfpc_callback( $buffer ) {
 		if (! empty($post) && ! empty($post->post_modified_gmt)) {
 
 			/* get last modification data */
-			$meta['lastmodified'] = strtotime($post->post_modified_gmt);
+            $meta[ 'lastmodified' ] = strtotime($post->post_modified_gmt);
 
 			/* get shortlink, if possible */
 			if (function_exists('wp_get_shortlink')) {
 
-				$shortlink = wp_get_shortlink( );
+                $shortlink = wp_get_shortlink();
 
-				if (!empty ( $shortlink ) )
+                if (! empty ($shortlink)) {
 
-					$meta['shortlink'] = $shortlink;
+                    $meta[ 'shortlink' ] = $shortlink;
 
-			}
+                }
+
+            }
 
 		}
 
 	} else {
 
-		$meta['type'] = 'unknown';
+        $meta[ 'type' ] = 'unknown';
 
 	}
 
-	if ( $meta['type'] != 'unknown' ) {
+    if ($meta[ 'type' ] != 'unknown') {
 
 		/* check if caching is disabled for page type */
-		$nocache_key = 'nocache_'. $meta['type'];
+        $nocache_key = 'nocache_' . $meta[ 'type' ];
 
 		/* don't cache if prevented by rule */
-		if ( $config[ $nocache_key ] == 1 ) {
+        if ($config[ $nocache_key ] == 1) {
 
 			return $buffer;
 		}
 
 	}
 
-	if ( is_404() ) {
+    if (is_404()) {
 
-		$meta['status'] = 404;
+        $meta[ 'status' ] = 404;
 
-	}
+    }
 
 	/* redirect page */
-	if ( $wc_mfpc_redirect != null) {
+    if ($wc_mfpc_redirect != null) {
 
-		$meta['redirect'] =  $wc_mfpc_redirect;
+        $meta[ 'redirect' ] = $wc_mfpc_redirect;
 
-	}
+    }
 
 	/* feed is xml, all others forced to be HTML */
-	if ( is_feed() ) {
+    if (is_feed()) {
 
-		$meta['mime'] = 'text/xml;charset=';
+        $meta[ 'mime' ] = 'text/xml;charset=';
 
-	} else {
+    } else {
 
-		$meta['mime'] = 'text/html;charset=';
+        $meta[ 'mime' ] = 'text/html;charset=';
 
-	}
+    }
 
 	/* set mimetype */
-	$meta['mime'] = $meta['mime'] . $config['charset'];
+    $meta[ 'mime' ] = $meta[ 'mime' ] . $config[ 'charset' ];
 
 	/* store pingback url if pingbacks are enabled */
-	if ( get_option ( 'default_ping_status' ) == 'open' ) {
+    if (get_option('default_ping_status') == 'open') {
 
-		$meta['pingback'] = get_bloginfo('pingback_url');
+        $meta[ 'pingback' ] = get_bloginfo('pingback_url');
 
-	}
+    }
 
 	$to_store = $buffer;
 
 	/* add generation info is option is set, but only to HTML */
-	if (! empty($config['generate_time']) && stripos($buffer, '</body>') ) {
+    if (! empty($config[ 'generate_time' ]) && stripos($buffer, '</body>')) {
 
-		global $wc_mfpc_gentime;
+        global $wc_mfpc_gentime;
 
-		$mtime = explode ( " ", microtime() );
-		$wc_mfpc_gentime = ( $mtime[1] + $mtime[0] )- $wc_mfpc_gentime;
+        $mtime           = explode(" ", microtime());
+        $wc_mfpc_gentime = ($mtime[ 1 ] + $mtime[ 0 ]) - $wc_mfpc_gentime;
 
-		$insertion = "\n<!-- WC-MFPC cache generation stats" . "\n\tgeneration time: ". round( $wc_mfpc_gentime, 3 ) ." seconds\n\tgeneraton UNIX timestamp: ". time() . "\n\tgeneraton date: ". date( 'c' ) . "\n\tgenerator server: ". $_SERVER['SERVER_ADDR'] . " -->\n";
-		$index     = stripos( $buffer , '</body>' );
-		$to_store  = substr_replace( $buffer, $insertion, $index, 0);
-
-	}
+        $insertion = "\n<!-- WC-MFPC cache generation stats" . "\n\tgeneration time: " . round($wc_mfpc_gentime, 3) . " seconds\n\tgeneraton UNIX timestamp: " . time() . "\n\tgeneraton date: " . date('c') . "\n\tgenerator server: " . $_SERVER[ 'SERVER_ADDR' ] . " -->\n";
+        $index     = stripos($buffer, '</body>');
+        $to_store  = substr_replace($buffer, $insertion, $index, 0);
+    }
 
 	/**
 	 * Allows to edit the content to be stored in cache.
@@ -599,30 +611,32 @@ function wc_mfpc_callback( $buffer ) {
 	 * to be stored in the cache. This could be useful for alterations like
 	 * minification.
 	 *
-	 * @since 1.10.2
-	 *
 	 * @param string $to_store The content to be stored in cache.
+     *
+     * @return string $to_store
 	 */
-	$to_store = apply_filters( 'wc-mfpc-to-store', $to_store );
+    $to_store = apply_filters('wc-mfpc-to-store', $to_store);
 
-	$prefix_meta = $wc_mfpc_backend->key ( $config['prefix_meta'] );
-	$wc_mfpc_backend->set ( $prefix_meta, $meta );
+    $prefix_meta = $wc_mfpc_backend->key($config[ 'prefix_meta' ]);
+    $wc_mfpc_backend->set($prefix_meta, $meta);
 
-	$prefix_data = $wc_mfpc_backend->key ( $config['prefix_data'] );
-	$wc_mfpc_backend->set ( $prefix_data , $to_store );
+    $prefix_data = $wc_mfpc_backend->key($config[ 'prefix_data' ]);
+    $wc_mfpc_backend->set($prefix_data, $to_store);
+    if (! empty($meta[ 'status' ]) && $meta[ 'status' ] == 404) {
 
-	if ( !empty( $meta['status'] ) && $meta['status'] == 404 ) {
+        header("HTTP/1.1 404 Not Found");
 
-		header("HTTP/1.1 404 Not Found");
+    } else {
 
-	} else {
+        /* vital for nginx, make no problem at other places */
+        header("HTTP/1.1 200 OK");
 
-		/* vital for nginx, make no problem at other places */
-		header("HTTP/1.1 200 OK");
-
-	}
+    }
 
 	/* echoes HTML out */
 	return trim($buffer);
 }
-/*** END GENERATING CACHE ENTRY ***/
+
+/*
+ * END GENERATING CACHE ENTRY
+ */
