@@ -283,10 +283,13 @@ class Memcached
         /* server status will be calculated by getting server stats */
         error_log("checking server statuses");
 
-        /* get server list from connection */
+        /*
+         * Get the server list from connection.
+         */
         $servers = $this->connection->getServerList();
+        $changed = false;
 
-        foreach ($servers as $server) {
+        foreach ($servers as $i => $server) {
 
             $server_id = $server[ 'host' ] . self::port_separator . $server[ 'port' ];
 
@@ -295,14 +298,41 @@ class Memcached
              */
             $this->status[ $server_id ] = 0;
 
-            if ($this->connection->set('wc-mfpc', time())) {
+            /*
+             * Instantiate a new Memcached connection for this server to test it independently.
+             */
+            $memcached = new \Memcached();
+            $memcached->addServer($server[ 'host' ], $server[ 'port' ]);
+
+            if ($memcached->set('wc-mfpc', time())) {
 
                 error_log(sprintf('%s server is up & running', $server_id));
                 $this->status[ $server_id ] = 1;
 
+            } else {
+
+                /*
+                 * If the server did not respond remove it from the list.
+                 */
+                unset($servers[ $i ]);
+                $changed = true;
+
             }
 
+            unset($memcached);
+
         }
+
+        /*
+         * If there are indeed servers which do not respond, remove them from the pool.
+         */
+        if ($changed) {
+
+            $this->connection->resetServerList();
+            $this->connection->addServers($servers);
+
+        }
+
     }
 
     /**
