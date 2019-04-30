@@ -125,6 +125,14 @@ $wc_mfpc_redirect = null;
 include_once __DIR__ . '/src/Memcached.php';
 $wc_mfpc_backend = new \InvincibleBrands\WcMfpc\Memcached($wcMfpcConfig);
 
+/* backend connection failed, no caching :( */
+if (empty($wc_mfpc_backend->status())) {
+
+    error_log("Backend offline");
+
+    return false;
+}
+
 /*
  * no cache for for logged in users unless it's set identifier cookies are listed in backend as var for easier usage
  */
@@ -154,14 +162,6 @@ if (empty($wcMfpcConfig[ 'cache_loggedin' ])) {
 
 /* will store time of page generation */
 $wc_mfpc_gentime = 0;
-
-/* backend connection failed, no caching :( */
-if (empty($wc_mfpc_backend->status())) {
-
-    error_log("Backend offline");
-
-    return false;
-}
 
 /* try to get data & meta keys for current page */
 $wc_mfpc_keys   = [ 'meta' => $wcMfpcConfig[ 'prefix_meta' ], 'data' => $wcMfpcConfig[ 'prefix_data' ] ];
@@ -230,6 +230,7 @@ if (isset($_SERVER[ 'HTTP_IF_MODIFIED_SINCE' ]) && ! empty($wc_mfpc_values[ 'met
     }
 
 }
+
 /*
  * SERVING CACHED PAGE -------------------------------------------------------------------------------------------------
  */
