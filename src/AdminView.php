@@ -602,12 +602,6 @@ class AdminView
             'value'       => $wcMfpcConfig->isNocacheSingle() ? 'yes' : 'no',
         ]);
         woocommerce_wp_checkbox([
-            'id'          => 'nocache_dyn',
-            'label'       => 'Exclude dynamic requests',
-            'description' => 'Enable to exclude every dynamic request URL with GET parameters.',
-            'value'       => $wcMfpcConfig->isNocacheDyn() ? 'yes' : 'no',
-        ]);
-        woocommerce_wp_checkbox([
             'id'          => 'nocache_woocommerce',
             'label'       => 'Exclude dynamic WooCommerce pages',
             'description' => 'Enable to exclude every dynamic WooCommerce page.',
