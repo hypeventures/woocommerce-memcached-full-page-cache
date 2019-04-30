@@ -610,8 +610,9 @@ class Admin
         }
 
         /* add the required includes and generate the needed code */
-        $string[] = "<?php";
-        $string[] = Data::global_config_var . " = " . var_export($this->global_config, true) . ';';
+        $string[] = '<?php';
+        $string[] = 'global ' . Data::global_config_var . ';';
+        $string[] = Data::global_config_var . ' = ' . var_export($this->global_config, true) . ';';
         $string[] = "include_once ('" . $wcMfpcData->acache_worker . "');";
 
         /* write the file and start caching from this point */
