@@ -131,11 +131,6 @@ class Config
     /**
      * @var bool
      */
-    public $nocache_dyn             = true;
-
-    /**
-     * @var bool
-     */
     public $nocache_woocommerce     = true;
 
     /**
@@ -630,22 +625,6 @@ class Config
     public function setNocacheCookies(string $nocache_cookies = '')
     {
         $this->nocache_cookies = $nocache_cookies;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isNocacheDyn()
-    {
-        return $this->nocache_dyn;
-    }
-
-    /**
-     * @param bool $nocache_dyn
-     */
-    public function setNocacheDyn(bool $nocache_dyn)
-    {
-        $this->nocache_dyn = $nocache_dyn;
     }
 
     /**
