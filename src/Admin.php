@@ -58,8 +58,9 @@ class Admin
 
         add_action('admin_init', [ &$this, 'plugin_admin_init' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueue_admin_css_js' ]);
-        add_action('add_meta_boxes', [ &$this, 'addMetaBox' ], 2);
-        add_action('wp_ajax_wc-mfpc-clear-ng', [ &$this, 'processAjax' ]);
+        add_action('add_meta_boxes', [ &$this, 'addCacheControlMetaBox' ], 2);
+        add_action('product_cat_edit_form_fields', [ &$this, 'showCategoryBox' ]);
+        add_action('wp_ajax_wc-mfpc-clear-ng', [ &$this, 'processCacheControlAjax' ]);
 
         /*
          * Check WP_CACHE and add a warning if it's disabled.
@@ -76,20 +77,20 @@ class Admin
     }
 
     /**
-     * Adds the "Cache control" meta box to "Post", "Page" & "Producct" edit screens.
+     * Adds the "Cache control" meta box to "Post", "Page" & "Product" edit screens.
      *
      * @return void
      */
-    public function addMetaBox()
+    public function addCacheControlMetaBox()
     {
-        $screens = [ 'post', 'page', 'product', ];
+        $screens = [ 'post', 'page', 'product' ];
 
         foreach ($screens as $screen) {
 
             add_meta_box(
                 'wc-mfpc-metabox-' . $screen,
                 'Cache control',
-                [ AdminView::class, 'renderMetaBox' ],
+                [ Admin::class, 'showMetaBox' ],
                 $screen,
                 'side',
                 'high'
@@ -99,11 +100,68 @@ class Admin
     }
 
     /**
+     * Shows the "Cache control" box on "Category" edit screens.
+     *
+     * @param null|\WP_Term $term
+     */
+    public function showCategoryBox($term = null)
+    {
+        $permalink  = get_category_link($term->term_taxonomy_id);
+        $type       = 'Category';
+        $identifier = $term->name;
+
+        self::showCacheControl($permalink, $type, $identifier);
+    }
+
+    /**
+     * Shows the "Cache control" meta box on "Post", "Page" & "Product" edit screens.
+     *
+     * @param null|\WP_Post $post
+     *
+     * @return void
+     */
+    public static function showMetaBox($post = null)
+    {
+        $permalink  = get_permalink($post);
+        $type       = ucfirst($post->post_type);
+        $identifier = $post->ID;
+
+        self::showCacheControl($permalink, $type, $identifier);
+    }
+
+    /**
+     * Actually triggers the "Cache Control" box view to be rendered.
+     *
+     * @param string $permalink
+     * @param string $type
+     * @param string $identifier
+     *
+     * @return void
+     */
+    public static function showCacheControl($permalink = '', $type = '', $identifier = '')
+    {
+        global $wcMfpc, $wcMfpcConfig;
+
+        $statusMessage = '<b class="error-msg">Not cached</b>';
+        $display       = 'none';
+        $key           = $wcMfpcConfig->prefix_data . $permalink;
+
+        if (! empty($wcMfpc->backend->get($key))) {
+
+            $statusMessage = '<b class="ok-msg">Cached</b>';
+            $display       = 'block';
+
+        }
+
+        AdminView::renderCacheControl($statusMessage, $display, $type, $identifier, $permalink);
+    }
+
+    /**
      * Processes the "Cache control" AJAX request. Clears cache of given postId if possible.
      *
      * @return void
      */
-    public function processAjax()
+    public function processCacheControlAjax()
     {
         global $wcMfpc;
 
@@ -114,11 +172,12 @@ class Admin
             && $_POST[ 'action' ] === Data::cache_control_action
             && ! empty($_POST[ 'nonce' ])
             && wp_verify_nonce($_POST[ 'nonce' ], Data::cache_control_action)
-            && isset($_POST[ 'postId' ])
+            && isset($_POST[ 'permalink' ])
         ) {
 
-            $result = $wcMfpc->backend->clear(intval($_POST[ 'postId' ]));
-
+            $link   = esc_url($_POST[ 'permalink' ]);
+            error_log($link);
+            $result = $wcMfpc->backend->clear_keys([ $link => true ]);
 
         } else {
 
@@ -132,7 +191,7 @@ class Admin
 
         }
 
-        wp_die(json_encode('SUCCESS! Cache for ID ' . intval($_POST[ 'postId' ]) . ' was cleared.'));
+        wp_die(json_encode('SUCCESS! Cache for this item was cleared.'));
     }
 
     /**
