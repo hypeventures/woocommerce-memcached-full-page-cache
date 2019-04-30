@@ -96,24 +96,34 @@ class Memcached
 
         if (is_admin() && function_exists('add_filter')) {
 
-            add_filter('wc_mfpc_clear_keys_array', function ($to_clear, $options) {
-
-                $filtered_result = [];
-
-                foreach ($to_clear as $link => $dummy) {
-
-                    /* clear feeds, meta and data as well */
-                    $filtered_result[ $options[ 'prefix_meta' ] . $link ]          = true;
-                    $filtered_result[ $options[ 'prefix_data' ] . $link ]          = true;
-                    $filtered_result[ $options[ 'prefix_meta' ] . $link . 'feed' ] = true;
-                    $filtered_result[ $options[ 'prefix_data' ] . $link . 'feed' ] = true;
-
-                }
-
-                return $filtered_result;
-            }, 10, 2);
+            add_filter('wc_mfpc_clear_keys_array', [ &$this, 'getKeys' ], 10, 2);
 
         }
+    }
+
+    /**
+     * Returns an array with 4 keys for each permalink in the array $toClear.
+     *
+     * @param array $toClear [ 'permalink' => true, ]
+     * @param array $options
+     *
+     * @return array
+     */
+    public function getKeys($toClear, $options) {
+
+        $result = [];
+
+        foreach ($toClear as $link => $dummy) {
+
+            /* clear feeds, meta and data as well */
+            $result[ $options[ 'prefix_meta' ] . $link ]          = true;
+            $result[ $options[ 'prefix_data' ] . $link ]          = true;
+            $result[ $options[ 'prefix_meta' ] . $link . 'feed' ] = true;
+            $result[ $options[ 'prefix_data' ] . $link . 'feed' ] = true;
+
+        }
+
+        return $result;
     }
 
     /**
