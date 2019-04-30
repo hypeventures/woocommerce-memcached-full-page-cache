@@ -15,7 +15,7 @@ class Data
 
     const host_separator         = ',';
     const port_separator         = ':';
-    const global_config_var      = '$wcMfpcConfig';
+    const global_config_var      = '$wc_mfpc_config_array';
     const key_save               = 'saved';
     const key_delete             = 'deleted';
     const key_flush              = 'flushed';
