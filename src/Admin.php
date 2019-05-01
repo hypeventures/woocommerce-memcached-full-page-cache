@@ -29,11 +29,6 @@ class Admin
     private $global_saved = false;
 
     /**
-     * @var array
-     */
-    private $errors = [];
-
-    /**
      * Initializes the Hooks necessary for the admin settings pages.
      *
      * @return void
@@ -42,22 +37,35 @@ class Admin
     {
         global $wcMfpcData;
 
-        /*
-         * register settings pages & register admin init, catches $_POST and adds submenu to admin menu
-         */
         if ($wcMfpcData->network) {
 
             add_filter("network_admin_plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
 
-        } else {
-
-            add_filter("plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
-            add_action('admin_menu', [ &$this, 'addMenu' ], 101);
-
         }
+
+        add_filter("plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
+        add_action('admin_menu', [ &$this, 'addMenu' ], 101);
 
         add_action('admin_init', [ &$this, 'plugin_admin_init' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueue_admin_css_js' ]);
+
+        $abort  = false;
+        $domain = parse_url(get_option('siteurl'), PHP_URL_HOST);
+
+        /*
+         * Check if global_config_key equals the actual domain.
+         */
+        if ($wcMfpcData->global_config_key !== $domain) {
+
+            Alert::alert(sprintf(
+                'Domain mismatch: the site domain configuration (%s) does not match the HTTP_HOST (%s) '
+                . 'variable in PHP. Please fix the incorrect one, otherwise the plugin may not work as expected.',
+                $domain, esc_url($_SERVER[ 'HTTP_HOST' ])
+            ), LOG_WARNING, true);
+
+            $abort = true;
+
+        }
 
         /*
          * Check WP_CACHE and add a warning if it's disabled.
@@ -69,6 +77,14 @@ class Admin
                 'Please add <i>define(\'WP_CACHE\', true);</i> to the beginning of wp-config.php file to enable caching.',
                 LOG_WARNING, true
             );
+
+            $abort = true;
+        }
+
+        /*
+         * In case caching is either disabled or no settings available => abort here and set no more action hooks.
+         */
+        if ($abort) {
 
             return;
         }
@@ -320,46 +336,12 @@ class Admin
     }
 
     /**
-     * init hook function runs before admin panel hook, themeing and options read
-     */
-    public function plugin_pre_init()
-    {
-        global $wcMfpcData;
-
-        if (! isset($_SERVER[ 'HTTP_HOST' ])) {
-
-            $_SERVER[ 'HTTP_HOST' ] = '127.0.0.1';
-
-        }
-
-        /* set global config key; here, because it's needed for migration */
-        if ($wcMfpcData->network) {
-
-            $wcMfpcData->global_config_key = 'network';
-
-        } else {
-
-            $sitedomain = parse_url(get_option('siteurl'), PHP_URL_HOST);
-
-            if ($_SERVER[ 'HTTP_HOST' ] != $sitedomain) {
-
-                $this->errors[ 'domain_mismatch' ] = sprintf(__("Domain mismatch: the site domain configuration (%s) does not match the HTTP_HOST (%s) variable in PHP. Please fix the incorrect one, otherwise the plugin may not work as expected.", 'wc-mfpc'), $sitedomain, $_SERVER[ 'HTTP_HOST' ]);
-
-            }
-
-            $wcMfpcData->global_config_key = $_SERVER[ 'HTTP_HOST' ];
-
-        }
-    }
-
-    /**
      * admin init called by WordPress add_action, needs to be public
      */
     public function plugin_admin_init()
     {
         global $wcMfpc, $wcMfpcData, $wcMfpcConfig;
 
-        $this->plugin_pre_init();
         $this->plugin_extend_options_read($wcMfpcConfig->getConfig());
 
         /* save parameter updates, if there are any */
