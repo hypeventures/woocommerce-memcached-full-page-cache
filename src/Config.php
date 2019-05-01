@@ -229,25 +229,9 @@ class Config
 
         }
 
-        /* map missing values from default */
-        foreach ($wcMfpcData->defaults as $key => $default) {
+        if (isset($options[ $wcMfpcData->global_config_key ])) {
 
-            if (! @array_key_exists($key, $options)) {
-
-                $options[ $key ] = $default;
-
-            }
-
-        }
-
-        /* removed unused keys, rare, but possible */
-        foreach (@array_keys($options) as $key) {
-
-            if (! @array_key_exists($key, $wcMfpcData->defaults)) {
-
-                unset ($options[ $key ]);
-
-            }
+            $options = $options[ $wcMfpcData->global_config_key ];
 
         }
 
