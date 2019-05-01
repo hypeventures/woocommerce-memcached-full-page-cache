@@ -33,6 +33,7 @@ class Data
     const admin_css_handle       = 'wc-mfpc-admin-css';
     const shell_possibilities    = [ 'shell_exec', 'exec', 'system', 'passthru' ];
     const cache_control_action   = 'wc-mfpc-clear-keys';
+    const settings_slug          = 'admin.php';
 
     /**
      * @var string
@@ -87,11 +88,6 @@ class Data
     /**
      * @var string
      */
-    public $settings_slug = '';
-
-    /**
-     * @var string
-     */
     public $settings_link = '';
 
     /**
@@ -108,8 +104,8 @@ class Data
         $this->admin_css_url        = $this->plugin_url . 'assets/admin.css';
         $this->acache_worker        = $this->plugin_dir . 'wc-mfpc-advanced-cache.php';
         $this->acache               = WP_CONTENT_DIR . '/advanced-cache.php';
-        $this->settings_slug        = 'admin.php';
-        $this->settings_link        = $this->settings_slug . '?page=' . Data::plugin_settings_page;
+        $this->settings_link        = self::settings_slug . '?page=' . self::plugin_settings_page;
+        $this->network              = function_exists(is_multisite()) && is_multisite();
 
         $this->setShellFunction();
     }
