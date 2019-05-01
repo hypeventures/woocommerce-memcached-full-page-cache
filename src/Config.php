@@ -166,11 +166,13 @@ class Config
     /**
      * Config constructor.
      *
-     * @param array $config  Optional array with config from DB;
+     * @todo Check if add_action() to set nocache_woocommerce_url is really necessary.
+     *
+     * @param array $config  Optional array with config to be set.
      */
     public function __construct($config = [])
     {
-        add_action('wp_loaded', [ $this, 'setNocacheWoocommerceUrl' ]);
+        add_action('plugins_loaded', [ $this, 'setNocacheWoocommerceUrl' ]);
         $this->setConfig($config);
     }
 
@@ -213,7 +215,9 @@ class Config
     }
 
     /**
-     * reads options stored in database and reads merges them with default values
+     * Loads options stored in the DB. Keeps defaults if loading was not successful.
+     *
+     * @return void
      */
     public function load()
     {
