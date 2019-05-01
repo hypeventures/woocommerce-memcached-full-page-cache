@@ -138,15 +138,16 @@ class Data
      */
     private function setGlobalConfigKey()
     {
-        global $wcMfpcData;
-
+        /*
+         * ToDo: Check if this is useful at all or if it can be removed.
+         */
         if (! isset($_SERVER[ 'HTTP_HOST' ])) {
 
             $_SERVER[ 'HTTP_HOST' ] = '127.0.0.1';
 
         }
 
-        $wcMfpcData->global_config_key = $_SERVER[ 'HTTP_HOST' ];
+        $this->global_config_key = $_SERVER[ 'HTTP_HOST' ];
     }
 
 }
