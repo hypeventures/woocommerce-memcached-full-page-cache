@@ -386,7 +386,7 @@ class Admin
             /* flush backend */
             $wcMfpc->backend->clear(false, true);
             $this->status = 3;
-            header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_flush);
+            header("Location: " . $wcMfpcData->settings_link . Data::slug_flush);
 
         }
     }
@@ -472,6 +472,7 @@ class Admin
 
             /* update the options entity */
             $wcMfpcConfig->setConfig($options);
+            $wcMfpcConfig->setNocacheWoocommerceUrl();
 
         }
 
