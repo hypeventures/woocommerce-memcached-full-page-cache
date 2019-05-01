@@ -30,7 +30,7 @@ class WcMfpc
         register_activation_hook($wcMfpcData->plugin_file, [ &$this, 'pluginActivate' ]);
         register_deactivation_hook($wcMfpcData->plugin_file, [ &$this, 'pluginDeactivate' ]);
 
-        $wcMfpcConfig->read();
+        $wcMfpcConfig->load();
 
         if (is_admin()) {
 

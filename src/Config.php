@@ -215,7 +215,7 @@ class Config
     /**
      * reads options stored in database and reads merges them with default values
      */
-    public function read()
+    public function load()
     {
         global $wcMfpcData;
 
