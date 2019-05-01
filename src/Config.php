@@ -633,7 +633,7 @@ class Config
     /**
      * @param string $nocache_woocommerce_url
      */
-    public function setNocacheWoocommerceUrl(string $nocache_woocommerce_url)
+    public function setNocacheWoocommerceUrl(string $nocache_woocommerce_url = '')
     {
         $this->nocache_woocommerce_url = $nocache_woocommerce_url;
 
