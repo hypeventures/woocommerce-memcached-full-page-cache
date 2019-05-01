@@ -45,46 +45,13 @@ class Admin
 
         add_filter("plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
         add_action('admin_menu', [ &$this, 'addMenu' ], 101);
-
         add_action('admin_init', [ &$this, 'plugin_admin_init' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueue_admin_css_js' ]);
 
-        $abort  = false;
-        $domain = parse_url(get_option('siteurl'), PHP_URL_HOST);
-
         /*
-         * Check if global_config_key equals the actual domain.
+         * In case of major issues => abort here and set no more action hooks.
          */
-        if ($wcMfpcData->global_config_key !== $domain) {
-
-            Alert::alert(sprintf(
-                'Domain mismatch: the site domain configuration (%s) does not match the HTTP_HOST (%s) '
-                . 'variable in PHP. Please fix the incorrect one, otherwise the plugin may not work as expected.',
-                $domain, esc_url($_SERVER[ 'HTTP_HOST' ])
-            ), LOG_WARNING, true);
-
-            $abort = true;
-
-        }
-
-        /*
-         * Check WP_CACHE and add a warning if it's disabled.
-         */
-        if (! defined('WP_CACHE') || empty(WP_CACHE)) {
-
-            Alert::alert(
-                '(!) WP_CACHE is disabled. Woocommerce-Memcached-Full-Page-Cache does not work without.<br>' .
-                'Please add <i>define(\'WP_CACHE\', true);</i> to the beginning of wp-config.php file to enable caching.',
-                LOG_WARNING, true
-            );
-
-            $abort = true;
-        }
-
-        /*
-         * In case caching is either disabled or no settings available => abort here and set no more action hooks.
-         */
-        if ($abort) {
+        if (! $this->validateMandatorySettings()) {
 
             return;
         }
@@ -107,6 +74,50 @@ class Admin
         add_filter('handle_bulk_actions-edit-post', [ &$this, 'handleBulkAction' ], 10, 3);
         add_filter('handle_bulk_actions-edit-page', [ &$this, 'handleBulkAction' ], 10, 3);
         add_filter('handle_bulk_actions-edit-product_cat', [ &$this, 'handleBulkAction' ], 10, 3);
+    }
+
+    /**
+     * Validates "siteurl" value and status of "WP_CACHE". Triggers admin notices in case of an issue.
+     *
+     * @return bool
+     */
+    private function validateMandatorySettings()
+    {
+        global $wcMfpcData;
+
+        $valid  = false;
+        $domain = parse_url(get_option('siteurl'), PHP_URL_HOST);
+
+        /*
+         * Check if global_config_key equals the actual domain.
+         */
+        if ($wcMfpcData->global_config_key !== $domain) {
+
+            Alert::alert(sprintf(
+                'Domain mismatch: the site domain configuration (%s) does not match the HTTP_HOST (%s) '
+                . 'variable in PHP. Please fix the incorrect one, otherwise the plugin may not work as expected.',
+                $domain, $wcMfpcData->global_config_key
+            ), LOG_WARNING, true);
+
+            $valid = true;
+
+        }
+
+        /*
+         * Check WP_CACHE and add a warning if it's disabled.
+         */
+        if (! defined('WP_CACHE') || empty(WP_CACHE)) {
+
+            Alert::alert(
+                '(!) WP_CACHE is disabled. Woocommerce-Memcached-Full-Page-Cache does not work without.<br>' .
+                'Please add <i>define(\'WP_CACHE\', true);</i> to the beginning of wp-config.php file to enable caching.',
+                LOG_WARNING, true
+            );
+
+            $valid = true;
+        }
+
+        return $valid;
     }
 
     /**
