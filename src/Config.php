@@ -172,7 +172,6 @@ class Config
      */
     public function __construct($config = [])
     {
-        add_action('plugins_loaded', [ $this, 'setNocacheWoocommerceUrl' ]);
         $this->setConfig($config);
     }
 
@@ -195,7 +194,7 @@ class Config
 
             if (property_exists(self::class, $key)) {
 
-                $this->{$key} = esc_attr($value);
+                $this->{$key} = trim(esc_attr($value));
 
             }
 
