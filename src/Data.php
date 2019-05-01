@@ -107,6 +107,7 @@ class Data
         $this->network              = function_exists(is_multisite()) && is_multisite();
 
         $this->setShellFunction();
+        $this->setGlobalConfigKey();
     }
 
     /**
@@ -123,11 +124,29 @@ class Data
             if (function_exists($possibility) && ! (ini_get('safe_mode') || isset($disabled[ $possibility ]))) {
 
                 $this->shell_function = $possibility;
-                return;
 
+                return;
             }
 
         }
+    }
+
+    /**
+     * Sets the global config key to be HTTP_HOST.
+     *
+     * @return void
+     */
+    private function setGlobalConfigKey()
+    {
+        global $wcMfpcData;
+
+        if (! isset($_SERVER[ 'HTTP_HOST' ])) {
+
+            $_SERVER[ 'HTTP_HOST' ] = '127.0.0.1';
+
+        }
+
+        $wcMfpcData->global_config_key = $_SERVER[ 'HTTP_HOST' ];
     }
 
 }
