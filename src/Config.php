@@ -239,6 +239,26 @@ class Config
     }
 
     /**
+     * Saves the actual Config in this object as array in the DB.
+     *
+     * @return bool
+     */
+    public function save()
+    {
+        global $wcMfpcData;
+
+        if ($wcMfpcData->network) {
+
+            $options = get_site_option(Data::plugin_constant);
+            $options[ $wcMfpcData->global_config_key ] = $this->getConfig();
+
+            return update_site_option(Data::plugin_constant, $options);
+        }
+
+        return update_option(Data::plugin_constant, $this->getConfig());
+    }
+
+    /**
      * @return string
      */
     public function getHosts()
