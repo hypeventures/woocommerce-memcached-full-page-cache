@@ -104,6 +104,13 @@ if (! empty($wc_mfpc_config_array[ 'nocache_cookies' ])) {
 
 }
 
+if (isset($_COOKIE[ 'wc-mfpc-nocache' ])) {
+
+    error_log('----------------> skipping administrator nocache cookie');
+
+    return false;
+}
+
 /* no cache for excluded URL patterns */
 if (! empty($wc_mfpc_config_array[ 'nocache_url' ])) {
 
@@ -394,11 +401,12 @@ function wc_mfpc_callback( $buffer )
     }
 
     /*
-     * Skip if current user has a admin-bar.
+     * Skip if current user has a admin-bar. Sets the cookie to skip directly in the future.
      */
     if (is_admin_bar_showing()) {
 
         error_log('------------------> skipping administrator!');
+        setcookie('wc-mfpc-nocache', 1, time() + 86400);
 
         return $buffer;
     }
