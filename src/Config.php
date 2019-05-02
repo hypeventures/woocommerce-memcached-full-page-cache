@@ -166,7 +166,7 @@ class Config
     /**
      * @var array
      */
-    private $global                 = [];
+    public $global               = [];
 
     /**
      * Config constructor.
@@ -213,7 +213,10 @@ class Config
      */
     public function getConfig()
     {
-        return (array) $this;
+        $config = (array) $this;
+        unset($config[ 'global' ]);
+
+        return $config;
     }
 
     /**
@@ -257,7 +260,7 @@ class Config
 
         if ($wcMfpcData->network) {
 
-            $options = get_site_option(Data::global_option);
+            $options = get_site_option(Data::global_option, []);
             $options[ $wcMfpcData->global_config_key ] = $this->getConfig();
 
             $this->global = $options;
