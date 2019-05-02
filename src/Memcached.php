@@ -17,11 +17,6 @@ class Memcached
     const port_separator = ':';
 
     /**
-     * @var array
-     */
-    public $cookies = [];
-
-    /**
      * @var null|\Memcached
      */
     protected $connection = null;
@@ -60,9 +55,6 @@ class Memcached
         }
 
         $this->options = $config;
-
-        /* these are the list of the cookies to look for when looking for logged in user */
-        $this->cookies = [ 'comment_author_', 'wordpressuser_', 'wp-postpass_', 'wordpress_logged_in_' ];
 
         /* map the key with the predefined schemes */
         $ruser   = isset ($_SERVER[ 'REMOTE_USER' ]) ? $_SERVER[ 'REMOTE_USER' ] : '';
