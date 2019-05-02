@@ -45,6 +45,7 @@ if (! isset($wc_mfpc_config_array)) {
 /* request uri */
 $wc_mfpc_uri = $_SERVER[ 'REQUEST_URI' ];
 
+// ToDo: check this on single blog pages (no multisite). Eventually tweaking is needed.
 if (empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
 
     error_log("no usable config found");
@@ -54,6 +55,14 @@ if (empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
 
 $wc_mfpc_config_array = $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ];
 error_log("using {$_SERVER[ 'HTTP_HOST' ]} level config");
+
+/* no cache for uri with query strings, things usually go bad that way */
+if (stripos($wc_mfpc_uri, '?') !== false) {
+
+    error_log('Dynamic url cache is disabled ( url with "?" ), skipping');
+
+    return false;
+}
 
 /* no cache for WooCommerce URL patterns */
 if (isset($wc_mfpc_config_array[ 'nocache_woocommerce_url' ])) {
@@ -69,12 +78,38 @@ if (isset($wc_mfpc_config_array[ 'nocache_woocommerce_url' ])) {
 
 }
 
-/* no cache for uri with query strings, things usually go bad that way */
-if (stripos($wc_mfpc_uri, '?') !== false) {
+/*
+ * NEVER cache for admins!
+ */
+if (isset($_COOKIE[ 'wc-mfpc-nocache' ])) {
 
-    error_log('Dynamic url cache is disabled ( url with "?" ), skipping');
+    error_log('No cache for admin users! Skipping.');
 
     return false;
+}
+
+/*
+ * no cache for for logged in users
+ */
+if (empty($wc_mfpc_config_array[ 'cache_loggedin' ])) {
+
+    $nocache_cookies = [ 'comment_author_', 'wordpressuser_', 'wp-postpass_', 'wordpress_logged_in_' ];
+
+    foreach ($_COOKIE as $n => $v) {
+
+        foreach ($nocache_cookies as $nocache_cookie) {
+
+            if (strpos($n, $nocache_cookie) === 0) {
+
+                error_log("No cache for cookie: {$n}, skipping");
+
+                return false;
+            }
+
+        }
+
+    }
+
 }
 
 /* check for cookies that will make us not cache the content, like logged in WordPress cookie */
@@ -118,31 +153,7 @@ if (! empty($wc_mfpc_config_array[ 'nocache_url' ])) {
 
 }
 
-/*
- * no cache for for logged in users
- */
-if (empty($wc_mfpc_config_array[ 'cache_loggedin' ])) {
 
-    $nocache_cookies = [ 'comment_author_', 'wordpressuser_', 'wp-postpass_', 'wordpress_logged_in_' ];
-
-}
-
-$nocache_cookies[] = 'wc-mfpc-nocache';
-
-foreach ($_COOKIE as $n => $v) {
-
-    foreach ($nocache_cookies as $nocache_cookie) {
-
-        if (strpos($n, $nocache_cookie) === 0) {
-
-            error_log("No cache for cookie: {$n}, skipping");
-
-            return false;
-        }
-
-    }
-
-}
 
 /* canonical redirect storage */
 $wc_mfpc_redirect = null;
