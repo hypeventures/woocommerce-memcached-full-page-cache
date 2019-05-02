@@ -8,7 +8,9 @@ if (! defined('ABSPATH')) { exit; }
 error_log('------------------------------------------------------------------------------------------------------------------------');
 error_log('worker running');
 
-/* check for WP cache enabled*/
+/*
+ * check for WP cache enabled
+ */
 if (! defined('WP_CACHE') || WP_CACHE != true) {
 
     error_log('WP_CACHE is not true');
@@ -16,7 +18,9 @@ if (! defined('WP_CACHE') || WP_CACHE != true) {
     return false;
 }
 
-/* no cache for post request (comments, plugins and so on) */
+/*
+ * no cache for post request (comments, plugins and so on)
+ */
 if ($_SERVER[ "REQUEST_METHOD" ] === 'POST') {
 
     error_log('POST requests are never cached');
@@ -34,7 +38,9 @@ if (defined('SID') && SID != '') {
     return false;
 }
 
-/* check for config */
+/*
+ * check for config
+ */
 if (! isset($wc_mfpc_config_array)) {
 
     error_log('$wc_mfpc_config_array variable not found');
@@ -42,10 +48,15 @@ if (! isset($wc_mfpc_config_array)) {
     return false;
 }
 
-/* request uri */
+/*
+ * Set request uri
+ */
 $wc_mfpc_uri = $_SERVER[ 'REQUEST_URI' ];
 
-// ToDo: check this on single blog pages (no multisite). Eventually tweaking is needed.
+/*
+ * Check if config is available.
+ * ToDo: check this on single blog pages (no multisite). Eventually tweaking is needed.
+ */
 if (empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
 
     error_log("no usable config found");
@@ -53,10 +64,15 @@ if (empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
     return false;
 }
 
+/*
+ * Set Config
+ */
 $wc_mfpc_config_array = $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ];
 error_log("using {$_SERVER[ 'HTTP_HOST' ]} level config");
 
-/* no cache for uri with query strings, things usually go bad that way */
+/*
+ * no cache for uri with query strings, things usually go bad that way
+ */
 if (stripos($wc_mfpc_uri, '?') !== false) {
 
     error_log('Dynamic url cache is disabled ( url with "?" ), skipping');
@@ -64,7 +80,9 @@ if (stripos($wc_mfpc_uri, '?') !== false) {
     return false;
 }
 
-/* no cache for WooCommerce URL patterns */
+/*
+ * no cache for WooCommerce URL patterns
+ */
 if (isset($wc_mfpc_config_array[ 'nocache_woocommerce_url' ])) {
 
     $pattern = sprintf('#%s#', $wc_mfpc_config_array[ 'nocache_woocommerce_url' ]);
@@ -112,7 +130,9 @@ if (empty($wc_mfpc_config_array[ 'cache_loggedin' ])) {
 
 }
 
-/* check for cookies that will make us not cache the content, like logged in WordPress cookie */
+/*
+ * check for cookies that will make us not cache the content, like logged in WordPress cookie
+ */
 if (! empty($wc_mfpc_config_array[ 'nocache_cookies' ])) {
 
     $nocache_cookies = array_map('trim', explode(",", $wc_mfpc_config_array[ 'nocache_cookies' ]));
@@ -139,7 +159,9 @@ if (! empty($wc_mfpc_config_array[ 'nocache_cookies' ])) {
 
 }
 
-/* no cache for excluded URL patterns */
+/*
+ * no cache for excluded URL patterns
+ */
 if (! empty($wc_mfpc_config_array[ 'nocache_url' ])) {
 
     $pattern = sprintf('#%s#', trim($wc_mfpc_config_array[ 'nocache_url' ]));
@@ -153,16 +175,20 @@ if (! empty($wc_mfpc_config_array[ 'nocache_url' ])) {
 
 }
 
-
-
-/* canonical redirect storage */
+/*
+ * Initialize canonical redirect storage.
+ */
 $wc_mfpc_redirect = null;
 
-/* fires up the backend storage array with current config */
+/*
+ * Connect to Memcached via actual config.
+ */
 include_once __DIR__ . '/src/Memcached.php';
 $wc_mfpc_backend = new \InvincibleBrands\WcMfpc\Memcached($wc_mfpc_config_array);
 
-/* backend connection failed, no caching :( */
+/*
+ * Check backend connection.
+ */
 if (empty($wc_mfpc_backend->status())) {
 
     error_log("Backend offline");
@@ -170,10 +196,14 @@ if (empty($wc_mfpc_backend->status())) {
     return false;
 }
 
-/* will store time of page generation */
+/*
+ * Initialize getime storage
+ */
 $wc_mfpc_gentime = 0;
 
-/* try to get data & meta keys for current page */
+/*
+ * Try to get data & meta keys for current page
+ */
 $wc_mfpc_keys   = [ 'meta' => $wc_mfpc_config_array[ 'prefix_meta' ], 'data' => $wc_mfpc_config_array[ 'prefix_data' ] ];
 $wc_mfpc_values = [];
 error_log("Trying to fetch entries");
@@ -185,14 +215,20 @@ foreach ($wc_mfpc_keys as $internal => $key) {
 
     if (empty($value)) {
 
-        error_log("No cached data found");
-        /* does not matter which is missing, we need both, if one fails, no caching */
+
+        /*
+         * It does not matter which is missing, we need both, if one fails, no caching
+         */
         wc_mfpc_start();
+        error_log("No cached data found");
 
         return;
+
     } else {
 
-        /* store results */
+        /*
+         * store results
+         */
         $wc_mfpc_values[ $internal ] = $value;
         error_log('Got value for ' . $internal);
 
@@ -200,40 +236,57 @@ foreach ($wc_mfpc_keys as $internal => $key) {
 
 }
 
-/* serve cache 404 status */
-if (isset($wc_mfpc_values[ 'meta' ][ 'status' ]) && $wc_mfpc_values[ 'meta' ][ 'status' ] == 404) {
+/*
+ * Serve cache 404 status
+ */
+if (isset($wc_mfpc_values[ 'meta' ][ 'status' ]) && $wc_mfpc_values[ 'meta' ][ 'status' ] === 404) {
 
     error_log("Serving 404");
     header("HTTP/1.1 404 Not Found");
-    /* if I kill the page serving here, the 404 page will not be showed at all, so we do not do that
+
+    /*
+     * If the page stops serving here, the 404 page will not be showed at all.
+     *
      * flush();
      * die();
      */
 
 }
 
-/* server redirect cache */
+/*
+ * Server redirect cache
+ */
 if (! empty($wc_mfpc_values[ 'meta' ][ 'redirect' ])) {
 
     error_log("Serving redirect to {$wc_mfpc_values['meta']['redirect']}");
     header('Location: ' . $wc_mfpc_values[ 'meta' ][ 'redirect' ]);
-    /* cut the connection as fast as possible */
+
+    /*
+     * Cut the connection as fast as possible
+     */
     flush();
     die();
 
 }
 
-/* page is already cached on client side (chrome likes to do this, anyway, it's quite efficient) */
+/*
+ * Page is already cached on client side (chrome likes to do this, anyway, it's quite efficient)
+ */
 if (isset($_SERVER[ 'HTTP_IF_MODIFIED_SINCE' ]) && ! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
 
     $if_modified_since = strtotime(preg_replace('/;.*$/', '', $_SERVER[ "HTTP_IF_MODIFIED_SINCE" ]));
 
-    /* check is cache is still valid */
+    /*
+     * check is cache is still valid
+     */
     if ($if_modified_since >= $wc_mfpc_values[ 'meta' ][ 'lastmodified' ]) {
 
         error_log("Serving 304 Not Modified");
         header("HTTP/1.0 304 Not Modified");
-        /* connection cut for faster serving */
+
+        /*
+         * Cut the connection as fast as possible
+         */
         flush();
         die();
 
@@ -245,14 +298,18 @@ if (isset($_SERVER[ 'HTTP_IF_MODIFIED_SINCE' ]) && ! empty($wc_mfpc_values[ 'met
  * BEGIN SERVING CACHED PAGE -------------------------------------------------------------------------------------------
  */
 
-/* if we reach this point it means data was found & correct, serve it */
+/*
+ * if we reach this point it means data was found & correct, serve it
+ */
 if (! empty ($wc_mfpc_values[ 'meta' ][ 'mime' ])) {
 
     header('Content-Type: ' . $wc_mfpc_values[ 'meta' ][ 'mime' ]);
 
 }
 
-/* set expiry date */
+/*
+ * Set expiry date
+ */
 if (! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
 
     $hash = md5($wc_mfpc_uri . $wc_mfpc_values[ 'meta' ][ 'expire' ]);
@@ -281,44 +338,60 @@ if (! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
 
 } else {
 
-    /* in case there is no expiry set, expire immediately and don't serve Etag; browser cache is disabled */
+    /*
+     * In case there is no expiry set, expire immediately and don't serve Etag; browser cache is disabled
+     */
     header('Expires: ' . gmdate("D, d M Y H:i:s", time()) . " GMT");
-    /* if I set these, the 304 not modified will never, ever kick in, so not setting these
-     * leaving here as a reminder why it should not be set */
-    //header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, s-maxage=0, post-check=0, pre-check=0');
-    //header('Pragma: no-cache');
+
+    /*
+     * if these are set, the 304 not modified will never kick in, so these are not set.
+     * leaving here as a reminder why it should not be set
+     *
+     * header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, s-maxage=0, post-check=0, pre-check=0');
+     * header('Pragma: no-cache');
+     */
 
 }
 
-/* if shortlinks were set */
+/*
+ * If shortlinks were set
+ */
 if (! empty($wc_mfpc_values[ 'meta' ][ 'shortlink' ])) {
 
     header('Link:<' . $wc_mfpc_values[ 'meta' ][ 'shortlink' ] . '>; rel=shortlink');
 
 }
 
-/* if last modifications were set (for posts & pages) */
+/*
+ * If last modifications were set (for posts & pages)
+ */
 if (! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
 
     header('Last-Modified: ' . gmdate("D, d M Y H:i:s", $wc_mfpc_values[ 'meta' ][ 'lastmodified' ]) . " GMT");
 
 }
 
-/* pingback urls, if existx */
+/*
+ * If PingBack was set
+ */
 if (! empty( $wc_mfpc_values[ 'meta' ][ 'pingback' ] ) && ! empty($wc_mfpc_config_array['pingback_header' ])) {
 
 	header('X-Pingback: ' . $wc_mfpc_values[ 'meta' ][ 'pingback' ]);
 
 }
 
-/* for debugging */
-if (! empty($wc_mfpc_config_array['response_header'])) {
+/*
+ * If debugging header is should be set.
+ */
+if (! empty($wc_mfpc_config_array[ 'response_header' ])) {
 
 	header( 'X-Cache-Engine: WC-MFPC with Memcached via PHP');
 
 }
 
-/* HTML data */
+/*
+ * HTML data
+ */
 if (! empty($wc_mfpc_config_array[ 'generate_time' ]) && stripos($wc_mfpc_values[ 'data' ], '</body>')) {
 
     $mtime           = explode(" ", microtime());
@@ -348,32 +421,35 @@ die();
  */
 
 /**
- * starts caching function
+ * Initializes the caching function.
  *
  * @return void
  *
  */
 function wc_mfpc_start()
 {
-    /* set start time */
     global $wc_mfpc_gentime;
 
     $mtime           = explode(" ", microtime());
     $wc_mfpc_gentime = $mtime[ 1 ] + $mtime[ 0 ];
 
-	/* start object "colleting" and pass it the the actual storer function  */
+	/*
+	 * Start object "colleting" and pass it the the actual storing function
+	 */
 	ob_start('wc_mfpc_callback');
 }
 
 /**
- * callback function for WordPress redirect urls
+ * Callback function for WordPress redirect urls.
  *
- * @param $redirect_url
+ * @see \InvincibleBrands\WcMfpc\WcMfpc::init()
+ *
+ * @param string $redirect_url
  * @param $requested_url
  *
  * @return mixed
  */
-function wc_mfpc_redirect_callback ($redirect_url, $requested_url)
+function wc_mfpc_redirect_callback ($redirect_url = '')
 {
 	global $wc_mfpc_redirect;
 
@@ -383,7 +459,7 @@ function wc_mfpc_redirect_callback ($redirect_url, $requested_url)
 }
 
 /**
- * write cache function, called when page generation ended
+ * Write cache function, called when page generation ended.
  *
  * @param $buffer
  *
@@ -391,25 +467,20 @@ function wc_mfpc_redirect_callback ($redirect_url, $requested_url)
  */
 function wc_mfpc_callback( $buffer )
 {
-	/* use global config */
-	global $wc_mfpc_config_array;
-
-	/* backend was already set up, try to use it */
-	global $wc_mfpc_backend;
-
-	/* check if it's a redirect */
-	global $wc_mfpc_redirect;
+	global $wc_mfpc_config_array, $wc_mfpc_backend, $wc_mfpc_redirect;
 
 	$config = $wc_mfpc_config_array;
 
-	/* no is_home = error, WordPress functions are not availabe */
+	/*
+	 * If true, WordPress functions are not availabe => skip writing cache.
+	 */
     if (! function_exists('is_home')) {
 
 		return $buffer;
     }
 
     /*
-     * Skip if current user has a admin-bar. Sets the cookie to skip directly in the future.
+     * Skip if current user has a admin-bar. Sets the cookie to skip cache directly in the future.
      */
     if (is_admin_bar_showing()) {
 
@@ -419,20 +490,20 @@ function wc_mfpc_callback( $buffer )
         return $buffer;
     }
 
-	/* no <body> close tag = not HTML, also no <rss>, not feed, don't cache */
+	/*
+	 * If no <body> or <rss> close tag is found, don't cache
+	 */
 	if (stripos($buffer, '</body>') === false && stripos($buffer, '</rss>') === false) {
 
 		return $buffer;
     }
 
-	/* reset meta to solve conflicts */
-	$meta = [];
-
-	/* trim unneeded whitespace from beginning / ending of buffer */
+	$meta   = [];
     $buffer = trim($buffer);
 
-	/* Can be a trackback or other things without a body.
-	   We do not cache them, WP needs to get those calls. */
+	/*
+	 * Filter anything without a body => also skip caching.
+	 */
 	if (strlen($buffer) == 0) {
 
 		return '';
@@ -458,14 +529,15 @@ function wc_mfpc_callback( $buffer )
 
 		error_log( 'Getting latest post for for home & feed');
 
-		/* get newest post and set last modified accordingly */
-        $args = [
+		/*
+		 * Get newest post and set last modified accordingly
+		 */
+        $recent_post = wp_get_recent_posts([
             'numberposts' => 1,
             'orderby'     => 'modified',
             'order'       => 'DESC',
             'post_status' => 'publish',
-        ];
-        $recent_post = wp_get_recent_posts( $args, OBJECT );
+        ], OBJECT );
 
 		if (! empty($recent_post)) {
 
@@ -495,14 +567,13 @@ function wc_mfpc_callback( $buffer )
 
 			error_log( 'Getting latest post for taxonomy: ' . json_encode($wp_query->tax_query));
 
-            $args = [
+            $recent_post = get_posts([
                 'numberposts' => 1,
                 'orderby'     => 'modified',
                 'order'       => 'DESC',
                 'post_status' => 'publish',
                 'tax_query'   => $wp_query->tax_query,
-            ];
-            $recent_post = get_posts($args, OBJECT);
+            ]);
 
             if (! empty($recent_post)) {
 
@@ -528,17 +599,18 @@ function wc_mfpc_callback( $buffer )
 
 		}
 
-		/*
-		 * try if post is available if made with archieve, last listed post can make this go bad
-		 */
 		global $post;
 
+		/*
+		 * Check if post is available. If made with archive, last listed post can make this go bad.
+		 */
 		if (! empty($post) && ! empty($post->post_modified_gmt)) {
 
-			/* get last modification data */
             $meta[ 'lastmodified' ] = strtotime($post->post_modified_gmt);
 
-			/* get shortlink, if possible */
+			/*
+			 * get shortlink, if possible
+			 */
 			if (function_exists('wp_get_shortlink')) {
 
                 $shortlink = wp_get_shortlink();
@@ -561,10 +633,14 @@ function wc_mfpc_callback( $buffer )
 
     if ($meta[ 'type' ] != 'unknown') {
 
-		/* check if caching is disabled for page type */
+		/*
+		 * check if caching is disabled for page type
+		 */
         $nocache_key = 'nocache_' . $meta[ 'type' ];
 
-		/* don't cache if prevented by rule */
+		/*
+		 * Skip caching if prevented for this meta type by rule
+		 */
         if ($config[ $nocache_key ] == 1) {
 
 			return $buffer;
@@ -578,14 +654,18 @@ function wc_mfpc_callback( $buffer )
 
     }
 
-	/* redirect page */
+	/*
+	 * Check if redirect must be set
+	 */
     if ($wc_mfpc_redirect != null) {
 
         $meta[ 'redirect' ] = $wc_mfpc_redirect;
 
     }
 
-	/* feed is xml, all others forced to be HTML */
+	/*
+	 * Feed is xml, all others forced to be HTML
+	 */
     if (is_feed()) {
 
         $meta[ 'mime' ] = 'text/xml;charset=';
@@ -596,7 +676,9 @@ function wc_mfpc_callback( $buffer )
 
     }
 
-	/* set mimetype */
+	/*
+	 * Set mime-type.
+	 */
     $meta[ 'mime' ] = $meta[ 'mime' ] . $config[ 'charset' ];
 
 	/* store pingback url if pingbacks are enabled */
@@ -608,7 +690,9 @@ function wc_mfpc_callback( $buffer )
 
 	$to_store = $buffer;
 
-	/* add generation info is option is set, but only to HTML */
+	/*
+	 * add generation info is option is set, but only to HTML
+	 */
     if (! empty($config[ 'generate_time' ]) && stripos($buffer, '</body>')) {
 
         global $wc_mfpc_gentime;
@@ -623,10 +707,8 @@ function wc_mfpc_callback( $buffer )
 
 	/**
 	 * Allows to edit the content to be stored in cache.
-	 *
-	 * This hooks allows the user to edit the page content right before it is about
-	 * to be stored in the cache. This could be useful for alterations like
-	 * minification.
+	 * This hooks allows the user to edit the page content right before it is about to be stored in the cache. This
+     * could be useful for alterations like minification.
 	 *
 	 * @param string $to_store The content to be stored in cache.
      *
@@ -639,21 +721,26 @@ function wc_mfpc_callback( $buffer )
 
     $prefix_data = $wc_mfpc_backend->key($config[ 'prefix_data' ]);
     $wc_mfpc_backend->set($prefix_data, $to_store);
-    if (! empty($meta[ 'status' ]) && $meta[ 'status' ] == 404) {
+
+    if (! empty($meta[ 'status' ]) && $meta[ 'status' ] === 404) {
 
         header("HTTP/1.1 404 Not Found");
 
     } else {
 
-        /* vital for nginx, make no problem at other places */
+        /*
+         * Vital header for nginx
+         */
         header("HTTP/1.1 200 OK");
 
     }
 
-	/* echoes HTML out */
+	/*
+	 * Return buffer to be echoed.
+	 */
 	return trim($buffer);
 }
 
 /*
- * END GENERATING CACHE ENTRY
+ * END GENERATING CACHE ENTRY-------------------------------------------------------------------------------------------
  */
