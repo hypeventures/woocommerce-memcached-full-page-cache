@@ -224,11 +224,11 @@ class Config
 
         if ($wcMfpcData->network) {
 
-            $options = get_site_option(Data::plugin_constant);
+            $options = get_site_option(Data::global_option);
 
         } else {
 
-            $options = get_option(Data::plugin_constant);
+            $options = get_option(Data::global_option);
 
         }
 
@@ -252,13 +252,39 @@ class Config
 
         if ($wcMfpcData->network) {
 
-            $options = get_site_option(Data::plugin_constant);
+            $options = get_site_option(Data::global_option);
             $options[ $wcMfpcData->global_config_key ] = $this->getConfig();
 
-            return update_site_option(Data::plugin_constant, $options);
+            return update_site_option(Data::global_option, $options);
         }
 
-        return update_option(Data::plugin_constant, $this->getConfig());
+        return update_option(Data::global_option, $this->getConfig());
+    }
+
+    /**
+     * Saves the actual Config in this object as array in the DB.
+     *
+     * @param bool $uninstall
+     *
+     * @return bool
+     */
+    public function delete($uninstall = false)
+    {
+        global $wcMfpcData;
+
+        if ($wcMfpcData->network) {
+
+            if ($uninstall) {
+                delete_site_option(Data::global_option);
+            }
+
+            $options = get_site_option(Data::global_option);
+            $options[ $wcMfpcData->global_config_key ] = $this->getConfig();
+
+            return update_site_option(Data::global_option, $options);
+        }
+
+        return delete_option(Data::global_option);
     }
 
     /**
