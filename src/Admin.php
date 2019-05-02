@@ -14,11 +14,6 @@ class Admin
 {
 
     /**
-     * @var array
-     */
-    private $global_config = [];
-
-    /**
      * @var int
      */
     private $status = 0;
@@ -45,7 +40,7 @@ class Admin
 
         add_filter("plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
         add_action('admin_menu', [ &$this, 'addMenu' ], 101);
-        add_action('admin_init', [ &$this, 'plugin_admin_init' ]);
+        add_action('admin_init', [ &$this, 'init' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueue_admin_css_js' ]);
 
         /*
@@ -349,31 +344,37 @@ class Admin
     /**
      * admin init called by WordPress add_action, needs to be public
      */
-    public function plugin_admin_init()
+    public function init()
     {
         global $wcMfpc, $wcMfpcData, $wcMfpcConfig;
 
-        $this->plugin_extend_options_read($wcMfpcConfig->getConfig());
-
-        /* save parameter updates, if there are any */
+        /*
+         * save parameter updates, if there are any
+         */
         if (isset($_POST[ Data::button_save ]) && check_admin_referer('wc-mfpc')) {
 
-            $wcMfpcConfig->save();
+            $this->saveConfig();
+            $this->deployAdvancedCache();
             $this->status = 1;
             header("Location: " . $wcMfpcData->settings_link . Data::slug_save);
 
         }
 
-        /* delete parameters if requested */
+        /*
+         * delete parameters if requested
+         */
         if (isset($_POST[ Data::button_delete ]) && check_admin_referer('wc-mfpc')) {
 
             $wcMfpcConfig->delete();
+            $this->deployAdvancedCache();
             $this->status = 2;
             header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_delete);
 
         }
 
-        /* save parameter updates, if there are any */
+        /*
+         * save parameter updates, if there are any
+         */
         if (isset($_POST[ Data::button_flush ]) && check_admin_referer('wc-mfpc')) {
 
             /* flush backend */
@@ -385,41 +386,11 @@ class Admin
     }
 
     /**
-     * deletes saved options from database
-     */
-    public static function plugin_options_delete()
-    {
-        global $wcMfpcData;
-
-        self::_delete_option(Data::plugin_constant, $wcMfpcData->network);
-        delete_site_option(Data::global_option);
-    }
-
-    /**
-     * clear option; will handle network wide or standalone site options
-     *
-     * @param      $optionID
-     * @param bool $network
-     */
-    public static function _delete_option($optionID, $network = false)
-    {
-        if ($network) {
-          
-            delete_site_option($optionID);
-            
-        } else {
-          
-            delete_option($optionID);
-            
-        }
-    }
-
-    /**
      * used on update and to save current options to database
      *
      * @param boolean $activating [optional] true on activation hook
      */
-    protected function plugin_options_save($activating = false)
+    protected function saveConfig($activating = false)
     {
         global $wcMfpcData, $wcMfpcConfig;
 
@@ -451,11 +422,11 @@ class Admin
                  * if this is the situation by checking the types of the elements,
                  * since a missing value means update from an integer to 0
                  */
-                } elseif (empty($_POST[ $key ]) && (is_bool($default) || is_int($default))) {
+                } elseif (is_bool($default) || is_int($default)) {
 
                     $options[ $key ] = 0;
 
-                } elseif (empty($_POST[ $key ]) && is_array($default)) {
+                } elseif (is_array($default)) {
 
                     $options[ $key ] = [];
 
@@ -466,7 +437,6 @@ class Admin
             /* update the options entity */
             $wcMfpcConfig->setConfig($options);
             $wcMfpcConfig->setNocacheWoocommerceUrl();
-
         }
 
         /* flush the cache when new options are saved, not needed on activation */
@@ -478,115 +448,19 @@ class Admin
 
         }
 
-        /* create the to-be-included configuration for advanced-cache.php */
-        $this->update_global_config();
+        $wcMfpcConfig->save();
 
-        /* create advanced cache file, needed only once or on activation, because there could be lefover advanced-cache.php from different plugins */
-        if (! $activating) {
-
-            $this->deploy_advanced_cache();
-
-        }
-
-        /* save options to database */
-        self::_update_option(Data::plugin_constant, $wcMfpcConfig->getConfig(), $wcMfpcData->network);
+        $this->global_saved = true;
     }
 
     /**
-     * option update; will handle network wide or standalone site options
+     * Generates and writes the "advanced-cache.php"
      *
-     * @param      $optionID
-     * @param      $data
-     * @param bool $network
+     * @return bool
      */
-    public static function _update_option($optionID, $data, $network = false)
+    private function deployAdvancedCache()
     {
-        if ($network) {
-
-            update_site_option($optionID, $data);
-
-        } else {
-
-            update_option($optionID, $data);
-
-        }
-    }
-
-    /**
-     * read option; will handle network wide or standalone site options
-     *
-     * @param      $optionID
-     * @param bool $network
-     *
-     * @return mixed
-     */
-    public static function _get_option($optionID, $network = false)
-    {
-        if ($network) {
-
-            $options = get_site_option($optionID);
-
-        } else {
-
-            $options = get_option($optionID);
-
-        }
-
-        return $options;
-    }
-
-    /**
-     * read hook; needs to be implemented
-     *
-     * @param $options
-     */
-    public function plugin_extend_options_read($options)
-    {
-        global $wcMfpcData;
-
-        $this->global_config = get_site_option(Data::global_option);
-
-        if (! empty ($this->global_config[ $wcMfpcData->global_config_key ])) {
-
-            $this->global_saved = true;
-
-        }
-
-        $this->global_config[ $wcMfpcData->global_config_key ] = $options;
-    }
-
-    /**
-     * function to update global configuration
-     *
-     * @param boolean $remove_site Bool to remove or add current config to global
-     */
-    public function update_global_config($remove_site = false)
-    {
-        global $wcMfpcConfig, $wcMfpcData;
-
-        /* remove or add current config to global config */
-        if ($remove_site) {
-
-            unset ($this->global_config[ $wcMfpcData->global_config_key ]);
-
-        } else {
-
-            $this->global_config[ $wcMfpcData->global_config_key ] = $wcMfpcConfig->getConfig();
-
-        }
-
-        /* deploy advanced-cache.php */
-        $this->deploy_advanced_cache();
-        /* save options to database */
-        update_site_option(Data::global_option, $this->global_config);
-    }
-
-    /**
-     * advanced-cache.php creator function
-     */
-    private function deploy_advanced_cache()
-    {
-        global $wcMfpcData;
+        global $wcMfpcData, $wcMfpcConfig;
 
         if (! touch($wcMfpcData->acache)) {
 
@@ -596,9 +470,10 @@ class Admin
         }
 
         /* if no active site left no need for advanced cache :( */
-        if (empty ($this->global_config)) {
+        if (empty($wcMfpcConfig->getGlobal())) {
 
             error_log('Generating advanced-cache.php failed: Global config is empty');
+            unlink(WP_CONTENT_DIR . '/advanced-cache.php');
 
             return false;
         }
@@ -606,10 +481,8 @@ class Admin
         /* add the required includes and generate the needed code */
         $string[] = '<?php';
         $string[] = 'global ' . Data::global_config_var . ';';
-        $string[] = Data::global_config_var . ' = ' . var_export($this->global_config, true) . ';';
+        $string[] = Data::global_config_var . ' = ' . var_export($wcMfpcConfig->getGlobal(), true) . ';';
         $string[] = "include_once ('" . $wcMfpcData->acache_worker . "');";
-
-        /* write the file and start caching from this point */
 
         return file_put_contents($wcMfpcData->acache, join("\n", $string));
     }
