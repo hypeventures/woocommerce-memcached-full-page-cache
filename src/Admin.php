@@ -19,11 +19,6 @@ class Admin
     private $status = 0;
 
     /**
-     * @var bool
-     */
-    private $global_saved = false;
-
-    /**
      * Initializes the Hooks necessary for the admin settings pages.
      *
      * @return void
@@ -449,8 +444,6 @@ class Admin
         }
 
         $wcMfpcConfig->save();
-
-        $this->global_saved = true;
     }
 
     /**
@@ -512,16 +505,6 @@ class Admin
     public function getStatus()
     {
         return $this->status;
-    }
-
-    /**
-     * Returns true, if the global save was successful.
-     *
-     * @return bool $status
-     */
-    public function isGlobalSaved()
-    {
-        return $this->global_saved;
     }
 
 }
