@@ -275,7 +275,8 @@ class Config
         if ($wcMfpcData->network) {
 
             if ($uninstall) {
-                delete_site_option(Data::global_option);
+
+                return delete_site_option(Data::global_option);
             }
 
             $options = get_site_option(Data::global_option);
