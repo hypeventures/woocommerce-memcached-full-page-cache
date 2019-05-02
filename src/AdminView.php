@@ -388,6 +388,25 @@ class AdminView
             'description' => '<b>host1:port1,host2:port2,...</b> - OR - <b>unix://[socket_path]</b>',
             'value'       => $wcMfpcConfig->getHosts(),
         ]);
+        woocommerce_wp_checkbox([
+            'id'          => 'memcached_binary',
+            'label'       => 'Enable binary mode',
+            'description' => 'Some memcached proxies and implementations only support the ASCII protocol.',
+            'value'       => $wcMfpcConfig->isMemcachedBinary() ? 'yes' : 'no',
+        ]);
+
+        /*
+         * If memcached does not support or if authentication is disabled, do not show the auth input fields to avoid
+         * confuseion.
+         */
+        if (
+            ! version_compare(phpversion('memcached'), '2.0.0', '>=')
+            || ((int) ini_get('memcached.use_sasl')) !== 1
+        ) {
+
+            return;
+        }
+
         woocommerce_wp_text_input([
             'id'          => 'authuser',
             'label'       => 'Username',
@@ -401,12 +420,6 @@ class AdminView
             'class'       => 'short',
             'description' => 'Username for authentication with Memcached <span class="error-msg">(Only if SASL is enabled)</span>',
             'value'       => $wcMfpcConfig->getAuthpass(),
-        ]);
-        woocommerce_wp_checkbox([
-            'id'          => 'memcached_binary',
-            'label'       => 'Enable binary mode',
-            'description' => 'Some memcached proxies and implementations only support the ASCII protocol.',
-            'value'       => $wcMfpcConfig->isMemcachedBinary() ? 'yes' : 'no',
         ]);
     }
 
