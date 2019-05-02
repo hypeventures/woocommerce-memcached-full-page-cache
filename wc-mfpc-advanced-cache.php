@@ -104,13 +104,6 @@ if (! empty($wc_mfpc_config_array[ 'nocache_cookies' ])) {
 
 }
 
-if (isset($_COOKIE[ 'wc-mfpc-nocache' ])) {
-
-    error_log('----------------> skipping administrator nocache cookie');
-
-    return false;
-}
-
 /* no cache for excluded URL patterns */
 if (! empty($wc_mfpc_config_array[ 'nocache_url' ])) {
 
@@ -121,6 +114,32 @@ if (! empty($wc_mfpc_config_array[ 'nocache_url' ])) {
         error_log("Cache exception based on URL regex pattern matched, skipping");
 
         return false;
+    }
+
+}
+
+/*
+ * no cache for for logged in users
+ */
+if (empty($wc_mfpc_config_array[ 'cache_loggedin' ])) {
+
+    $nocache_cookies = [ 'comment_author_', 'wordpressuser_', 'wp-postpass_', 'wordpress_logged_in_' ];
+
+}
+
+$nocache_cookies[] = 'wc-mfpc-nocache';
+
+foreach ($_COOKIE as $n => $v) {
+
+    foreach ($nocache_cookies as $nocache_cookie) {
+
+        if (strpos($n, $nocache_cookie) === 0) {
+
+            error_log("No cache for cookie: {$n}, skipping");
+
+            return false;
+        }
+
     }
 
 }
@@ -138,28 +157,6 @@ if (empty($wc_mfpc_backend->status())) {
     error_log("Backend offline");
 
     return false;
-}
-
-/*
- * no cache for for logged in users unless it's set identifier cookies are listed in backend as var for easier usage
- */
-if (empty($wc_mfpc_config_array[ 'cache_loggedin' ])) {
-
-    foreach ($_COOKIE as $n => $v) {
-
-        foreach ($wc_mfpc_backend->cookies as $nocache_cookie) {
-
-            if (strpos($n, $nocache_cookie) === 0) {
-
-                error_log("No cache for cookie: {$n}, skipping");
-
-                return false;
-            }
-
-        }
-
-    }
-
 }
 
 /* will store time of page generation */
