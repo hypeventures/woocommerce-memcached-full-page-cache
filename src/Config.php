@@ -96,7 +96,7 @@ class Config
     /**
      * @var bool
      */
-    public $cache_loggedin          = false;
+    public $cache_loggedin          = true;
 
     /**
      * @var bool
