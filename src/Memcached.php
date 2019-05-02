@@ -548,7 +548,7 @@ class Memcached
             error_log('flushing cache');
 
             /* proxy to internal function */
-            $result = $this->_flush();
+            $result = $this->flush();
 
             if ($result === false) {
 
@@ -637,7 +637,7 @@ class Memcached
     /**
      * Flush memcached entries
      */
-    protected function _flush()
+    public function flush()
     {
         return $this->connection->flush();
     }
