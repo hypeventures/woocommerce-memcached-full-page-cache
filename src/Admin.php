@@ -342,7 +342,7 @@ class Admin
     {
         global $wcMfpcData;
 
-        wp_register_style(Data::admin_css_handle, $wcMfpcData->admin_css_url, [ 'dashicons' ], false, 'all');
+        wp_register_style(Data::admin_css_handle, $wcMfpcData->admin_css_url, [], false, 'all');
         wp_enqueue_style(Data::admin_css_handle);
     }
 
@@ -358,7 +358,7 @@ class Admin
         /* save parameter updates, if there are any */
         if (isset($_POST[ Data::button_save ]) && check_admin_referer('wc-mfpc')) {
 
-            $this->plugin_options_save();
+            $wcMfpcConfig->save();
             $this->status = 1;
             header("Location: " . $wcMfpcData->settings_link . Data::slug_save);
 
@@ -367,7 +367,7 @@ class Admin
         /* delete parameters if requested */
         if (isset($_POST[ Data::button_delete ]) && check_admin_referer('wc-mfpc')) {
 
-            self::plugin_options_delete();
+            $wcMfpcConfig->delete();
             $this->status = 2;
             header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_delete);
 
@@ -377,7 +377,7 @@ class Admin
         if (isset($_POST[ Data::button_flush ]) && check_admin_referer('wc-mfpc')) {
 
             /* flush backend */
-            $wcMfpc->backend->clear(false, true);
+            $wcMfpc->backend->flush();
             $this->status = 3;
             header("Location: " . $wcMfpcData->settings_link . Data::slug_flush);
 
