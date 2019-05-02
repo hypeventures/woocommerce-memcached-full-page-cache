@@ -5,7 +5,7 @@
 
 if (! defined('ABSPATH')) { exit; }
 
-
+error_log('------------------------------------------------------------------------------------------------------------------------');
 error_log('worker running');
 
 /* check for WP cache enabled*/
@@ -152,11 +152,6 @@ if (empty($wc_mfpc_config_array[ 'cache_loggedin' ])) {
         }
 
     }
-
-} elseif(current_user_can('administrator')) {
-
-    error_log('No cache for administrators');
-    return false;
 
 }
 
@@ -351,10 +346,6 @@ function wc_mfpc_start()
     $mtime           = explode(" ", microtime());
     $wc_mfpc_gentime = $mtime[ 1 ] + $mtime[ 0 ];
 
-	// ToDo: Check if this might be useful!!!
-    global $show_admin_bar;
-    $show_admin_bar = false;
-
 	/* start object "colleting" and pass it the the actual storer function  */
 	ob_start('wc_mfpc_callback');
 }
@@ -400,6 +391,16 @@ function wc_mfpc_callback( $buffer )
     if (! function_exists('is_home')) {
 
 		return $buffer;
+    }
+
+    /*
+     * Skip if current user has a admin-bar.
+     */
+    if (is_admin_bar_showing()) {
+
+        error_log('------------------> skipping administrator!');
+
+        return $buffer;
     }
 
 	/* no <body> close tag = not HTML, also no <rss>, not feed, don't cache */
