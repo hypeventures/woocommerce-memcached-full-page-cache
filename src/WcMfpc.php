@@ -104,8 +104,9 @@ class WcMfpc
      */
     public function pluginDeactivate()
     {
-        $admin = new Admin();
-        $admin->update_global_config(true);
+        global $wcMfpcConfig;
+
+        $wcMfpcConfig->delete();
     }
 
     /**
