@@ -182,12 +182,15 @@ class Memcached
             return false;
         }
 
-        /* check is there's no backend connection yet */
+        /*
+         * Initialize connection in case there's none yet.
+         */
         if ($this->connection === null) {
 
+            /*
+             * Use binary protocol & no compression if possible => good for nginx and still fast.
+             */
             $this->connection = new \Memcached();
-
-            /* use binary and not compressed format, good for nginx and still fast */
             $this->connection->setOption(\Memcached::OPT_COMPRESSION, false);
 
             if (! empty($this->options[ 'memcached_binary' ])) {
@@ -196,12 +199,7 @@ class Memcached
 
             }
 
-            if (
-                version_compare(phpversion('memcached'), '2.0.0', '>=')
-                && ini_get('memcached.use_sasl') == 1
-                && ! empty($this->options[ 'authpass' ])
-                && ! empty($this->options[ 'authuser' ])
-            ) {
+            if (! empty($this->options[ 'authpass' ]) && ! empty($this->options[ 'authuser' ])) {
 
                 $this->connection->setSaslAuthData($this->options[ 'authuser' ], $this->options[ 'authpass' ]);
 
@@ -217,7 +215,7 @@ class Memcached
             return false;
         }
 
-        /* check if we already have list of servers, only add server(s) if it's not already connected */
+        /* check if we already have a list of servers, only add server(s) if it's not already connected */
         $servers_alive = [];
 
         if (! empty ($this->status)) {
@@ -253,26 +251,13 @@ class Memcached
 
         /* backend is now alive */
         $this->alive = true;
-        $this->_status();
     }
 
     /**
-     * sets current backend alive status for Memcached servers
-     *
-     * @todo This is complete BS. It proofs nothing! The key will just be set at the first available server which is
-     *       most likely NOT corresponding with the server which is in the foreach() loop.
-     *       The connection status of each server can only be determined if while saving the following is done:
-     *        - add a single server
-     *        - save a key which is specific for this server like md5(host:port)
-     *        - empty server list
-     *        - rinse and repeat steps above for each server
-     *       THEN we can check each individual server here via \Memcached->getServerByKey(md5(host:port))
-     *
-     * @link https://www.php.net/manual/de/memcached.getserverbykey.php
+     * Sets current backend alive status for Memcached servers
      */
     protected function _status()
     {
-        /* server status will be calculated by getting server stats */
         error_log("checking server statuses");
 
         /*
@@ -421,8 +406,9 @@ class Memcached
     /**
      * public set function, transparent proxy to internal function based on backend
      *
-     * @param string $key  Cache key to set with ( reference only, for speed )
-     * @param mixed  $data Data to set ( reference only, for speed )
+     * @param string $key     Cache key to set with ( reference only, for speed )
+     * @param mixed  $data    Data to set ( reference only, for speed )
+     * @param mixed  $expire
      *
      * @return mixed $result status of set function
      */
@@ -436,8 +422,8 @@ class Memcached
 
         /* log the current action */
         error_log(sprintf('set %s expiration time: %s', $key, $this->options[ 'expire' ]));
-        /* expiration time based is based on type from now on */
 
+        /* expiration time based is based on type from now on */
         /* fallback */
         if ($expire === false) {
 
@@ -461,13 +447,6 @@ class Memcached
         /* proxy to internal function */
         $result = $this->_set($key, $data, $expire);
 
-        /* check result validity */
-        if (empty($result)) {
-
-            error_log(sprintf('failed to set entry: %s', $key), LOG_WARNING);
-
-        }
-
         return $result;
     }
 
@@ -488,9 +467,8 @@ class Memcached
 
             $code = $this->connection->getResultCode();
 
-            error_log(sprintf('unable to set entry: %s', $key));
+            error_log(sprintf('Unable to set entry: %s', $key));
             error_log(sprintf('Memcached error code: %s', $code));
-            //throw new Exception ( 'Unable to store Memcached entry ' . $key .  ', error code: ' . $code );
 
         }
 
@@ -562,20 +540,6 @@ class Memcached
 
         }
 
-        /* clear pasts index page if settings requires it */
-        if ($this->options[ 'invalidation_method' ] == 3) {
-
-            $posts_page_id = get_option('page_for_posts');
-            $post_type     = get_post_type($post_id);
-
-            if ($post_type === 'post' && $posts_page_id != $post_id) {
-
-                $this->clear($posts_page_id, $force);
-
-            }
-
-        }
-
         /* if there's a post id pushed, it needs to be invalidated in all cases */
         if (! empty ($post_id)) {
 
@@ -640,31 +604,12 @@ class Memcached
      * @param array &$links Passed by reference array that has to be filled up with the links
      * @param mixed $site   Site ID or false; used in WordPress Network
      */
-    public function taxonomy_links(&$links, $site = false)
+    public function taxonomy_links(&$links)
     {
-        if ($site !== false) {
-
-            $current_blog = get_current_blog_id();
-            switch_to_blog($site);
-            $url = get_blog_option($site, 'siteurl');
-
-            if (substr($url, -1) !== '/') {
-
-                $url = $url . '/';
-
-            }
-
-            $links[ $url ] = true;
-
-        }
-
-        /* we're only interested in public taxonomies */
-        $args = [
+        /* get public taxonomies as objects */
+        $taxonomies = get_taxonomies([
             'public' => true,
-        ];
-
-        /* get taxonomies as objects */
-        $taxonomies = get_taxonomies($args, 'objects');
+        ], 'objects');
 
         if (! empty($taxonomies)) {
 
@@ -714,13 +659,6 @@ class Memcached
                 }
 
             }
-
-        }
-
-        /* switch back to original site if we navigated away */
-        if ($site !== false) {
-
-            switch_to_blog($current_blog);
 
         }
     }
@@ -806,31 +744,6 @@ class Memcached
     }
 
     /**
-     * clear cache triggered by new comment
-     *
-     * @param int              $comment_id     Comment ID
-     * @param null|\WP_Comment $comment_object The whole comment object ?
-     *
-     * @return bool
-     */
-    public function clear_by_comment($comment_id = 0, $comment_object = null)
-    {
-        if (empty($comment_id)) {
-
-            return false;
-        }
-
-        $comment = get_comment($comment_id);
-        $post_id = $comment->comment_post_ID;
-
-        if (! empty($post_id)) {
-
-            $this->clear($post_id);
-
-        }
-    }
-
-    /**
      * get backend aliveness
      *
      * @return bool|array Array of configured servers with aliveness value
@@ -847,19 +760,6 @@ class Memcached
         $this->_status();
 
         return $this->status;
-    }
-
-    /**
-     * get current array of servers
-     * ToDo: Remove - this seems to be unused...
-     *
-     * @return array Server list in current config
-     */
-    public function get_servers()
-    {
-        $r = isset ($this->options[ 'servers' ]) ? $this->options[ 'servers' ] : '';
-
-        return $r;
     }
 
 }
