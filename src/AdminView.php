@@ -205,8 +205,9 @@ class AdminView
          * @var Data   $wcMfpcData
          * @var Config $wcMfpcConfig
          * @var Admin  $wcMfpcAdmin
+         * @var array  $wc_mfpc_config_array
          */
-        global $wcMfpcData, $wcMfpcConfig, $wcMfpcAdmin;
+        global $wcMfpcData, $wcMfpcConfig, $wcMfpcAdmin, $wc_mfpc_config_array;
 
         /*
          * if options were saved
@@ -240,10 +241,11 @@ class AdminView
         /*
          * look for global settings array
          */
-        if (! $wcMfpcAdmin->isGlobalSaved()) {
+        if (isset($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
 
             Alert::alert(sprintf(
-                'This site was reached as %s ( according to PHP HTTP_HOST ) and there are no settings present for this domain in the WC-MFPC configuration yet. Please save the %s for the domain or fix the webserver configuration!',
+                'This site was reached as %s ( according to PHP HTTP_HOST ) and there are no settings present '
+                . 'for this domain in the WC-MFPC configuration yet. Please save the %s for this blog.',
                 $_SERVER[ 'HTTP_HOST' ], $settings_link
             ), LOG_WARNING);
 
@@ -254,7 +256,10 @@ class AdminView
          */
         if (file_exists($wcMfpcData->acache) && ! is_writable($wcMfpcData->acache)) {
 
-            Alert::alert(sprintf('Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.', $wcMfpcData->acache), LOG_WARNING);
+            Alert::alert(sprintf(
+              'Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.',
+              $wcMfpcData->acache
+            ), LOG_WARNING);
 
         }
 
