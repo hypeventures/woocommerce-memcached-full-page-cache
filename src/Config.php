@@ -164,9 +164,12 @@ class Config
     public $pingback_header         = false;
 
     /**
+     * @var array
+     */
+    private $global                 = [];
+
+    /**
      * Config constructor.
-     *
-     * @todo Check if add_action() to set nocache_woocommerce_url is really necessary.
      *
      * @param array $config  Optional array with config to be set.
      */
@@ -232,6 +235,8 @@ class Config
 
         }
 
+        $this->global = $options;
+
         if (isset($options[ $wcMfpcData->global_config_key ])) {
 
             $options = $options[ $wcMfpcData->global_config_key ];
@@ -255,8 +260,12 @@ class Config
             $options = get_site_option(Data::global_option);
             $options[ $wcMfpcData->global_config_key ] = $this->getConfig();
 
+            $this->global = $options;
+
             return update_site_option(Data::global_option, $options);
         }
+
+        $this->global = $this->getConfig();
 
         return update_option(Data::global_option, $this->getConfig());
     }
@@ -282,8 +291,12 @@ class Config
             $options = get_site_option(Data::global_option);
             $options[ $wcMfpcData->global_config_key ] = $this->getConfig();
 
+            $this->global = $options;
+
             return update_site_option(Data::global_option, $options);
         }
+
+        $this->global = $this->getConfig();
 
         return delete_option(Data::global_option);
     }
@@ -481,6 +494,8 @@ class Config
     }
 
     /**
+     * Determines the RegEx to exclude dynamic woocommerce pages.
+     *
      * @param string $nocache_woocommerce_url
      */
     public function setNocacheWoocommerceUrl(string $nocache_woocommerce_url = '')
@@ -547,6 +562,14 @@ class Config
     public function isPingbackHeader()
     {
         return $this->pingback_header;
+    }
+
+    /**
+     * @return array
+     */
+    public function getGlobal()
+    {
+        return $this->global;
     }
 
 }
