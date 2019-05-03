@@ -15,8 +15,8 @@ if (! defined( 'WP_UNINSTALL_PLUGIN') || ! defined('ABSPATH')) {
 
 include_once 'vendor/autoload.php';
 
-/* delete advanced-cache.php file */
+use InvincibleBrands\WcMfpc\Data;
+
 unlink(WP_CONTENT_DIR . '/advanced-cache.php');
 
-/* delete site settings */
-InvincibleBrands\WcMfpc\Admin::plugin_options_delete();
+delete_site_option(Data::global_option);
