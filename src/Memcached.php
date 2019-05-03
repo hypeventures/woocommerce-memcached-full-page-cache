@@ -651,46 +651,25 @@ class Memcached
     }
 
     /**
-     * get memcached aliveness
+     * Sets the status of each server in an array
      *
-     * @return bool|array Array of configured servers with aliveness value
+     * @todo Test if changing of the server list is really necessary. It might increase Memcached server requests.
+     *
+     * @return bool|array $this->status  Array of configured servers with aliveness value
      */
     public function status()
     {
-
-        /* look for memcached aliveness, exit on inactive memcached */
         if (! $this->isAlive()) {
 
             return false;
         }
 
-        $this->_status();
-
-        return $this->status;
-    }
-
-    /**
-     * Sets current memcached alive status for Memcached servers.
-     *
-     * @todo Evaluate merging _status() into status()
-     */
-    protected function _status()
-    {
-        error_log("checking server statuses");
-
-        /*
-         * Get the server list from connection.
-         */
-        $servers = $this->connection->getServerList();
         $changed = false;
+        $servers = $this->connection->getServerList();
 
         foreach ($servers as $i => $server) {
 
-            $server_id = $server[ 'host' ] . self::port_separator . $server[ 'port' ];
-
-            /*
-             * reset server status to offline
-             */
+            $server_id                  = $server[ 'host' ] . self::port_separator . $server[ 'port' ];
             $this->status[ $server_id ] = 0;
 
             /*
@@ -701,14 +680,10 @@ class Memcached
 
             if ($memcached->set('wc-mfpc', time())) {
 
-                error_log(sprintf('%s server is up & running', $server_id));
                 $this->status[ $server_id ] = 1;
 
             } else {
 
-                /*
-                 * If the server did not respond remove it from the list.
-                 */
                 unset($servers[ $i ]);
                 $changed = true;
 
@@ -721,13 +696,14 @@ class Memcached
         /*
          * If there are indeed servers which do not respond, remove them from the pool.
          */
-        if ($changed) {
+        if ($changed && ! empty($servers)) {
 
             $this->connection->resetServerList();
             $this->connection->addServers($servers);
 
         }
 
+        return $this->status;
     }
 
 }
