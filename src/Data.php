@@ -80,11 +80,6 @@ class Data
     public $global_config_key = '';
 
     /**
-     * @var bool
-     */
-    public $network = false;
-
-    /**
      * @var string
      */
     public $settings_link = '';
@@ -104,7 +99,6 @@ class Data
         $this->acache_worker        = $this->plugin_dir . 'wc-mfpc-advanced-cache.php';
         $this->acache               = WP_CONTENT_DIR . '/advanced-cache.php';
         $this->settings_link        = 'admin.php?page=' . self::plugin_settings_page;
-        $this->network              = function_exists('is_multisite') && is_multisite();
 
         $this->setShellFunction();
         $this->setGlobalConfigKey();
