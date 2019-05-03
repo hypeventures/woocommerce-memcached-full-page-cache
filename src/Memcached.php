@@ -348,36 +348,18 @@ class Memcached
     }
 
     /**
-     * public set function, transparent proxy to internal function based on memcached
+     * Determines expire time if necessary
      *
      * @param string $key     Cache key to set with ( reference only, for speed )
      * @param mixed  $data    Data to set ( reference only, for speed )
-     * @param mixed  $expire
      *
      * @return mixed $result status of set function
      */
-    public function set(&$key, &$data, $expire = false)
+    public function set(&$key, &$data)
     {
         if (! $this->is_alive()) {
 
             return false;
-        }
-
-        /* fallback */
-        if ($expire === false) {
-
-            $expire = empty($this->config[ 'expire' ]) ? 0 : (int) $this->config[ 'expire' ];
-
-        }
-
-        if ((is_home() || is_feed()) && isset($this->config[ 'expire_home' ])) {
-
-            $expire = (int) $this->config[ 'expire_home' ];
-
-        } elseif ((is_tax() || is_category() || is_tag() || is_archive()) && isset($this->config[ 'expire_taxonomy' ])) {
-
-            $expire = (int) $this->config[ 'expire_taxonomy' ];
-
         }
 
         /*
@@ -385,6 +367,7 @@ class Memcached
          */
         error_log('SET ' . $key);
 
+        $expire = $this->getExpire();
         $result = $this->connection->set($key, $data, $expire);
 
         if ($result === false) {
@@ -397,6 +380,28 @@ class Memcached
         }
 
         return $result;
+    }
+
+    /**
+     * Determines and returns the expire time based on config settings.
+     *
+     * @return int $expire
+     */
+    protected function getExpire()
+    {
+        $expire = empty($this->config[ 'expire' ]) ? 0 : (int) $this->config[ 'expire' ];
+
+        if (isset($this->config[ 'expire_home' ]) && (is_home() || is_feed())) {
+
+            $expire = (int) $this->config[ 'expire_home' ];
+
+        } elseif (isset($this->config[ 'expire_taxonomy' ]) && (is_tax() || is_category() || is_tag() || is_archive())) {
+
+            $expire = (int) $this->config[ 'expire_taxonomy' ];
+
+        }
+
+        return $expire;
     }
 
     /**
