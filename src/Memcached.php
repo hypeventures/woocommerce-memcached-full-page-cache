@@ -353,45 +353,28 @@ class Memcached
          */
         error_log('SET ' . $key);
 
-        $expire = $this->getExpire();
+        $expire = empty($this->config[ 'expire' ]) ? 0 : (int) $this->config[ 'expire' ];
+
+        /**
+         * Filter to enable customization of expire time.
+         * Allows 3rd party Developers to change the expiration time based on page type etc.
+         *
+         * @param int $expire  Integer to be set as "Expires:" header.
+         *                     Default value is the expire setting, which you can set at the Plugins setting page.
+         *
+         * @return int
+         */
+        $expire = (int) apply_filters('wc-mfpc-custom-expire', $expire);
+
         $result = $this->connection->set($key, $data, $expire);
-
-        if ($result === false) {
-
-            $code = $this->connection->getResultCode();
-
-            error_log('Unable to set entry: ' . $key, LOG_WARNING);
-            error_log('Memcached error code: ' . $code, LOG_WARNING);
-
-        }
 
         return $result;
     }
 
     /**
-     * Determines and returns the expire time based on config settings.
+     * Handles clearing of posts and taxonomies.
      *
-     * @return int $expire
-     */
-    protected function getExpire()
-    {
-        $expire = empty($this->config[ 'expire' ]) ? 0 : (int) $this->config[ 'expire' ];
-
-        if (! empty($this->config[ 'expire_home' ]) && (is_home() || is_feed())) {
-
-            $expire = (int) $this->config[ 'expire_home' ];
-
-        } elseif (! empty($this->config[ 'expire_taxonomy' ]) && (is_tax() || is_category() || is_tag() || is_archive())) {
-
-            $expire = (int) $this->config[ 'expire_taxonomy' ];
-
-        }
-
-        return $expire;
-    }
-
-    /**
-     * public get function, transparent proxy to internal function based on memcached
+     * @todo This needs some serious diet.
      *
      * @param int     $post_id ID of post to invalidate
      * @param boolean $force   Force flush cache
