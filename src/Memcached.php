@@ -327,7 +327,7 @@ class Memcached
     {
         if (! $this->alive) {
 
-            error_log("memcached is not active, exiting function " . __FUNCTION__, LOG_WARNING);
+            error_log("Memcached is not active, exiting function " . __FUNCTION__, LOG_WARNING);
 
             return false;
         }
@@ -348,7 +348,7 @@ class Memcached
     }
 
     /**
-     * Determines expire time if necessary
+     * Sets key and data in Memcached with expiration via getExpire().
      *
      * @param string $key     Cache key to set with ( reference only, for speed )
      * @param mixed  $data    Data to set ( reference only, for speed )
