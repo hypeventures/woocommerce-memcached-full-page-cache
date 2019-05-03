@@ -244,6 +244,8 @@ class Memcached
 
         $result = [];
 
+        #error_log('getKeys $toClear: ' . var_export($toClear, true));
+
         foreach ($toClear as $link => $dummy) {
 
             $result[ $config[ 'prefix_data' ] . $link ]          = true;
@@ -252,6 +254,8 @@ class Memcached
             $result[ $config[ 'prefix_meta' ] . $link . 'feed' ] = true;
 
         }
+
+        #error_log('getKeys $result: ' . var_export($result, true));
 
         return $result;
     }
@@ -270,9 +274,9 @@ class Memcached
         $key_base = self::mapUriMap($uriMap, $this->config[ 'key' ]);
         $key      = $prefix . $key_base;
 
-        error_log(sprintf('original key configuration: %s', $this->config[ 'key' ]));
-        error_log(sprintf('setting key for: %s', $key_base));
-        error_log(sprintf('setting key to: %s', $key));
+        #error_log(sprintf('original key configuration: %s', $this->config[ 'key' ]));
+        #error_log(sprintf('setting key for: %s', $key_base));
+        #error_log(sprintf('setting key to: %s', $key));
 
         return $key;
     }
@@ -293,7 +297,7 @@ class Memcached
      *
      * @param string $key Cache key to get value for
      *
-     * @return mixed False when entry not found or entry value on success
+     * @return mixed     False when entry not found or entry value on success
      */
     public function get(&$key)
     {
@@ -302,8 +306,7 @@ class Memcached
             return false;
         }
 
-        /* log the current action */
-        error_log(sprintf('GET %s', $key));
+        #error_log(sprintf('GET %s', $key));
 
         $result = $this->connection->get($key);;
 
@@ -319,7 +322,7 @@ class Memcached
     /**
      * function to check memcached aliveness
      *
-     * @return boolean true if memcached is alive, false if not
+     * @return bool  True, if memcached is alive, false in case it's not
      */
     protected function isAlive()
     {
@@ -334,7 +337,8 @@ class Memcached
     }
 
     /**
-     * Sets key and data in Memcached with expiration via getExpire().
+     * Sets key and data in Memcached with expiration.
+     * Contains Hook: 'wc-mfpc-custom-expire' to customize expiration time.
      *
      * @param string $key     Cache key to set with ( reference only, for speed )
      * @param mixed  $data    Data to set ( reference only, for speed )
@@ -348,10 +352,7 @@ class Memcached
             return false;
         }
 
-        /*
-         * ToDo: Only necessary for testing. Remove on finish!
-         */
-        error_log('SET ' . $key);
+        #error_log('SET ' . $key);
 
         $expire = empty($this->config[ 'expire' ]) ? 0 : (int) $this->config[ 'expire' ];
 
@@ -383,7 +384,6 @@ class Memcached
      */
     public function clear($post_id = 0, $force = false)
     {
-        /* look for memcached aliveness, exit on inactive memcached */
         if (! $this->isAlive()) {
 
             return false;
@@ -392,7 +392,7 @@ class Memcached
         /* exit if no post_id is specified */
         if (empty ($post_id) && $force === false) {
 
-            error_log('not clearing unidentified post', LOG_WARNING);
+            #error_log('not clearing unidentified post', LOG_WARNING);
 
             return false;
         }
@@ -400,10 +400,8 @@ class Memcached
         /* if invalidation method is set to full, flush cache */
         if (($this->config[ 'invalidation_method' ] === 0 || $force === true)) {
 
-            /* log action */
-            error_log('flushing cache');
+            #error_log('flushing cache');
 
-            /* proxy to internal function */
             $result = $this->flush();
 
             if ($result === false) {
