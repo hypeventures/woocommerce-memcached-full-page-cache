@@ -1,7 +1,11 @@
 <?php
 /**
- * Uninstall file for WC-MFPC;
- * (!) Hook does not remove the database options.
+ * Uninstall file for WooCommerce-Memcached-Full-Page-Cache.
+ *
+ * @uses defined()
+ * @uses Data
+ * @uses unlink()
+ * @uses delete_site_option()
  */
 
 /*
