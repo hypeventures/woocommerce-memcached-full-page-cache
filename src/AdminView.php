@@ -451,15 +451,6 @@ class AdminView
             'value'       => $wcMfpcConfig->getBrowsercache(),
         ]);
         woocommerce_wp_text_input([
-            'id'          => 'expire_taxonomy',
-            'label'       => 'Expiration of Taxonomies',
-            'type'        => 'number',
-            'data_type'   => 'decimal',
-            'class'       => 'short',
-            'description' => 'Sets validity time of taxonomy entry in seconds, including custom taxonomy.',
-            'value'       => $wcMfpcConfig->getExpireTaxonomy(),
-        ]);
-        woocommerce_wp_text_input([
             'id'          => 'browsercache_taxonomy',
             'label'       => 'Browser cache expiration of Taxonomies',
             'type'        => 'number',
@@ -467,15 +458,6 @@ class AdminView
             'class'       => 'short',
             'description' => 'Sets validity time of taxonomy for the browser cache.',
             'value'       => $wcMfpcConfig->getBrowsercacheTaxonomy(),
-        ]);
-        woocommerce_wp_text_input([
-            'id'          => 'expire_home',
-            'label'       => 'Expiration of Home',
-            'type'        => 'number',
-            'data_type'   => 'decimal',
-            'class'       => 'short',
-            'description' => 'Sets validity time of home on server side.',
-            'value'       => $wcMfpcConfig->getExpireHome(),
         ]);
         woocommerce_wp_text_input([
             'id'          => 'browsercache_home',
