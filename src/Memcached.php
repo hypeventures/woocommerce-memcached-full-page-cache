@@ -297,9 +297,7 @@ class Memcached
      */
     public function get(&$key)
     {
-        /* look for memcached aliveness, exit on inactive memcached */
         if (! $this->isAlive()) {
-            error_log('WARNING: Backend offline');
 
             return false;
         }
@@ -307,7 +305,7 @@ class Memcached
         /* log the current action */
         error_log(sprintf('GET %s', $key));
 
-        $result = $this->_get($key);
+        $result = $this->connection->get($key);;
 
         if (empty($result)) {
 
@@ -333,18 +331,6 @@ class Memcached
         }
 
         return true;
-    }
-
-    /**
-     * get function for Memcached memcached
-     *
-     * @param string $key Key to get values for
-     *
-     * @return mixed
-     */
-    protected function _get(&$key)
-    {
-        return $this->connection->get($key);
     }
 
     /**
