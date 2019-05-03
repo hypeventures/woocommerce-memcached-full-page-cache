@@ -298,7 +298,7 @@ class Memcached
     public function get(&$key)
     {
         /* look for memcached aliveness, exit on inactive memcached */
-        if (! $this->is_alive()) {
+        if (! $this->isAlive()) {
             error_log('WARNING: Backend offline');
 
             return false;
