@@ -36,10 +36,13 @@ use InvincibleBrands\WcMfpc\Config;
 use InvincibleBrands\WcMfpc\Data;
 use InvincibleBrands\WcMfpc\WcMfpc;
 
-global $wcMfpcConfig, $wcMfpcData, $wcMfpc;
+define('WC_MFPC_PLUGIN_DIR', __DIR__ . '/');
+define('WC_MFPC_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('WC_MFPC_PLUGIN_FILE', basename(__FILE__) . '/' . Data::plugin_constant . '.php');
+
+global $wcMfpcConfig, $wcMfpc;
 
 $wcMfpcConfig = new Config();
-$wcMfpcData   = new Data();
 $wcMfpc       = new WcMfpc();
 
 add_action('init', [ &$wcMfpc, 'init' ]);
