@@ -23,7 +23,7 @@ if (! defined('WP_CACHE') || WP_CACHE != true) {
  */
 if ($_SERVER[ "REQUEST_METHOD" ] === 'POST') {
 
-    error_log('POST requests are never cached');
+    error_log('POST (AJAX) requests are never cached');
 
     return false;
 }
@@ -41,19 +41,9 @@ if (defined('SID') && SID != '') {
 /*
  * check for config
  */
-if (! isset($wc_mfpc_config_array)) {
+if (! isset($wc_mfpc_config_array) || empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
 
-    error_log('$wc_mfpc_config_array variable not found');
-
-    return false;
-}
-
-/*
- * Check if config is available.
- */
-if (empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
-
-    error_log("no usable config found");
+    error_log("No config found.");
 
     return false;
 }
