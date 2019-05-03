@@ -49,11 +49,6 @@ if (! isset($wc_mfpc_config_array)) {
 }
 
 /*
- * Set request uri
- */
-$wc_mfpc_uri = $_SERVER[ 'REQUEST_URI' ];
-
-/*
  * Check if config is available.
  */
 if (empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
@@ -63,11 +58,8 @@ if (empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
     return false;
 }
 
-/*
- * Set Config
- */
 $wc_mfpc_config_array = $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ];
-error_log("using {$_SERVER[ 'HTTP_HOST' ]} level config");
+$wc_mfpc_uri          = $_SERVER[ 'REQUEST_URI' ];
 
 /*
  * no cache for uri with query strings, things usually go bad that way
