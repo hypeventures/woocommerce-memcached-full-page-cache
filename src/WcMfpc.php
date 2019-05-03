@@ -90,12 +90,15 @@ class WcMfpc
     }
 
     /**
-     * Activation hook function.
-     * Left empty to avoid issues with detecting WordPress Network (Multisite).
+     * Activation hook function. Redirects to settingspage
      *
      * @return void
      */
-    public function pluginActivate() {}
+    public function pluginActivate()
+    {
+        wp_redirect(admin_url() . Data::settings_link, 302);
+        wp_die();
+    }
 
     /**
      * Removes current site config from global config on deactivation.
