@@ -5,7 +5,7 @@
 
 if (! defined('ABSPATH')) { exit; }
 
-error_log('------------------------------------------------------------------------------------------------------------------------');
+error_log('--------------------------------------------------------------------------------------------------');
 error_log('worker running');
 
 /*
@@ -55,7 +55,6 @@ $wc_mfpc_uri = $_SERVER[ 'REQUEST_URI' ];
 
 /*
  * Check if config is available.
- * ToDo: check this on single blog pages (no multisite). Eventually tweaking is needed.
  */
 if (empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
 
@@ -214,7 +213,6 @@ foreach ($wc_mfpc_keys as $internal => $key) {
     $value = $wc_mfpc_memcached->get($key);
 
     if (empty($value)) {
-
 
         /*
          * It does not matter which is missing, we need both, if one fails, no caching
