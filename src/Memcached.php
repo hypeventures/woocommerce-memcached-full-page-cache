@@ -587,22 +587,7 @@ class Memcached
      */
     public function clear_keys($keys)
     {
-        $to_clear = $this->getKeys($keys, $this->config);
-
-        return $this->_clear($to_clear);
-    }
-
-    /**
-     * Removes entry from Memcached or flushes Memcached storage
-     *
-     * @todo Evaluate merging _clear() into clear()
-     *
-     * @param mixed $keys String / array of string of keys to delete entries with
-     *
-     * @return bool
-     */
-    protected function _clear(&$keys)
-    {
+        $keys   = $this->getKeys($keys, $this->config);
         $result = false;
 
         /* make an array if only one string is present, easier processing */
