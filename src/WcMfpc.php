@@ -70,7 +70,6 @@ class WcMfpc
          */
         add_action('switch_theme', [ &$this, 'clearMemcached' ], 0);
         add_action('deleted_post', [ &$this, 'clearMemcached' ], 0);
-        add_action('edit_post', [ &$this, 'clearMemcached' ], 0);
 
         /*
          * add filter for catching canonical redirects
