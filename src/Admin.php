@@ -27,11 +27,11 @@ class Admin
     {
         if (is_multisite()) {
 
-            add_filter("network_admin_plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'plugin_settings_link' ]);
+            add_filter("network_admin_plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'addSettingsLink' ]);
 
         }
 
-        add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'plugin_settings_link' ]);
+        add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'addSettingsLink' ]);
         add_action('admin_menu', [ &$this, 'addMenu' ], 101);
         add_action('admin_init', [ &$this, 'init' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueue_admin_css_js' ]);
@@ -71,7 +71,7 @@ class Admin
      */
     private function validateMandatorySettings()
     {
-        $valid  = false;
+        $valid  = true;
         $domain = parse_url(get_option('siteurl'), PHP_URL_HOST);
 
         /*
@@ -85,7 +85,7 @@ class Admin
                 $domain, Config::getGlobalConfigKey()
             ), LOG_WARNING, true);
 
-            $valid = true;
+            $valid = false;
 
         }
 
@@ -100,7 +100,16 @@ class Admin
                 LOG_WARNING, true
             );
 
-            $valid = true;
+            $valid = false;
+        }
+
+        if (! class_exists('Memcached')) {
+
+            Alert::alert(
+                'WARNING: PHP Memcached expansion is missing! WooCommerce Memcached Full Page Cache does not work.',
+                LOG_WARNING, true
+            );
+
         }
 
         return $valid;
@@ -475,13 +484,13 @@ class Admin
     }
 
     /**
-     * callback function to add settings link to plugins page
+     * Callback function to add settings link to plugins page
      *
      * @param array $links Current links to add ours to
      *
      * @return array
      */
-    public function plugin_settings_link($links)
+    public function addSettingsLink($links)
     {
         $settings_link = '<a href="' . Data::settings_link . '">Settings</a>';
         array_unshift($links, $settings_link);
