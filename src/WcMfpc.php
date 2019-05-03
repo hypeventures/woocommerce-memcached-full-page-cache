@@ -52,36 +52,42 @@ class WcMfpc
         }
 
         /*
-         * cache invalidation hooks
-         */
-        add_action('transition_post_status', [ &$this->getMemcached(), 'clear_ng' ], 10, 3);
-
-        /*
          * comments invalidation hooks
          */
         if (! empty($wcMfpcConfig->isCommentsInvalidate())) {
 
-            add_action('comment_post', [ &$this->getMemcached(), 'clear' ], 0);
-            add_action('edit_comment', [ &$this->getMemcached(), 'clear' ], 0);
-            add_action('trashed_comment', [ &$this->getMemcached(), 'clear' ], 0);
-            add_action('pingback_post', [ &$this->getMemcached(), 'clear' ], 0);
-            add_action('trackback_post', [ &$this->getMemcached(), 'clear' ], 0);
-            add_action('wp_insert_comment', [ &$this->getMemcached(), 'clear' ], 0);
+            add_action('comment_post', [ &$this, 'clearMemcached' ], 0);
+            add_action('edit_comment', [ &$this, 'clearMemcached' ], 0);
+            add_action('trashed_comment', [ &$this, 'clearMemcached' ], 0);
+            add_action('pingback_post', [ &$this, 'clearMemcached' ], 0);
+            add_action('trackback_post', [ &$this, 'clearMemcached' ], 0);
+            add_action('wp_insert_comment', [ &$this, 'clearMemcached' ], 0);
 
         }
 
         /*
          * invalidation on some other occasions as well
          */
-        add_action('switch_theme', [ &$this->getMemcached(), 'clear' ], 0);
-        add_action('deleted_post', [ &$this->getMemcached(), 'clear' ], 0);
-        add_action('edit_post', [ &$this->getMemcached(), 'clear' ], 0);
+        add_action('switch_theme', [ &$this, 'clearMemcached' ], 0);
+        add_action('deleted_post', [ &$this, 'clearMemcached' ], 0);
+        add_action('edit_post', [ &$this, 'clearMemcached' ], 0);
 
         /*
          * add filter for catching canonical redirects
          */
         add_filter('redirect_canonical', 'wc_mfpc_redirect_callback', 10, 2);
 
+    }
+
+    /**
+     * Proxy to trigger Memcached::clear() via hooks.
+     *
+     * @param null|\WP_Post $post
+     */
+    public function clearMemcached($post = null)
+    {
+        $this->getMemcached()
+             ->clear($post);
     }
 
     /**
