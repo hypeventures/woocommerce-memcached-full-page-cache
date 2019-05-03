@@ -21,6 +21,6 @@ include_once 'vendor/autoload.php';
 
 use InvincibleBrands\WcMfpc\Data;
 
-unlink(WP_CONTENT_DIR . '/advanced-cache.php');
+unlink(Data::acache);
 
 delete_site_option(Data::global_option);
