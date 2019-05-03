@@ -215,21 +215,44 @@ class Config
     }
 
     /**
+     * @return array
+     */
+    public static function getDefaultConfig()
+    {
+        $default = new Config();
+
+        return $default->getConfig();
+    }
+
+    /**
+     * Returns the "Globa Config Key" = HTTP_HOST.
+     *
+     * @return string
+     */
+    public static function getGlobalConfigKey()
+    {
+        if (empty($_SERVER[ 'HTTP_HOST' ])) {
+
+            return '127.0.0.1';
+        }
+
+        return $_SERVER[ 'HTTP_HOST' ];
+    }
+
+    /**
      * Loads options stored in the DB. Keeps defaults if loading was not successful.
      *
      * @return void
      */
     public function load()
     {
-        global $wcMfpcData;
-
         $options = get_site_option(Data::global_option);
 
         $this->global = $options;
 
-        if (isset($options[ $wcMfpcData->global_config_key ])) {
+        if (isset($options[ self::getGlobalConfigKey() ])) {
 
-            $options = $options[ $wcMfpcData->global_config_key ];
+            $options = $options[ self::getGlobalConfigKey() ];
             $this->setConfig($options);
 
         }
@@ -242,10 +265,8 @@ class Config
      */
     public function save()
     {
-        global $wcMfpcData;
-
         $options = get_site_option(Data::global_option, []);
-        $options[ $wcMfpcData->global_config_key ] = $this->getConfig();
+        $options[ self::getGlobalConfigKey() ] = $this->getConfig();
 
         $this->global = $options;
 
@@ -259,13 +280,11 @@ class Config
      */
     public function delete()
     {
-        global $wcMfpcData;
-
         $options = get_site_option(Data::global_option, []);
 
-        if (isset($options[ $wcMfpcData->global_config_key ])) {
+        if (isset($options[ Config::getGlobalConfigKey() ])) {
 
-            unset($options[ $wcMfpcData->global_config_key ]);
+            unset($options[ Config::getGlobalConfigKey() ]);
 
         }
 
