@@ -27,7 +27,7 @@ class Admin
     {
         global $wcMfpcData;
 
-        if ($wcMfpcData->network) {
+        if (is_multisite()) {
 
             add_filter("network_admin_plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
 
