@@ -202,12 +202,11 @@ class AdminView
     private function renderMessages()
     {
         /**
-         * @var Data   $wcMfpcData
          * @var Config $wcMfpcConfig
          * @var Admin  $wcMfpcAdmin
          * @var array  $wc_mfpc_config_array
          */
-        global $wcMfpcData, $wcMfpcConfig, $wcMfpcAdmin, $wc_mfpc_config_array;
+        global $wcMfpcConfig, $wcMfpcAdmin, $wc_mfpc_config_array;
 
         /*
          * if options were saved
@@ -236,7 +235,7 @@ class AdminView
 
         }
 
-        $settings_link = ' &raquo; <a href="' . $wcMfpcData->settings_link . '">WC-MFPC Settings</a>';
+        $settings_link = ' &raquo; <a href="' . Data::settings_link. '">WC-MFPC Settings</a>';
 
         /*
          * look for global settings array
@@ -254,11 +253,11 @@ class AdminView
         /*
          * look for writable acache file
          */
-        if (file_exists($wcMfpcData->acache) && ! is_writable($wcMfpcData->acache)) {
+        if (file_exists(Data::acache) && ! is_writable(Data::acache)) {
 
             Alert::alert(sprintf(
               'Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.',
-              $wcMfpcData->acache
+              Data::acache
             ), LOG_WARNING);
 
         }
@@ -266,7 +265,7 @@ class AdminView
         /*
          * look for acache file
          */
-        if (! file_exists($wcMfpcData->acache)) {
+        if (! file_exists(Data::acache)) {
 
             Alert::alert(sprintf('Advanced cache file is yet to be generated, please save %s', $settings_link), LOG_WARNING);
 
