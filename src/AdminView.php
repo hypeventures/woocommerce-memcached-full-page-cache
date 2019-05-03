@@ -306,7 +306,8 @@ class AdminView
     {
         global $wcMfpc;
 
-        $servers = $wcMfpc->getMemcached()->status();
+        $servers = $wcMfpc->getMemcached()
+                          ->status();
         $message = '<b>Connection status:</b></p><p>';
 
         if (empty ($servers) || ! is_array($servers)) {
