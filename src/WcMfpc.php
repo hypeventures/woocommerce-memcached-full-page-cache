@@ -25,10 +25,10 @@ class WcMfpc
      */
     public function init()
     {
-        global $wcMfpcConfig, $wcMfpcData;
+        global $wcMfpcConfig;
 
-        register_activation_hook($wcMfpcData->plugin_file, [ &$this, 'pluginActivate' ]);
-        register_deactivation_hook($wcMfpcData->plugin_file, [ &$this, 'pluginDeactivate' ]);
+        register_activation_hook(WC_MFPC_PLUGIN_FILE, [ &$this, 'pluginActivate' ]);
+        register_deactivation_hook(WC_MFPC_PLUGIN_FILE, [ &$this, 'pluginDeactivate' ]);
 
         $wcMfpcConfig->load();
 
