@@ -429,18 +429,6 @@ class Memcached
     }
 
     /**
-     * "Next generation clean" ... what the hell that might be ...
-     *
-     * @param $new_status
-     * @param $old_status
-     * @param $post
-     */
-    public function clear_ng($new_status, $old_status, $post)
-    {
-        $this->clear($post->ID);
-    }
-
-    /**
      * public get function, transparent proxy to internal function based on memcached
      *
      * @param int     $post_id ID of post to invalidate
