@@ -64,15 +64,6 @@ class Memcached
         $this->setUriMap();
         $this->setServers();
         $this->init();
-
-        /*
-         * Todo: Evaluate if using a filter can be avoided OR if 3rd party support should be granted via the filter.
-         */
-        if (function_exists('is_admin') && is_admin() && function_exists('add_filter')) {
-
-            add_filter('wc_mfpc_clear_keys_array', [ &$this, 'getKeys' ], 10, 2);
-
-        }
     }
 
     /**
@@ -625,7 +616,7 @@ class Memcached
      */
     public function clear_keys($keys)
     {
-        $to_clear = apply_filters('wc_mfpc_clear_keys_array', $keys, $this->config);
+        $to_clear = $this->getKeys($keys, $this->config);
 
         return $this->_clear($to_clear);
     }
