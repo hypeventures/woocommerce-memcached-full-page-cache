@@ -323,7 +323,7 @@ class Memcached
      *
      * @return boolean true if memcached is alive, false if not
      */
-    protected function is_alive()
+    protected function isAlive()
     {
         if (! $this->alive) {
 
@@ -357,7 +357,7 @@ class Memcached
      */
     public function set(&$key, &$data)
     {
-        if (! $this->is_alive()) {
+        if (! $this->isAlive()) {
 
             return false;
         }
@@ -415,7 +415,7 @@ class Memcached
     public function clear($post_id = 0, $force = false)
     {
         /* look for memcached aliveness, exit on inactive memcached */
-        if (! $this->is_alive()) {
+        if (! $this->isAlive()) {
 
             return false;
         }
@@ -659,7 +659,7 @@ class Memcached
     {
 
         /* look for memcached aliveness, exit on inactive memcached */
-        if (! $this->is_alive()) {
+        if (! $this->isAlive()) {
 
             return false;
         }
