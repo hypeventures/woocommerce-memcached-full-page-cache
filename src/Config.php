@@ -228,25 +228,16 @@ class Config
     {
         global $wcMfpcData;
 
-        if ($wcMfpcData->network) {
-
-            $options = get_site_option(Data::global_option);
-
-        } else {
-
-            $options = get_option(Data::global_option);
-
-        }
+        $options = get_site_option(Data::global_option);
 
         $this->global = $options;
 
         if (isset($options[ $wcMfpcData->global_config_key ])) {
 
             $options = $options[ $wcMfpcData->global_config_key ];
+            $this->setConfig($options);
 
         }
-
-        $this->setConfig($options);
     }
 
     /**
@@ -258,50 +249,34 @@ class Config
     {
         global $wcMfpcData;
 
-        if ($wcMfpcData->network) {
+        $options = get_site_option(Data::global_option, []);
+        $options[ $wcMfpcData->global_config_key ] = $this->getConfig();
 
-            $options = get_site_option(Data::global_option, []);
-            $options[ $wcMfpcData->global_config_key ] = $this->getConfig();
+        $this->global = $options;
 
-            $this->global = $options;
-
-            return update_site_option(Data::global_option, $options);
-        }
-
-        $this->global = $this->getConfig();
-
-        return update_option(Data::global_option, $this->getConfig());
+        return update_site_option(Data::global_option, $options);
     }
 
     /**
-     * Saves the actual Config in this object as array in the DB.
-     *
-     * @param bool $uninstall
+     * Saves the actual this Config object as array in the DB.
      *
      * @return bool
      */
-    public function delete($uninstall = false)
+    public function delete()
     {
         global $wcMfpcData;
 
-        if ($wcMfpcData->network) {
+        $options = get_site_option(Data::global_option, []);
 
-            if ($uninstall) {
+        if (isset($options[ $wcMfpcData->global_config_key ])) {
 
-                return delete_site_option(Data::global_option);
-            }
+            unset($options[ $wcMfpcData->global_config_key ]);
 
-            $options = get_site_option(Data::global_option);
-            $options[ $wcMfpcData->global_config_key ] = $this->getConfig();
-
-            $this->global = $options;
-
-            return update_site_option(Data::global_option, $options);
         }
 
-        $this->global = $this->getConfig();
+        $this->global = $options;
 
-        return delete_option(Data::global_option);
+        return update_site_option(Data::global_option, $options);
     }
 
     /**
