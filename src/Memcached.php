@@ -146,7 +146,7 @@ class Memcached
          */
         if (! class_exists('Memcached')) {
 
-            error_log(' Memcached extension missing, wc-mfpc will not be able to function correctly!', LOG_WARNING);
+            error_log('Memcached extension missing, wc-mfpc will not be able to function correctly!', LOG_WARNING);
 
             return;
         }
@@ -156,7 +156,7 @@ class Memcached
          */
         if (empty ($this->servers) && ! $this->alive) {
 
-            error_log("Memcached servers list is empty, init failed", LOG_WARNING);
+            error_log("Memcached servers list is empty, init failed.", LOG_WARNING);
 
             return;
         }
@@ -189,7 +189,7 @@ class Memcached
         /* check if initialization was success or not */
         if ($this->connection === null) {
 
-            error_log('error initializing Memcached PHP extension, exiting');
+            error_log('Error initializing Memcached PHP extension, exiting.');
 
             return;
         }
@@ -358,16 +358,11 @@ class Memcached
      */
     public function set(&$key, &$data, $expire = false)
     {
-        /* look for memcached aliveness, exit on inactive memcached */
         if (! $this->is_alive()) {
 
             return false;
         }
 
-        /* log the current action */
-        error_log(sprintf('set %s expiration time: %s', $key, $this->config[ 'expire' ]));
-
-        /* expiration time based is based on type from now on */
         /* fallback */
         if ($expire === false) {
 
@@ -385,34 +380,19 @@ class Memcached
 
         }
 
-        /* log the current action */
-        error_log(sprintf('SET %s', $key));
+        /*
+         * ToDo: Only necessary for testing. Remove on finish!
+         */
+        error_log('SET ' . $key);
 
-        /* proxy to internal function */
-        $result = $this->_set($key, $data, $expire);
-
-        return $result;
-    }
-
-    /**
-     * Set function for Memcached memcached
-     *
-     * @param string $key  Key to set with
-     * @param mixed  $data Data to set
-     *
-     * @return bool
-     */
-    protected function _set(&$key, &$data, &$expire)
-    {
         $result = $this->connection->set($key, $data, $expire);
 
-        /* if storing failed, log the error code */
         if ($result === false) {
 
             $code = $this->connection->getResultCode();
 
-            error_log(sprintf('Unable to set entry: %s', $key));
-            error_log(sprintf('Memcached error code: %s', $code));
+            error_log('Unable to set entry: ' . $key, LOG_WARNING);
+            error_log('Memcached error code: ' . $code, LOG_WARNING);
 
         }
 
