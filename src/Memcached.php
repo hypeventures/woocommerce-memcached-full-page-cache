@@ -377,11 +377,11 @@ class Memcached
     {
         $expire = empty($this->config[ 'expire' ]) ? 0 : (int) $this->config[ 'expire' ];
 
-        if (isset($this->config[ 'expire_home' ]) && (is_home() || is_feed())) {
+        if (! empty($this->config[ 'expire_home' ]) && (is_home() || is_feed())) {
 
             $expire = (int) $this->config[ 'expire_home' ];
 
-        } elseif (isset($this->config[ 'expire_taxonomy' ]) && (is_tax() || is_category() || is_tag() || is_archive())) {
+        } elseif (! empty($this->config[ 'expire_taxonomy' ]) && (is_tax() || is_category() || is_tag() || is_archive())) {
 
             $expire = (int) $this->config[ 'expire_taxonomy' ];
 
