@@ -25,15 +25,13 @@ class Admin
      */
     public function setHooks()
     {
-        global $wcMfpcData;
-
         if (is_multisite()) {
 
-            add_filter("network_admin_plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
+            add_filter("network_admin_plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'plugin_settings_link' ]);
 
         }
 
-        add_filter("plugin_action_links_" . $wcMfpcData->plugin_file, [ &$this, 'plugin_settings_link' ]);
+        add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'plugin_settings_link' ]);
         add_action('admin_menu', [ &$this, 'addMenu' ], 101);
         add_action('admin_init', [ &$this, 'init' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueue_admin_css_js' ]);
@@ -73,20 +71,18 @@ class Admin
      */
     private function validateMandatorySettings()
     {
-        global $wcMfpcData;
-
         $valid  = false;
         $domain = parse_url(get_option('siteurl'), PHP_URL_HOST);
 
         /*
          * Check if global_config_key equals the actual domain.
          */
-        if ($wcMfpcData->global_config_key !== $domain) {
+        if (Config::getGlobalConfigKey() !== $domain) {
 
             Alert::alert(sprintf(
                 'Domain mismatch: the site domain configuration (%s) does not match the HTTP_HOST (%s) '
                 . 'variable in PHP. Please fix the incorrect one, otherwise the plugin may not work as expected.',
-                $domain, $wcMfpcData->global_config_key
+                $domain, Config::getGlobalConfigKey()
             ), LOG_WARNING, true);
 
             $valid = true;
@@ -330,9 +326,7 @@ class Admin
      */
     public function enqueue_admin_css_js()
     {
-        global $wcMfpcData;
-
-        wp_register_style(Data::admin_css_handle, $wcMfpcData->admin_css_url, [], false, 'all');
+        wp_register_style(Data::admin_css_handle, Data::admin_css_url, [], false, 'all');
         wp_enqueue_style(Data::admin_css_handle);
     }
 
@@ -341,7 +335,7 @@ class Admin
      */
     public function init()
     {
-        global $wcMfpc, $wcMfpcData, $wcMfpcConfig;
+        global $wcMfpc, $wcMfpcConfig;
 
         /*
          * save parameter updates, if there are any
@@ -351,7 +345,7 @@ class Admin
             $this->saveConfig();
             $this->deployAdvancedCache();
             $this->status = 1;
-            header("Location: " . $wcMfpcData->settings_link . Data::slug_save);
+            header("Location: " . Data::settings_link . Data::slug_save);
 
         }
 
@@ -363,7 +357,7 @@ class Admin
             $wcMfpcConfig->delete();
             $this->deployAdvancedCache();
             $this->status = 2;
-            header("Location: " . $wcMfpcData->settings_link . $wcMfpcData->slug_delete);
+            header("Location: " . Data::settings_link . Data::slug_delete);
 
         }
 
@@ -375,7 +369,7 @@ class Admin
             /* flush backend */
             $wcMfpc->backend->flush();
             $this->status = 3;
-            header("Location: " . $wcMfpcData->settings_link . Data::slug_flush);
+            header("Location: " . Data::settings_link . Data::slug_flush);
 
         }
     }
@@ -387,13 +381,13 @@ class Admin
      */
     protected function saveConfig($activating = false)
     {
-        global $wcMfpcData, $wcMfpcConfig;
+        global $wcMfpcConfig;
 
         /* only try to update defaults if it's not activation hook, $_POST is not empty and the post is ours */
         if (! $activating && ! empty ($_POST) && isset($_POST[ Data::button_save ])) {
 
             /* we'll only update those that exist in the defaults array */
-            $options = $wcMfpcData->defaults;
+            $options = Config::getDefaultConfig();
 
             foreach ($options as $key => $default) {
 
@@ -453,11 +447,11 @@ class Admin
      */
     private function deployAdvancedCache()
     {
-        global $wcMfpcData, $wcMfpcConfig;
+        global $wcMfpcConfig;
 
-        if (! touch($wcMfpcData->acache)) {
+        if (! touch(Data::acache)) {
 
-            error_log('Generating advanced-cache.php failed: ' . $wcMfpcData->acache . ' is not writable');
+            error_log('Generating advanced-cache.php failed: ' . Data::acache . ' is not writable');
 
             return false;
         }
@@ -475,9 +469,9 @@ class Admin
         $string[] = '<?php';
         $string[] = 'global ' . Data::global_config_var . ';';
         $string[] = Data::global_config_var . ' = ' . var_export($wcMfpcConfig->getGlobal(), true) . ';';
-        $string[] = "include_once ('" . $wcMfpcData->acache_worker . "');";
+        $string[] = "include_once ('" . Data::acache_worker . "');";
 
-        return file_put_contents($wcMfpcData->acache, join("\n", $string));
+        return file_put_contents(Data::acache, join("\n", $string));
     }
 
     /**
@@ -489,9 +483,7 @@ class Admin
      */
     public function plugin_settings_link($links)
     {
-        global $wcMfpcData;
-
-        $settings_link = '<a href="' . $wcMfpcData->settings_link . '">' . __('Settings', 'wc-mfpc') . '</a>';
+        $settings_link = '<a href="' . Data::settings_link . '">Settings</a>';
         array_unshift($links, $settings_link);
 
         return $links;
