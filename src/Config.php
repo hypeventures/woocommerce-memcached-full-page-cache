@@ -56,16 +56,6 @@ class Config
     /**
      * @var int
      */
-    public $expire_home             = 86400;
-
-    /**
-     * @var int
-     */
-    public $expire_taxonomy         = 86400;
-
-    /**
-     * @var int
-     */
     public $invalidation_method     = 1;
 
     /**
@@ -355,22 +345,6 @@ class Config
     public function getExpire()
     {
         return $this->expire;
-    }
-
-    /**
-     * @return int
-     */
-    public function getExpireHome()
-    {
-        return $this->expire_home;
-    }
-
-    /**
-     * @return int
-     */
-    public function getExpireTaxonomy()
-    {
-        return $this->expire_taxonomy;
     }
 
     /**
