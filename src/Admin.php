@@ -158,13 +158,13 @@ class Admin
 
             if ($action === 'clearCache') {
 
-                $result = $wcMfpc->backend->clear($id);
+                $result = $wcMfpc->memcached->clear($id);
                 $item   = $id;
 
             } else {
 
                 $term   = get_term($id);
-                $result = $wcMfpc->backend->clear_keys([ get_category_link($term->term_taxonomy_id) => true, ]);
+                $result = $wcMfpc->memcached->clear_keys([ get_category_link($term->term_taxonomy_id) => true, ]);
                 $item   = $term->name;
 
             }
@@ -255,7 +255,7 @@ class Admin
         $display       = 'none';
         $key           = $wcMfpcConfig->prefix_data . $permalink;
 
-        if (! empty($wcMfpc->backend->get($key))) {
+        if (! empty($wcMfpc->memcached->get($key))) {
 
             $statusMessage = '<b class="ok-msg">Cached</b>';
             $display       = 'block';
@@ -285,7 +285,7 @@ class Admin
         ) {
 
             $link   = esc_url($_POST[ 'permalink' ]);
-            $result = $wcMfpc->backend->clear_keys([ $link => true ]);
+            $result = $wcMfpc->memcached->clear_keys([ $link => true ]);
 
         } else {
 
@@ -366,8 +366,8 @@ class Admin
          */
         if (isset($_POST[ Data::button_flush ]) && check_admin_referer('wc-mfpc')) {
 
-            /* flush backend */
-            $wcMfpc->backend->flush();
+            /* flush memcached */
+            $wcMfpc->memcached->flush();
             $this->status = 3;
             header("Location: " . Data::settings_link . Data::slug_flush);
 
@@ -433,7 +433,7 @@ class Admin
 
             global $wcMfpc;
 
-            $wcMfpc->backend->clear(null, true);
+            $wcMfpc->memcached->clear(null, true);
 
         }
 

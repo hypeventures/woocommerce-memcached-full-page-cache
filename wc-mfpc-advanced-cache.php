@@ -184,12 +184,12 @@ $wc_mfpc_redirect = null;
  * Connect to Memcached via actual config.
  */
 include_once __DIR__ . '/src/Memcached.php';
-$wc_mfpc_backend = new \InvincibleBrands\WcMfpc\Memcached($wc_mfpc_config_array);
+$wc_mfpc_memcached = new \InvincibleBrands\WcMfpc\Memcached($wc_mfpc_config_array);
 
 /*
- * Check backend connection.
+ * Check memcached connection.
  */
-if (empty($wc_mfpc_backend->status())) {
+if (empty($wc_mfpc_memcached->status())) {
 
     error_log("Backend offline");
 
@@ -210,8 +210,8 @@ error_log("Trying to fetch entries");
 
 foreach ($wc_mfpc_keys as $internal => $key) {
 
-    $key   = $wc_mfpc_backend->key($key);
-    $value = $wc_mfpc_backend->get($key);
+    $key   = $wc_mfpc_memcached->key($key);
+    $value = $wc_mfpc_memcached->get($key);
 
     if (empty($value)) {
 
@@ -467,7 +467,7 @@ function wc_mfpc_redirect_callback ($redirect_url = '')
  */
 function wc_mfpc_callback( $buffer )
 {
-	global $wc_mfpc_config_array, $wc_mfpc_backend, $wc_mfpc_redirect;
+	global $wc_mfpc_config_array, $wc_mfpc_memcached, $wc_mfpc_redirect;
 
 	$config = $wc_mfpc_config_array;
 
@@ -716,11 +716,11 @@ function wc_mfpc_callback( $buffer )
 	 */
     $to_store = apply_filters('wc-mfpc-to-store', $to_store);
 
-    $prefix_meta = $wc_mfpc_backend->key($config[ 'prefix_meta' ]);
-    $wc_mfpc_backend->set($prefix_meta, $meta);
+    $prefix_meta = $wc_mfpc_memcached->key($config[ 'prefix_meta' ]);
+    $wc_mfpc_memcached->set($prefix_meta, $meta);
 
-    $prefix_data = $wc_mfpc_backend->key($config[ 'prefix_data' ]);
-    $wc_mfpc_backend->set($prefix_data, $to_store);
+    $prefix_data = $wc_mfpc_memcached->key($config[ 'prefix_data' ]);
+    $wc_mfpc_memcached->set($prefix_data, $to_store);
 
     if (! empty($meta[ 'status' ]) && $meta[ 'status' ] === 404) {
 

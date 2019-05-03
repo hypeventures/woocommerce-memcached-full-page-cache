@@ -210,7 +210,7 @@ class Memcached
 
             $servers_alive = $this->connection->getServerList();
 
-            /* create check array if backend servers are already connected */
+            /* create check array if memcached servers are already connected */
             if (! empty ($servers_alive)) {
 
                 foreach ($servers_alive as $skey => $server) {
@@ -237,7 +237,7 @@ class Memcached
 
         }
 
-        /* backend is now alive */
+        /* memcached is now alive */
         $this->alive = true;
     }
 
@@ -298,7 +298,7 @@ class Memcached
     }
 
     /**
-     * public get function, transparent proxy to internal function based on backend
+     * public get function, transparent proxy to internal function based on memcached
      *
      * @param string $key Cache key to get value for
      *
@@ -306,7 +306,7 @@ class Memcached
      */
     public function get(&$key)
     {
-        /* look for backend aliveness, exit on inactive backend */
+        /* look for memcached aliveness, exit on inactive memcached */
         if (! $this->is_alive()) {
             error_log('WARNING: Backend offline');
 
@@ -328,15 +328,15 @@ class Memcached
     }
 
     /**
-     * function to check backend aliveness
+     * function to check memcached aliveness
      *
-     * @return boolean true if backend is alive, false if not
+     * @return boolean true if memcached is alive, false if not
      */
     protected function is_alive()
     {
         if (! $this->alive) {
 
-            error_log("backend is not active, exiting function " . __FUNCTION__, LOG_WARNING);
+            error_log("memcached is not active, exiting function " . __FUNCTION__, LOG_WARNING);
 
             return false;
         }
@@ -345,7 +345,7 @@ class Memcached
     }
 
     /**
-     * get function for Memcached backend
+     * get function for Memcached memcached
      *
      * @param string $key Key to get values for
      *
@@ -357,7 +357,7 @@ class Memcached
     }
 
     /**
-     * public set function, transparent proxy to internal function based on backend
+     * public set function, transparent proxy to internal function based on memcached
      *
      * @param string $key     Cache key to set with ( reference only, for speed )
      * @param mixed  $data    Data to set ( reference only, for speed )
@@ -367,7 +367,7 @@ class Memcached
      */
     public function set(&$key, &$data, $expire = false)
     {
-        /* look for backend aliveness, exit on inactive backend */
+        /* look for memcached aliveness, exit on inactive memcached */
         if (! $this->is_alive()) {
 
             return false;
@@ -404,7 +404,7 @@ class Memcached
     }
 
     /**
-     * Set function for Memcached backend
+     * Set function for Memcached memcached
      *
      * @param string $key  Key to set with
      * @param mixed  $data Data to set
@@ -441,7 +441,7 @@ class Memcached
     }
 
     /**
-     * public get function, transparent proxy to internal function based on backend
+     * public get function, transparent proxy to internal function based on memcached
      *
      * @param int     $post_id ID of post to invalidate
      * @param boolean $force   Force flush cache
@@ -450,7 +450,7 @@ class Memcached
      */
     public function clear($post_id = 0, $force = false)
     {
-        /* look for backend aliveness, exit on inactive backend */
+        /* look for memcached aliveness, exit on inactive memcached */
         if (! $this->is_alive()) {
 
             return false;
@@ -687,14 +687,14 @@ class Memcached
     }
 
     /**
-     * get backend aliveness
+     * get memcached aliveness
      *
      * @return bool|array Array of configured servers with aliveness value
      */
     public function status()
     {
 
-        /* look for backend aliveness, exit on inactive backend */
+        /* look for memcached aliveness, exit on inactive memcached */
         if (! $this->is_alive()) {
 
             return false;
@@ -706,7 +706,7 @@ class Memcached
     }
 
     /**
-     * Sets current backend alive status for Memcached servers.
+     * Sets current memcached alive status for Memcached servers.
      *
      * @todo Evaluate merging _status() into status()
      */
