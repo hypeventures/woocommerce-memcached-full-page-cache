@@ -167,13 +167,15 @@ class Admin
 
             if ($action === 'clearCache') {
 
-                $result = $wcMfpc->getMemcached()->clear($id);
+                $result = $wcMfpc->getMemcached()
+                                 ->clear($id);
                 $item   = $id;
 
             } else {
 
                 $term   = get_term($id);
-                $result = $wcMfpc->getMemcached()->clear_keys([ get_category_link($term->term_taxonomy_id) => true, ]);
+                $result = $wcMfpc->getMemcached()
+                                 ->clear_keys([ get_category_link($term->term_taxonomy_id) => true, ]);
                 $item   = $term->name;
 
             }
@@ -376,7 +378,8 @@ class Admin
         if (isset($_POST[ Data::button_flush ]) && check_admin_referer('wc-mfpc')) {
 
             /* flush memcached */
-            $wcMfpc->getMemcached()->flush();
+            $wcMfpc->getMemcached()
+                   ->flush();
             $this->status = 3;
             header("Location: " . Data::settings_link . Data::slug_flush);
 
@@ -442,7 +445,8 @@ class Admin
 
             global $wcMfpc;
 
-            $wcMfpc->getMemcached()->clear(null, true);
+            $wcMfpc->getMemcached()
+                   ->clear(null, true);
 
         }
 
