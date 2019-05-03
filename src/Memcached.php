@@ -105,30 +105,6 @@ class Memcached
     }
 
     /**
-     * Returns an array which contains 4 keys for each permalink in the array $toClear.
-     *
-     * @param array $toClear [ 'permalink' => true, ]
-     * @param array $config
-     *
-     * @return array
-     */
-    public function getKeys($toClear, $config) {
-
-        $result = [];
-
-        foreach ($toClear as $link => $dummy) {
-
-            $result[ $config[ 'prefix_data' ] . $link ]          = true;
-            $result[ $config[ 'prefix_meta' ] . $link ]          = true;
-            $result[ $config[ 'prefix_data' ] . $link . 'feed' ] = true;
-            $result[ $config[ 'prefix_meta' ] . $link . 'feed' ] = true;
-
-        }
-
-        return $result;
-    }
-
-    /**
      * Split hosts strings into server array.
      *
      * @return void
@@ -266,64 +242,27 @@ class Memcached
     }
 
     /**
-     * Sets current backend alive status for Memcached servers.
+     * Returns an array which contains 4 keys for each permalink in the array $toClear.
      *
-     * @todo Evaluate merging _status() into status()
+     * @param array $toClear [ 'permalink' => true, ]
+     * @param array $config
+     *
+     * @return array
      */
-    protected function _status()
-    {
-        error_log("checking server statuses");
+    public function getKeys($toClear, $config) {
 
-        /*
-         * Get the server list from connection.
-         */
-        $servers = $this->connection->getServerList();
-        $changed = false;
+        $result = [];
 
-        foreach ($servers as $i => $server) {
+        foreach ($toClear as $link => $dummy) {
 
-            $server_id = $server[ 'host' ] . self::port_separator . $server[ 'port' ];
-
-            /*
-             * reset server status to offline
-             */
-            $this->status[ $server_id ] = 0;
-
-            /*
-             * Instantiate a new Memcached connection for this server to test it independently.
-             */
-            $memcached = new \Memcached();
-            $memcached->addServer($server[ 'host' ], $server[ 'port' ]);
-
-            if ($memcached->set('wc-mfpc', time())) {
-
-                error_log(sprintf('%s server is up & running', $server_id));
-                $this->status[ $server_id ] = 1;
-
-            } else {
-
-                /*
-                 * If the server did not respond remove it from the list.
-                 */
-                unset($servers[ $i ]);
-                $changed = true;
-
-            }
-
-            unset($memcached);
+            $result[ $config[ 'prefix_data' ] . $link ]          = true;
+            $result[ $config[ 'prefix_meta' ] . $link ]          = true;
+            $result[ $config[ 'prefix_data' ] . $link . 'feed' ] = true;
+            $result[ $config[ 'prefix_meta' ] . $link . 'feed' ] = true;
 
         }
 
-        /*
-         * If there are indeed servers which do not respond, remove them from the pool.
-         */
-        if ($changed) {
-
-            $this->connection->resetServerList();
-            $this->connection->addServers($servers);
-
-        }
-
+        return $result;
     }
 
     /**
@@ -764,6 +703,67 @@ class Memcached
         $this->_status();
 
         return $this->status;
+    }
+
+    /**
+     * Sets current backend alive status for Memcached servers.
+     *
+     * @todo Evaluate merging _status() into status()
+     */
+    protected function _status()
+    {
+        error_log("checking server statuses");
+
+        /*
+         * Get the server list from connection.
+         */
+        $servers = $this->connection->getServerList();
+        $changed = false;
+
+        foreach ($servers as $i => $server) {
+
+            $server_id = $server[ 'host' ] . self::port_separator . $server[ 'port' ];
+
+            /*
+             * reset server status to offline
+             */
+            $this->status[ $server_id ] = 0;
+
+            /*
+             * Instantiate a new Memcached connection for this server to test it independently.
+             */
+            $memcached = new \Memcached();
+            $memcached->addServer($server[ 'host' ], $server[ 'port' ]);
+
+            if ($memcached->set('wc-mfpc', time())) {
+
+                error_log(sprintf('%s server is up & running', $server_id));
+                $this->status[ $server_id ] = 1;
+
+            } else {
+
+                /*
+                 * If the server did not respond remove it from the list.
+                 */
+                unset($servers[ $i ]);
+                $changed = true;
+
+            }
+
+            unset($memcached);
+
+        }
+
+        /*
+         * If there are indeed servers which do not respond, remove them from the pool.
+         */
+        if ($changed) {
+
+            $this->connection->resetServerList();
+            $this->connection->addServers($servers);
+
+        }
+
     }
 
 }
