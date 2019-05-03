@@ -116,7 +116,7 @@ class WcMfpc
      */
     public function loadTextdomain()
     {
-        load_plugin_textdomain('wc-mfpc', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+        load_plugin_textdomain('wc-mfpc', false, WC_MFPC_PLUGIN_DIR . 'languages/');
     }
 
 }
