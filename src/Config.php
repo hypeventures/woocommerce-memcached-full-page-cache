@@ -84,11 +84,6 @@ class Config
     public $charset                 = 'utf-8';
 
     /**
-     * @var bool
-     */
-    public $log                     = true;
-
-    /**
      * @var string
      */
     public $cache_type              = 'memcached';
@@ -389,14 +384,6 @@ class Config
     public function getCharset()
     {
         return $this->charset;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isLog()
-    {
-        return $this->log;
     }
 
     /**
