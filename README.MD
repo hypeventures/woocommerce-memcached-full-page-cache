@@ -141,6 +141,40 @@ function cust_wc_mfpc_set_to_clear($toClear = [], $postId = '', $memcached = nul
 add_filter('wc_mfpc_custom_to_clear_before, 'cust_wc_mfpc_set_expire', 10, 3);
 ```
 
+---
+
+* `wc_mfpc_custom_to_store`
+
+This hook lets you customize the raw content of a page, before it gets stored in cache.
+
+It can be found here: [wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php)
+
+Example:
+```
+/**
+ * Function to customize the html content of any page.
+ *
+ * @param string $toStore  The content to be stored in cache.
+ *
+ * @return string $to_store
+ */
+function cust_wc_mfpc_set_to_store($toStore = '')
+{    
+    /*
+     * Add generation date info, but only to HTML.
+     */
+    if (stripos($buffer, '</body>')) {
+
+        $insertion = "\n<!-- WC-MFPC cache created date: " . date('c') . " -->\n";
+        $index     = stripos($buffer, '</body>');
+        $toStore   = substr_replace($buffer, $insertion, $index, 0);
+    }
+    
+    return $toStore;
+}
+add_filter('wc_mfpc_custom_to_store', 'cust_wc_mfpc_set_to_store');
+```
+
 * ` `
 
 ...
