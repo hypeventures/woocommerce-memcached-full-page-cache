@@ -19,7 +19,7 @@ Admin > WooCommerce > Full Page Cache
 
 You can use hooks to customize the behaviour of this plugin.
 
-### Hooks
+### Hook: Custom Expire
 
 * `wc_mfpc_custom_expire`
 
@@ -40,7 +40,10 @@ function cust_wc_mfpc_set_expire($expire = 0)
     
         $expire = (int) $this->config[ 'expire_home' ];
     
-    } elseif ($this->config[ 'expire_taxonomy' ] !== '' && (is_tax() || is_category() || is_tag() || is_archive())) {
+    } elseif (
+              $this->config[ 'expire_taxonomy' ] !== '' 
+              && (is_tax() || is_category() || is_tag() || is_archive())
+    ) {
     
         $expire = (int) $this->config[ 'expire_taxonomy' ];
     }
@@ -51,6 +54,8 @@ add_filter('wc_mfpc_custom_expire', 'cust_wc_mfpc_set_expire');
 ```
 
 ---
+
+### Hooks: Custom ToClear
 
 * `wc_mfpc_custom_to_clear_before`
 * `wc_mfpc_custom_to_clear_after`
@@ -126,8 +131,8 @@ function cust_wc_mfpc_set_to_clear($toClear = [], $postId = '', $memcached = nul
             $toClear[ $link ] = true;
   
             /*
-             * Remove the taxonomy name from the link, lots of plugins remove this for SEO, it's better to
-             * include them than leave them out. In worst case, some 404 pages are cached as well
+             * Remove the taxonomy name from the link, lots of plugins remove this for SEO, it's better
+             * to include them than leave them out. In worst case, some 404 pages are cached as well.
              */
             $link             = str_replace('/' . $taxonomy->rewrite[ 'slug' ], '', $link);
             $toClear[ $link ] = true;
@@ -142,6 +147,8 @@ add_filter('wc_mfpc_custom_to_clear_before, 'cust_wc_mfpc_set_expire', 10, 3);
 ```
 
 ---
+
+### Hook: Custom ToStore
 
 * `wc_mfpc_custom_to_store`
 
