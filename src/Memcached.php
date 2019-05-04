@@ -27,7 +27,7 @@ class Memcached
     protected $alive = false;
 
     /**
-     * @var array
+     * @var Config|array
      */
     protected $config = [];
 
@@ -49,7 +49,7 @@ class Memcached
     /**
      * Memcached constructor.
      *
-     * @param array $config
+     * @param Config|array $config
      *
      * @return bool|void
      */
@@ -64,6 +64,7 @@ class Memcached
         $this->setUriMap();
         $this->setServers();
         $this->init();
+
     }
 
     /**
@@ -236,7 +237,7 @@ class Memcached
      * Returns an array which contains 4 keys for each permalink in the array $toClear.
      *
      * @param array $toClear [ 'permalink' => true, ]
-     * @param array $config
+     * @param Config|array $config
      *
      * @return array
      */
@@ -377,6 +378,8 @@ class Memcached
      *
      * @todo This needs some serious diet.
      *
+     * @see Config::$invalidation_method
+     *
      * @param int     $post_id ID of post to invalidate
      * @param boolean $force   Force flush cache
      *
@@ -402,15 +405,7 @@ class Memcached
 
             #error_log('flushing cache');
 
-            $result = $this->flush();
-
-            if ($result === false) {
-
-                error_log('failed to flush cache', LOG_WARNING);
-
-            }
-
-            return $result;
+            return $this->flush();
         }
 
         /* storage for entries to clear */
@@ -456,12 +451,12 @@ class Memcached
             $current_page_id = '';
 
             do {
-                /* uriMap */
+
                 $uriMap                       = self::parseUriMap($permalink, $this->uriMap);
                 $uriMap[ '$request_uri' ]     = $uriMap[ '$request_uri' ] . ($current_page_id ? $current_page_id . '/' : '');
                 $clear_cache_key              = self::mapUriMap($uriMap, $this->config[ 'key' ]);
-                $to_clear[ $clear_cache_key ] = true;
                 $current_page_id              = 1 + (int) $current_page_id;
+                $to_clear[ $clear_cache_key ] = true;
 
             } while ($number_of_pages > 1 && $current_page_id <= $number_of_pages);
 
