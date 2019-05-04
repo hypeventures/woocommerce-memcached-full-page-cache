@@ -39,7 +39,6 @@
 }
 
 .description-addon {
-  padding-left: 240px;
   margin-top: -1.5rem;
 }
 
@@ -75,4 +74,18 @@
 
 .button-warning {
   color: #ff0000 !important;
+}
+
+.icon {
+  height: 2rem;
+  line-height: 2rem;
+  padding: 0 0.5rem 0 2.3rem;
+  margin: 0;
+  display: inline-block;
+  background-color: #fff;
+  background-repeat: no-repeat;
+}
+
+.github {
+  background-image: url("github-square.svg");
 }
