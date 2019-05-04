@@ -1,6 +1,9 @@
 # WooCommerce Memcached Full Page Cache
 
-WooCommerce full page cache plugin based on Memcached.
+WooCommerce full page cache plugin using Memcached.
+
+__CREDITS:__ This plugin is based on [WP-FFPC](https://github.com/petermolnar/wp-ffpc) 
+by [Peter Molnar](https://github.com/petermolnar).
 
 ## Installation
 
