@@ -124,11 +124,6 @@ class Config
     public $response_header         = true;
 
     /**
-     * @var bool
-     */
-    public $generate_time           = false;
-
-    /**
      * @var string
      */
     public $key                     = '$scheme://$host$request_uri';
@@ -475,14 +470,6 @@ class Config
     public function isResponseHeader()
     {
         return $this->response_header;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isGenerateTime()
-    {
-        return $this->generate_time;
     }
 
     /**
