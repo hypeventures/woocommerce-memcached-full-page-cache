@@ -131,6 +131,7 @@ class WcMfpc
 
     /**
      * Handles clearing of posts and taxonomies.
+     * Contains Hooks: 'wc_mfpc_custom_to_clear_before' & 'wc_mfpc_custom_to_clear_after' to customize expiration time.
      *
      * @todo Check if WcMfpc::clearMemcached() can be further simplified.
      *
@@ -147,6 +148,27 @@ class WcMfpc
             return false;
         }
 
+        $toClear   = [];
+
+        /**
+         * Filter to enable customization of array $toClear.
+         * Allows 3rd party Developers to change the array of keys which should be cleared afterwards.
+         *
+         * @param array      $toClear  Array of keys which should be cleared afterwards.
+         * @param string|int $postId   Id of the post in question IF it is a post. Needs to be checked!
+         * @param Memcached  $this     Instance of this Memcached class with active server connection.
+         *
+         * @return array $toClear  You can return bool false to abort processing directly after this.
+         */
+        $toClear = (array) apply_filters('wc_mfpc_custom_to_clear_before', $toClear, $postId, $memcached);
+
+        if ($toClear === false) {
+
+            error_log("Filter 'wc_mfpc_custom_to_clear_before' returned false, aborting " . __FILE__ . ' line: ' . __LINE__);
+
+            return false;
+        }
+
         if (empty($postId)) {
 
             #error_log('not clearing unidentified post', LOG_WARNING);
@@ -156,21 +178,18 @@ class WcMfpc
 
         global $wcMfpcConfig;
 
-        $toClear   = [];
         $permalink = get_permalink($postId);
 
-        /* no path, don't do anything */
         if (empty($permalink)) {
 
-            error_log(sprintf('unable to determine path from Post Permalink, post ID: %s', $postId), LOG_WARNING);
+            #error_log('Unable to determine path from Post Permalink, post ID: ' . $postId, LOG_WARNING);
 
             return false;
         }
 
         /*
-         * It is possible that post/page is paginated with <!--nextpage-->
-         * Wordpress doesn't seem to expose the number of pages via API.
-         * So let's just count it.
+         * It's possible that post/page is paginated with <!--nextpage--> as Wordpress doesn't seem to expose the
+         * number of pages via API. So let's just count it.
          */
         $numberOfPages = 1 + (int) preg_match_all('/<!--nextpage-->/', get_post($postId)->post_content, $matches);
         $currentPageId = 0;
@@ -195,7 +214,7 @@ class WcMfpc
          *
          * @return array $toClear
          */
-        $toClear = (array) apply_filters('wc_mfpc_custom_to_clear', $toClear, $postId, $memcached);
+        $toClear = (array) apply_filters('wc_mfpc_custom_to_clear_after', $toClear, $postId, $memcached);
 
         return $memcached->clear_keys($toClear);
     }
