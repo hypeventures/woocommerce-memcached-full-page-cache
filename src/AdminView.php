@@ -516,7 +516,7 @@ class AdminView
           If you are caching with nginx, you should update your nginx configuration and reload nginx after
           changing this value.
         </div>
-        <table class="description-addon" style="margin-top: 0;" cellspacing="0" cellpadding="0">
+        <table class="description-addon" style="margin: 0 0 1rem;" cellspacing="0" cellpadding="0">
           <tr><th colspan="2" style="text-align: left;"><h3>Possible variables:</h3></th></tr>
           <?php
           foreach ($this->list_uri_vars as $uri => $desc) {
