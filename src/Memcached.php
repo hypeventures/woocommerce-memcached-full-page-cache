@@ -19,12 +19,12 @@ class Memcached
     /**
      * @var null|\Memcached
      */
-    protected $connection = null;
+    public $connection = null;
 
     /**
      * @var bool
      */
-    protected $alive = false;
+    public $alive = false;
 
     /**
      * @var Config|array
@@ -34,17 +34,17 @@ class Memcached
     /**
      * @var array
      */
-    protected $servers = [];
+    public $servers = [];
 
     /**
      * @var array
      */
-    protected $status = [];
+    public $status = [];
 
     /**
      * @var array
      */
-    protected $uriMap = [];
+    public $uriMap = [];
 
     /**
      * Memcached constructor.
@@ -325,7 +325,7 @@ class Memcached
      *
      * @return bool  True, if memcached is alive, false in case it's not
      */
-    protected function isAlive()
+    public function isAlive()
     {
         if (! $this->alive) {
 
@@ -374,160 +374,11 @@ class Memcached
     }
 
     /**
-     * Handles clearing of posts and taxonomies.
-     *
-     * @todo This needs some serious diet.
-     *
-     * @see Config::$invalidation_method
-     *
-     * @param int     $post_id ID of post to invalidate
-     * @param boolean $force   Force flush cache
-     *
-     * @return bool
-     */
-    public function clear($post_id = 0, $force = false)
-    {
-        if (! $this->isAlive()) {
-
-            return false;
-        }
-
-        /* exit if no post_id is specified */
-        if (empty ($post_id) && $force === false) {
-
-            #error_log('not clearing unidentified post', LOG_WARNING);
-
-            return false;
-        }
-
-        /* if invalidation method is set to full, flush cache */
-        if (($this->config[ 'invalidation_method' ] === 0 || $force === true)) {
-
-            #error_log('flushing cache');
-
-            return $this->flush();
-        }
-
-        /* storage for entries to clear */
-        $to_clear = [];
-
-        /* clear taxonomies if settings requires it */
-        if ($this->config[ 'invalidation_method' ] == 2) {
-
-            /* this will only clear the current blog's entries */
-            $this->getTaxonomyLinks($to_clear);
-
-        }
-
-        /* if there's a post id pushed, it needs to be invalidated in all cases */
-        if (! empty ($post_id)) {
-
-            /* need permalink functions */
-            if (! function_exists('get_permalink')) {
-
-                include_once(ABSPATH . 'wp-includes/link-template.php');
-
-            }
-
-            /* get permalink */
-            $permalink = get_permalink($post_id);
-
-            /* no path, don't do anything */
-            if (empty($permalink) && $permalink != false) {
-
-                error_log(sprintf('unable to determine path from Post Permalink, post ID: %s', $post_id), LOG_WARNING);
-
-                return false;
-            }
-
-            /*
-             * It is possible that post/page is paginated with <!--nextpage-->
-             * Wordpress doesn't seem to expose the number of pages via API.
-             * So let's just count it.
-             */
-            $content_post    = get_post($post_id);
-            $content         = $content_post->post_content;
-            $number_of_pages = 1 + (int) preg_match_all('/<!--nextpage-->/', $content, $matches);
-            $current_page_id = '';
-
-            do {
-
-                $uriMap                       = self::parseUriMap($permalink, $this->uriMap);
-                $uriMap[ '$request_uri' ]     = $uriMap[ '$request_uri' ] . ($current_page_id ? $current_page_id . '/' : '');
-                $clear_cache_key              = self::mapUriMap($uriMap, $this->config[ 'key' ]);
-                $current_page_id              = 1 + (int) $current_page_id;
-                $to_clear[ $clear_cache_key ] = true;
-
-            } while ($number_of_pages > 1 && $current_page_id <= $number_of_pages);
-
-        }
-
-        /* Hook to custom clearing array. */
-        $to_clear = apply_filters('wc_mfpc_to_clear_array', $to_clear, $post_id);
-
-        /* run clear */
-        return $this->clear_keys($to_clear);
-    }
-
-    /**
      * Flush memcached entries
      */
     public function flush()
     {
         return $this->connection->flush();
-    }
-
-    /**
-     * Collects all permalinks of all taxonomy terms used in invalidation
-     *
-     * @param array &$links  Passed by reference array that has to be filled up with the links
-     */
-    public function getTaxonomyLinks(&$links)
-    {
-        $taxonomies = get_taxonomies([
-            'public' => true,
-        ], 'objects');
-
-        if (empty($taxonomies)) {
-
-            return;
-        }
-
-        foreach ($taxonomies as $taxonomy) {
-
-            $terms = get_terms([
-                'taxonomy'     => $taxonomy->name,
-                'hide_empty'   => true,
-                'fields'       => 'all',
-                'hierarchical' => false,
-            ]);
-
-            if (empty ($terms)) {
-
-                continue;
-
-            }
-
-            foreach ($terms as $term) {
-
-                if (empty($term->count)) {
-
-                    continue;
-
-                }
-
-                $link           = get_term_link($term->slug, $taxonomy->name);
-                $links[ $link ] = true;
-                /*
-                 * Remove the taxonomy name from the link, lots of plugins remove this for SEO, it's better to
-                 * include them than leave them out in worst case, we cache some 404 as well
-                 */
-                $link           = str_replace('/' . $taxonomy->rewrite[ 'slug' ], '', $link);
-                $links[ $link ] = true;
-
-            }
-
-        }
     }
 
     /**
@@ -563,6 +414,11 @@ class Memcached
      */
     public function clear_keys($keys)
     {
+        if (empty($keys)) {
+
+            return false;
+        }
+
         $keys   = $this->getKeys($keys, $this->config);
         $result = false;
 
