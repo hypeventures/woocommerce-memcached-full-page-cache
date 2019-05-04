@@ -149,7 +149,7 @@ class Config
     public $pingback_header         = false;
 
     /**
-     * @var array
+     * @var Config[]string|array
      */
     public $global               = [];
 
@@ -164,8 +164,8 @@ class Config
     }
 
     /**
-     * Processes a given Config Array and sets its contents for all keys
-     * which are a known attribute of this Config::class.
+     * Processes a given Config Array and sets its contents for all keys which are a known attribute of this
+     * Config::class.
      *
      * @param array $config
      *
@@ -194,7 +194,7 @@ class Config
     /**
      * Returns an array of this Config::class
      *
-     * @return array
+     * @return Config|array
      */
     public function getConfig()
     {
@@ -205,7 +205,7 @@ class Config
     }
 
     /**
-     * @return array
+     * @return Config|array
      */
     public static function getDefaultConfig()
     {
@@ -215,7 +215,7 @@ class Config
     }
 
     /**
-     * Returns the "Globa Config Key" = HTTP_HOST.
+     * Returns the "Global Config Key" = HTTP_HOST.
      *
      * @return string
      */
