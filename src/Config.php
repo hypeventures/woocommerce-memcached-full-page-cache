@@ -69,11 +69,6 @@ class Config
     public $charset                 = 'utf-8';
 
     /**
-     * @var string
-     */
-    public $cache_type              = 'memcached';
-
-    /**
      * @var bool
      */
     public $cache_loggedin          = true;
@@ -359,14 +354,6 @@ class Config
     public function getCharset()
     {
         return $this->charset;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCacheType()
-    {
-        return $this->cache_type;
     }
 
     /**
