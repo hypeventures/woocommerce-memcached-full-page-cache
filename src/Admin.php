@@ -167,8 +167,7 @@ class Admin
 
             if ($action === 'clearCache') {
 
-                $result = $wcMfpc->getMemcached()
-                                 ->clear($id);
+                $result = $wcMfpc->clearMemcached($id);
                 $item   = $id;
 
             } else {
@@ -446,7 +445,7 @@ class Admin
             global $wcMfpc;
 
             $wcMfpc->getMemcached()
-                   ->clear(null, true);
+                   ->flush();
 
         }
 
