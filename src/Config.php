@@ -54,11 +54,6 @@ class Config
     public $expire                  = 86400;
 
     /**
-     * @var int
-     */
-    public $invalidation_method     = 1;
-
-    /**
      * @var string
      */
     public $prefix_meta             = 'meta-';
@@ -345,14 +340,6 @@ class Config
     public function getExpire()
     {
         return $this->expire;
-    }
-
-    /**
-     * @return int
-     */
-    public function getInvalidationMethod()
-    {
-        return $this->invalidation_method;
     }
 
     /**
