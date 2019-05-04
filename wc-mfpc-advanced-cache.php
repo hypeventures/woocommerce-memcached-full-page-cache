@@ -429,7 +429,6 @@ function wc_mfpc_start()
  * @see \InvincibleBrands\WcMfpc\WcMfpc::init()
  *
  * @param string $redirect_url
- * @param $requested_url
  *
  * @return mixed
  */
