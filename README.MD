@@ -55,7 +55,7 @@ Examples:
 /**
  * Function to customize array of permalinks $toClear.
  *
- * @see InvincibleBrands\WcMfpc\Memcached::clearMemcached()
+ * @see InvincibleBrands\WcMfpc\WcMfpc::clearMemcached()
  *
  * @param array      $toClear  Array of keys which should be cleared afterwards.
  * @param string|int $postId   Id of the post in question IF it is a post. Needs to be checked!
