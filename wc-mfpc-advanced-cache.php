@@ -1,6 +1,10 @@
 <?php
-/*
- * advanced cache worker of WordPress plugin WC-MFPC
+/**
+ * Advanced cache worker of "WooCommerce Memcached Full Page Cache" Plugin.
+ *
+ * @see \InvincibleBrands\WcMfpc\Config::getConfig()
+ *
+ * @var \InvincibleBrands\WcMfpc\Config[]string|array $wc_mfpc_config_array
  */
 
 if (! defined('ABSPATH')) { exit; }
