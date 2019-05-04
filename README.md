@@ -7,6 +7,13 @@ by [Peter Molnar](https://github.com/petermolnar).
 
 ## Installation
 
+1. Upload contents of `woocommerce-memcached-full-page-cache.zip` (_OR clone this repository_) to the 
+`/wp-content/plugins/` directory of your wordpress installation.
+2. Enable WordPress caching via adding `define('WP_CACHE',true);` in the file `wp-config.php`
+3. Activate the plugin through the `Plugins` menu in WordPress
+4. Check the settings in `WooCommerce` => `Full Page Cache` menu in your WordPress admin backend.
+5. __(!) Save the settings__ to generate `/wp-content/advanced-cache.php` and activate caching!
+
 ...
 
 ## Settings
@@ -14,7 +21,7 @@ __Settings link:__ yourdomain.xyz/wp-admin/admin.php?page=wc-mfpc-settings
 
 OR
 
-Admin > WooCommerce > Full Page Cache
+__WP Admin__ => __WooCommerce__ => Full Page Cache
 
 ...
 
