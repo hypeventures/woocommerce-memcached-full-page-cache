@@ -16,15 +16,6 @@ class AdminView
     /**
      * @var array
      */
-    private $select_invalidation_method =  [
-        'Flush Cache',
-        'Only modified Post',
-        'Modified Post & related Taxonomies',
-    ];
-
-    /**
-     * @var array
-     */
     private $list_uri_vars = [
         '$scheme'           => 'The HTTP scheme (i.e. http, https).',
         '$host'             => 'Host in the header of request or name of the server processing the request if the Host header is not available.',
@@ -475,30 +466,6 @@ class AdminView
             'description' => 'Charset of HTML and XML (pages and feeds) data.',
             'value'       => $wcMfpcConfig->getCharset(),
         ]);
-        woocommerce_wp_select([
-            'id'          => 'invalidation_method',
-            'label'       => 'Cache invalidation method',
-            'class'       => 'short',
-            'description' => 'Select cache invalidation method.',
-            'options'     => $this->select_invalidation_method,
-            'value'       => $wcMfpcConfig->getInvalidationMethod(),
-        ]);
-        ?>
-        <ol class="description-addon">
-          <li>
-            <b><?php echo $this->select_invalidation_method[ 0 ]; ?></b>
-            - Clears everything in storage, <span class="error-msg">including values set by other applications.</span>
-          </li>
-          <li>
-            <b><?php echo $this->select_invalidation_method[ 1 ]; ?></b>
-            - Clear only the modified posts entry, everything else remains in cache.
-          </li>
-          <li>
-            <b><?php echo $this->select_invalidation_method[ 2 ]; ?></b>
-            - Unvalidates post and the taxonomy related to the Post.
-          </li>
-        </ol>
-        <?php
         woocommerce_wp_checkbox([
             'id'          => 'comments_invalidate',
             'label'       => 'Invalidate on comment actions',
