@@ -615,7 +615,7 @@ function wc_mfpc_callback( $buffer )
 
 	}
 
-    if ($meta[ 'type' ] != 'unknown') {
+    if ($meta[ 'type' ] !== 'unknown') {
 
 		/*
 		 * check if caching is disabled for page type
@@ -647,26 +647,26 @@ function wc_mfpc_callback( $buffer )
 
     }
 
-	/*
+    $meta[ 'mime' ] = 'text/html;charset=';
+
+    /*
 	 * Feed is xml, all others forced to be HTML
 	 */
     if (is_feed()) {
 
         $meta[ 'mime' ] = 'text/xml;charset=';
 
-    } else {
-
-        $meta[ 'mime' ] = 'text/html;charset=';
-
     }
 
 	/*
-	 * Set mime-type.
+	 * Add charset to complete mime-type.
 	 */
     $meta[ 'mime' ] = $meta[ 'mime' ] . $config[ 'charset' ];
 
-	/* store pingback url if pingbacks are enabled */
-    if (get_option('default_ping_status') == 'open') {
+	/*
+	 * Store pingback url if pingbacks are enabled
+	 */
+    if (get_option('default_ping_status') === 'open') {
 
         $meta[ 'pingback' ] = get_bloginfo('pingback_url');
 
