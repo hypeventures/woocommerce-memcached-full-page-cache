@@ -624,12 +624,6 @@ class AdminView
             'description' => 'Enable to add X-Cache-Engine HTTP header to HTTP responses.',
             'value'       => $wcMfpcConfig->isResponseHeader() ? 'yes' : 'no',
         ]);
-        woocommerce_wp_checkbox([
-            'id'          => 'generate_time',
-            'label'       => 'HTML debug comment',
-            'description' => 'Adds comment string including plugin name, cache engine and page generation time to every generated entry before closing <b>body</b> tag.',
-            'value'       => $wcMfpcConfig->isGenerateTime() ? 'yes' : 'no',
-        ]);
     }
 
     /**
