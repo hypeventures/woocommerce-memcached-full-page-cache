@@ -3,12 +3,21 @@
 WooCommerce full page cache plugin based on Memcached.
 
 ## Installation
+
 ...
 
 ## Settings
+__Settings link:__ yourdomain.xyz/wp-admin/admin.php?page=wc-mfpc-settings
+
+OR
+
+Admin > WooCommerce > Full Page Cache
+
 ...
 
 ## Customization
+
+You can use hooks to customize the behaviour of this plugin.
 
 ### Hooks
 
