@@ -182,11 +182,6 @@ if (empty($wc_mfpc_memcached->status())) {
 }
 
 /*
- * Initialize getime storage
- */
-$wc_mfpc_gentime = 0;
-
-/*
  * Try to get data & meta keys for current page
  */
 $wc_mfpc_keys   = [ 'meta' => $wc_mfpc_config_array[ 'prefix_meta' ], 'data' => $wc_mfpc_config_array[ 'prefix_data' ] ];
@@ -373,25 +368,8 @@ if (! empty($wc_mfpc_config_array[ 'response_header' ])) {
 
 }
 
-/*
- * HTML data
- */
-if (! empty($wc_mfpc_config_array[ 'generate_time' ]) && stripos($wc_mfpc_values[ 'data' ], '</body>')) {
-
-    $mtime           = explode(" ", microtime());
-    $wc_mfpc_gentime = ($mtime[ 1 ] + $mtime[ 0 ]) - $wc_mfpc_gentime;
-
-    $insertion = "\n<!-- WC-MFPC cache output stats\n\tcache engine: " . $wc_mfpc_config_array[ 'cache_type' ]
-                 . "\n\tUNIX timestamp: " . time() . "\n\tdate: " . date('c') . "\n\tfrom server: "
-                 . $_SERVER[ 'SERVER_ADDR' ] . " -->\n";
-
-    $index                    = stripos($wc_mfpc_values[ 'data' ], '</body>');
-    $wc_mfpc_values[ 'data' ] = substr_replace($wc_mfpc_values[ 'data' ], $insertion, $index, 0);
-
-}
-
 error_log("Serving data");
-echo trim($wc_mfpc_values['data']);
+echo trim($wc_mfpc_values[ 'data' ]);
 
 flush();
 die();
@@ -412,11 +390,6 @@ die();
  */
 function wc_mfpc_start()
 {
-    global $wc_mfpc_gentime;
-
-    $mtime           = explode(" ", microtime());
-    $wc_mfpc_gentime = $mtime[ 1 ] + $mtime[ 0 ];
-
 	/*
 	 * Start object "colleting" and pass it the the actual storing function
 	 */
@@ -455,7 +428,7 @@ function wc_mfpc_callback( $buffer )
 	$config = $wc_mfpc_config_array;
 
 	/*
-	 * If true, WordPress functions are not availabe => skip writing cache.
+	 * If true, WordPress functions are not available => skip writing cache.
 	 */
     if (! function_exists('is_home')) {
 
@@ -671,33 +644,18 @@ function wc_mfpc_callback( $buffer )
 
     }
 
-	$to_store = $buffer;
-
-	/*
-	 * add generation info is option is set, but only to HTML
-	 */
-    if (! empty($config[ 'generate_time' ]) && stripos($buffer, '</body>')) {
-
-        global $wc_mfpc_gentime;
-
-        $mtime           = explode(" ", microtime());
-        $wc_mfpc_gentime = ($mtime[ 1 ] + $mtime[ 0 ]) - $wc_mfpc_gentime;
-
-        $insertion = "\n<!-- WC-MFPC cache generation stats" . "\n\tgeneration time: " . round($wc_mfpc_gentime, 3) . " seconds\n\tgeneraton UNIX timestamp: " . time() . "\n\tgeneraton date: " . date('c') . "\n\tgenerator server: " . $_SERVER[ 'SERVER_ADDR' ] . " -->\n";
-        $index     = stripos($buffer, '</body>');
-        $to_store  = substr_replace($buffer, $insertion, $index, 0);
-    }
+	$toStore = $buffer;
 
 	/**
 	 * Allows to edit the content to be stored in cache.
-	 * This hooks allows the user to edit the page content right before it is about to be stored in the cache. This
+	 * This hook allows the user to edit the page content right before it is about to be stored in the cache. This
      * could be useful for alterations like minification.
 	 *
-	 * @param string $to_store The content to be stored in cache.
+	 * @param string $toStore  The content to be stored in cache.
      *
      * @return string $to_store
 	 */
-    $to_store = apply_filters('wc-mfpc-to-store', $to_store);
+    $to_store = apply_filters('wc_mfpc_custom_to_store', $toStore);
 
     $prefix_meta = $wc_mfpc_memcached->key($config[ 'prefix_meta' ]);
     $wc_mfpc_memcached->set($prefix_meta, $meta);
