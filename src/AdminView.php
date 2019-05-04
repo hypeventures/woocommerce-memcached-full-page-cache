@@ -172,7 +172,7 @@ class AdminView
             <?php $this->renderSubmit(); ?>
 
             <fieldset id="<?php echo Data::plugin_constant; ?>-debug">
-              <legend>Header / Debug settings</legend>
+              <legend>Header settings</legend>
                 <?php $this->renderDebugSettings(); ?>
             </fieldset>
 
