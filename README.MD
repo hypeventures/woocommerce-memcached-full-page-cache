@@ -41,6 +41,8 @@ function cust_wc_mfpc_set_expire($expire = 0)
 add_filter('wc_mfpc_custom_expire', 'cust_wc_mfpc_set_expire');
 ```
 
+---
+
 * `wc_mfpc_custom_to_clear_before`
 * `wc_mfpc_custom_to_clear_after`
 
