@@ -339,7 +339,7 @@ class Memcached
 
     /**
      * Sets key and data in Memcached with expiration.
-     * Contains Hook: 'wc-mfpc-custom-expire' to customize expiration time.
+     * Contains Hook: 'wc_mfpc_custom_expire' to customize expiration time.
      *
      * @param string $key     Cache key to set with ( reference only, for speed )
      * @param mixed  $data    Data to set ( reference only, for speed )
@@ -366,7 +366,7 @@ class Memcached
          *
          * @return int
          */
-        $expire = (int) apply_filters('wc-mfpc-custom-expire', $expire);
+        $expire = (int) apply_filters('wc_mfpc_custom_expire', $expire);
 
         $result = $this->connection->set($key, $data, $expire);
 
