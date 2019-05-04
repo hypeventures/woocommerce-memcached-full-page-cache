@@ -77,13 +77,14 @@
 }
 
 .icon {
-  height: 2rem;
-  line-height: 2rem;
-  padding: 0 0.5rem 0 2.3rem;
+  height: 2.7rem;
+  line-height: 2.8rem;
+  padding: 0rem 0.5rem 0 3rem;
   margin: 0;
   display: inline-block;
   background-color: #fff;
   background-repeat: no-repeat;
+  background-position-x: 0.1rem;
 }
 
 .github {
