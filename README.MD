@@ -76,6 +76,9 @@ function cust_wc_mfpc_set_to_clear($toClear = [], $postId = '', $memcached = nul
         return false;
     }
     
+    /*
+     * If you want to flush also the taxonomies whlie cearling a post from cache, the following will do.
+     */
     $taxonomies = get_taxonomies([
         'public' => true,
     ], 'objects');
