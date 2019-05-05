@@ -451,7 +451,17 @@ function wc_mfpc_output_buffer_callback($content = '')
      * Skip if any of these essential conditions are met.
      */
 	if (
-	    empty($content)
+        /**
+         * Filter to skip caching entirely.
+         * This allows 3rd parties to skip caching in custom scenarios.
+         *
+         * @param bool $skip       Set TRUE to skip caching.
+         * @param string $content  The page content.
+         *
+         * @return bool $skip
+         */
+        apply_filters('wc_mfpc_custom_skip_caching', $skip = false, $content)
+        || empty($content)
 	    || empty($wp_query)
         || (stripos($content, '</body>') === false && stripos($content, '</rss>') === false)
     ) {
