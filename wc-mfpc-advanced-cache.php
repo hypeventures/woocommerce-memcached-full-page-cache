@@ -82,7 +82,7 @@ if (
      * @param array  $wc_mfpc_config_array  Array with config from advanced-cache.php
      * @param string $wc_mfpc_uri           HTTP-HOST string
      */
-    (bool)apply_filters('wc_mfpc_custom_skip_load_from_cache', $skip = false, $wc_mfpc_config_array, $wc_mfpc_uri)
+    (bool) apply_filters('wc_mfpc_custom_skip_load_from_cache', $skip = false, $wc_mfpc_config_array, $wc_mfpc_uri)
 ) {
 
     return false;
@@ -131,13 +131,13 @@ if (empty($wc_mfpc_config_array[ 'cache_loggedin' ])) {
 
     $nocache_cookies = [ 'comment_author_', 'wordpressuser_', 'wp-postpass_', 'wordpress_logged_in_' ];
 
-    foreach ($_COOKIE as $n => $v) {
+    foreach ($_COOKIE as $cookie => $value) {
 
         foreach ($nocache_cookies as $nocache_cookie) {
 
-            if (strpos($n, $nocache_cookie) === 0) {
+            if (strpos($cookie, $nocache_cookie) === 0) {
 
-                error_log("No cache for cookie: {$n}, skipping");
+                error_log("No cache for cookie: {$cookie}, skipping");
 
                 return false;
             }
