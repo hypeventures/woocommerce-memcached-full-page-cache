@@ -31,18 +31,6 @@ class AdminView
 {
 
     /**
-     * @var array
-     */
-    private $list_uri_vars = [
-        '$scheme'           => 'The HTTP scheme (i.e. http, https).',
-        '$host'             => 'Host in the header of request or name of the server processing the request if the Host header is not available.',
-        '$request_uri'      => 'The *original* request URI as received from the client including the args',
-        '$remote_user'      => 'Name of user, authenticated by the Auth Basic Module',
-        '$cookie_PHPSESSID' => 'PHP Session Cookie ID, if set ( empty if not )',
-        '$accept_lang'      => 'First HTTP Accept Lang set in the HTTP request',
-    ];
-
-    /**
      * Renders the "Cache control" box.
      *
      * @param string $status     Cache status string.
@@ -507,30 +495,6 @@ class AdminView
         <div class="description-addon">
           <b>WARNING</b>: changing this will result the previous cache to becomes invalid!
         </div>
-        <?php
-        woocommerce_wp_text_input([
-            'id'          => 'key',
-            'label'       => 'Key scheme',
-            'class'       => 'short',
-            'description' => 'Key layout: <b>please use the guide below to change it.</b>',
-            'value'       => $wcMfpcConfig->getKey(),
-        ]);
-        ?>
-        <div class="description-addon">
-          <b>WARNING</b>: changing this will result the previous cache to becomes invalid!<br />
-          If you are caching with nginx, you should update your nginx configuration and reload nginx after
-          changing this value.
-        </div>
-        <table class="description-addon" style="margin: 0 0 1rem;" cellspacing="0" cellpadding="0">
-          <tr><th colspan="2" style="text-align: left;"><h3>Possible variables:</h3></th></tr>
-          <?php
-          foreach ($this->list_uri_vars as $uri => $desc) {
-
-              echo '<tr><td><b>' . $uri . '</b>:</td><td><i>' . $desc . '</i></td></tr>';
-
-          }
-          ?>
-        </table>
         <?php
     }
 
