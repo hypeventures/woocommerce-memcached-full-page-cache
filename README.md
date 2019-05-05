@@ -250,7 +250,7 @@ Example #1:
  *
  * @param bool   $skip    Default: false - return TRUE for skipping
  * @param array  $config  Array with config from advanced-cache.php
- * @param string $uri     HTTP-HOST string
+ * @param string $uri     Requested URL string
  *
  * @return bool $skip
  */
