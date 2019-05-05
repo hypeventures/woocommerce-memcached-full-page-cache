@@ -97,3 +97,7 @@
   position: absolute;
   right: 0;
 }
+
+#wc-mfpc-metabox-page .inside > div {
+  padding: 0 !important;
+}
