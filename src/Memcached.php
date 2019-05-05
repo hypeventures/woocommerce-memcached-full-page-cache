@@ -221,7 +221,7 @@ class Memcached
      *
      * @return string  The key for the given data type.
      */
-    public function buildKey($permalink = '', $type = 'data')
+    public function buildKey(&$permalink = '', &$type = 'data')
     {
         return $this->config[ 'prefix_' . $type ] . $permalink;
     }
@@ -233,9 +233,8 @@ class Memcached
      *
      * @return array  [ 'dataKey' => true, 'metaKEy' => true ]
      */
-    public function buildKeys($permalinks = [])
+    public function buildKeys(&$permalinks = [])
     {
-
         $result = [];
 
         #error_log('buildKeys $toClear: ' . var_export($toClear, true));
@@ -347,9 +346,9 @@ class Memcached
      *
      * @return bool
      */
-    public function clearLinks($permalinks = [])
+    public function clearLinks(&$permalinks = [])
     {
-        if (empty($permalinks)) {
+        if (! $this->isAlive() || empty($permalinks)) {
 
             return false;
         }
