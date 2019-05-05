@@ -99,6 +99,8 @@
   right: 0;
 }
 
-#wc-mfpc-metabox-page .inside > div {
+#wc-mfpc-metabox-post .inside > div,
+#wc-mfpc-metabox-page .inside > div,
+#wc-mfpc-metabox-product .inside > div {
   padding: 0 !important;
 }
