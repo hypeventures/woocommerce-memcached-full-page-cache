@@ -59,18 +59,34 @@ if (defined('SID') && SID != '') {
     return false;
 }
 
+$wc_mfpc_uri = $_SERVER[ 'REQUEST_URI' ];
+
 /*
  * check for config
  */
-if (! isset($wc_mfpc_config_array) || empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
+if (! isset($wc_mfpc_config_array) || empty($wc_mfpc_config_array[ $wc_mfpc_uri ])) {
 
     error_log("No config found.");
 
     return false;
 }
 
-$wc_mfpc_config_array = $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ];
-$wc_mfpc_uri          = $_SERVER[ 'REQUEST_URI' ];
+$wc_mfpc_config_array = $wc_mfpc_config_array[ $wc_mfpc_uri ];
+
+if (
+    /**
+     * Filter to skip loading page from cache.
+     * Allows 3rd parties to implement their own conditions to skip loading a page from cache.
+     *
+     * @param bool   $skip                  Default: false - return TRUE for skipping
+     * @param array  $wc_mfpc_config_array  Array with config from advanced-cache.php
+     * @param string $wc_mfpc_uri           HTTP-HOST string
+     */
+    (bool)apply_filters('wc_mfpc_custom_skip_load_from_cache', $skip = false, $wc_mfpc_config_array, $wc_mfpc_uri)
+) {
+
+    return false;
+}
 
 /*
  * no cache for uri with query strings, things usually go bad that way
