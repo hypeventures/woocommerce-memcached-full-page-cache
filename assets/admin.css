@@ -19,11 +19,6 @@
  * ToDo: Reduce this file further!
  */
 
-.wc-mfpc-admin dt {
-  margin-top: 2em;
-  font-weight:bold;
-}
-
 .wc-mfpc-admin fieldset {
   display:block;
   padding: 0 1rem 0 1rem;
