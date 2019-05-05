@@ -465,24 +465,6 @@ class AdminView
             'value'       => $wcMfpcConfig->getBrowsercache(),
         ]);
         woocommerce_wp_text_input([
-            'id'          => 'browsercache_taxonomy',
-            'label'       => 'Browser cache expiration of Taxonomies',
-            'type'        => 'number',
-            'data_type'   => 'decimal',
-            'class'       => 'short',
-            'description' => 'Sets validity time of taxonomy for the browser cache.',
-            'value'       => $wcMfpcConfig->getBrowsercacheTaxonomy(),
-        ]);
-        woocommerce_wp_text_input([
-            'id'          => 'browsercache_home',
-            'label'       => 'Browser cache expiration of Home',
-            'type'        => 'number',
-            'data_type'   => 'decimal',
-            'class'       => 'short',
-            'description' => 'Sets validity time of home for the browser cache.',
-            'value'       => $wcMfpcConfig->getBrowsercacheHome(),
-        ]);
-        woocommerce_wp_text_input([
             'id'          => 'charset',
             'label'       => 'Charset',
             'class'       => 'short',
