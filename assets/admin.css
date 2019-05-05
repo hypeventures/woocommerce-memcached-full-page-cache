@@ -106,4 +106,6 @@
 
 .github {
   background-image: url("github-square.svg");
+  position: absolute;
+  right: 0;
 }
