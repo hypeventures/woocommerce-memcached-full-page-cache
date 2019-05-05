@@ -101,11 +101,6 @@ class Config
     public $response_header         = true;
 
     /**
-     * @var string
-     */
-    public $key                     = '$scheme://$host$request_uri';
-
-    /**
      * @var bool
      */
     public $comments_invalidate     = true;
@@ -383,14 +378,6 @@ class Config
     public function isResponseHeader()
     {
         return $this->response_header;
-    }
-
-    /**
-     * @return string
-     */
-    public function getKey()
-    {
-        return $this->key;
     }
 
     /**
