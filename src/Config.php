@@ -80,31 +80,6 @@ class Config
     public $cache_loggedin          = true;
 
     /**
-     * @var bool
-     */
-    public $nocache_home            = false;
-
-    /**
-     * @var bool
-     */
-    public $nocache_feed            = false;
-
-    /**
-     * @var bool
-     */
-    public $nocache_archive         = false;
-
-    /**
-     * @var bool
-     */
-    public $nocache_single          = false;
-
-    /**
-     * @var bool
-     */
-    public $nocache_page            = false;
-
-    /**
      * @var string
      */
     public $nocache_cookies         = '';
@@ -352,46 +327,6 @@ class Config
     public function isCacheLoggedin()
     {
         return $this->cache_loggedin;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isNocacheHome()
-    {
-        return $this->nocache_home;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isNocacheFeed()
-    {
-        return $this->nocache_feed;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isNocacheArchive()
-    {
-        return $this->nocache_archive;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isNocacheSingle()
-    {
-        return $this->nocache_single;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isNocachePage()
-    {
-        return $this->nocache_page;
     }
 
     /**
