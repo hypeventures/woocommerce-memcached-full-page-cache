@@ -214,6 +214,24 @@ class Memcached
     }
 
     /**
+     * Builds and returns the current request URL which should equal our permalinks.
+     *
+     * @return string
+     */
+    public function buildUrl()
+    {
+        $scheme = 'http://';
+
+        if (isset($_SERVER[ 'HTTPS' ]) && strtolower($_SERVER[ 'HTTPS' ]) === 'on') {
+
+            $scheme = 'https://';
+
+        }
+
+        return $scheme . $_SERVER[ 'HTTP_HOST' ] . $_SERVER[ 'REQUEST_URI' ];
+    }
+
+    /**
      * Get the cache key for a given permalink and data type.
      *
      * @param string $permalink  The permalink of the page in question.
