@@ -447,8 +447,9 @@ function wc_mfpc_output_buffer_callback($content = '')
      * @var InvincibleBrands\WcMfpc\Memcached    $wc_mfpc_memcached
      * @var string                               $wc_mfpc_redirect
      * @var WP_Query                             $wp_query
+     * @var WP_Post                              $post
      */
-	global $wc_mfpc_config_array, $wc_mfpc_memcached, $wc_mfpc_redirect, $wp_query;
+	global $wc_mfpc_config_array, $wc_mfpc_memcached, $wc_mfpc_redirect, $wp_query, $post;
 
     $content = trim($content);
 
@@ -488,7 +489,26 @@ function wc_mfpc_output_buffer_callback($content = '')
 	$config    = &$wc_mfpc_config_array;
 	$cacheMeta = [];
 
-	if ($wp_query->is_home() || $wp_query->is_feed()) {
+	/*if (is_product()) {
+
+        error_log('caching product category');
+        $cacheMeta[ 'type' ] = 'product';
+
+        if (! empty ($post->post_modified_gmt)) {
+
+            $cacheMeta[ 'lastmodified' ] = strtotime($post->post_modified_gmt);
+
+        }
+
+    } elseif (is_product_category()) {
+
+	    error_log('caching product category');
+
+    } elseif (is_shop()) {
+
+        error_log('caching shop');
+
+    } else*/if ($wp_query->is_home() || $wp_query->is_feed()) {
 
 		if ($wp_query->is_home()) {
 
@@ -557,8 +577,6 @@ function wc_mfpc_output_buffer_callback($content = '')
 	} elseif ($wp_query->is_single() || $wp_query->is_page()) {
 
         $cacheMeta[ 'type' ] = 'single';
-
-		global $post;
 
 		/*
 		 * Check if post is available. If made with archive, last listed post can make this go bad.
