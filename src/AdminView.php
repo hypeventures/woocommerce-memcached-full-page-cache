@@ -543,36 +543,6 @@ class AdminView
             'description' => 'Enable to cache pages even if user is logged in.',
             'value'       => $wcMfpcConfig->isCacheLoggedin() ? 'yes' : 'no',
         ]);
-        woocommerce_wp_checkbox([
-            'id'          => 'nocache_home',
-            'label'       => 'Exclude home',
-            'description' => 'Enable to never cache home.',
-            'value'       => $wcMfpcConfig->isNocacheHome() ? 'yes' : 'no',
-        ]);
-        woocommerce_wp_checkbox([
-            'id'          => 'nocache_feed',
-            'label'       => 'Exclude feeds',
-            'description' => 'Enable to never cache feeds.',
-            'value'       => $wcMfpcConfig->isNocacheFeed() ? 'yes' : 'no',
-        ]);
-        woocommerce_wp_checkbox([
-            'id'          => 'nocache_archive',
-            'label'       => 'Exclude archives',
-            'description' => 'Enable to never cache archives.',
-            'value'       => $wcMfpcConfig->isNocacheArchive() ? 'yes' : 'no',
-        ]);
-        woocommerce_wp_checkbox([
-            'id'          => 'nocache_page',
-            'label'       => 'Exclude pages',
-            'description' => 'Enable to never cache pages.',
-            'value'       => $wcMfpcConfig->isNocachePage() ? 'yes' : 'no',
-        ]);
-        woocommerce_wp_checkbox([
-            'id'          => 'nocache_single',
-            'label'       => 'Exclude singulars',
-            'description' => 'Enable to never cache singulars.',
-            'value'       => $wcMfpcConfig->isNocacheSingle() ? 'yes' : 'no',
-        ]);
         woocommerce_wp_text_input([
             'id'          => 'nocache_cookies',
             'label'       => 'Exclude based on cookies',
