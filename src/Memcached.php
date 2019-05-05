@@ -243,7 +243,7 @@ class Memcached
         foreach ($permalinks as $permalink => $dummy) {
 
             $result[ $this->buildKey($permalink, 'data') ] = true;
-            $result[ $this->buildKey($permalink, 'data') ] = true;
+            $result[ $this->buildKey($permalink, 'meta') ] = true;
 
         }
 
