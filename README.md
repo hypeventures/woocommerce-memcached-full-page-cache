@@ -205,20 +205,68 @@ It can be found here: [wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php)
 Example:
 ```
 /**
- * Function to customize the cached meta data of any page.
+ * Function to customize the cached meta data array of any page.
  *
- * @param array $cacheMeta  The content to be stored in cache.
+ * @param array $cacheMeta  The meta data array to be stored in cache.
  *
  * @return array $cacheMeta
  */
 function cust_wc_mfpc_set_cache_meta($cacheMeta = '')
-{    
-    
+{
+    /*
+     * Example:
+     * Change browsercache expire time for certain page types before storing meta data.
+     */
+    if (is_home() || is_feed) {
+
+        $cacheMeta[ 'expire' ] = time() + 1800;
+
+    } elseif (is_archive()) {
+
+        $cacheMeta[ 'expire' ] = time() + 3600;
+
+    } elseif (is_product()) {
+
+        $cacheMeta[ 'expire' ] = time() + 7200;
+
+    }
     
     return $cacheMeta;
 }
 add_filter('wc_mfpc_custom_cache_meta', 'cust_wc_mfpc_set_cache_meta');
 ```
+
+### Hook: Custom SkipLoadFromCache
+
+* `wc_mfpc_custom_skip_load_from_cache`
+
+...
+
+Example:
+```
+/**
+ * Function to customize whether a page is processed by wp-ffpc at all.
+ *
+ * @param bool   $skip    Default: false - return TRUE for skipping
+ * @param array  $config  Array with config from advanced-cache.php
+ * @param string $uri     HTTP-HOST string
+ *
+ * @return bool $skip
+ */
+function cust_wc_mfpc_set_skip_load_from_cache($skip = false, $config = [], $uri = '')
+{
+    if (SOMETHING_OF_YOUR_CONCERN) {
+
+        $skip = true;
+
+    }
+    
+    return $skip
+}
+add_filter('wc_mfpc_custom_skip_load_from_cache', 'cust_wc_mfpc_set_skip_load_from_cache')
+```
+
+
 
 * ` `
 
