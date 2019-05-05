@@ -28,7 +28,6 @@
 if (! defined('ABSPATH')) { exit; }
 
 error_log('--------------------------------------------------------------------------------------------------');
-error_log('worker running');
 
 /*
  * check for WP cache enabled

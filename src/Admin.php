@@ -51,7 +51,7 @@ class Admin
         add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'addSettingsLink' ]);
         add_action('admin_menu', [ &$this, 'addMenu' ], 101);
         add_action('admin_init', [ &$this, 'init' ]);
-        add_action('admin_enqueue_scripts', [ &$this, 'enqueue_admin_css_js' ]);
+        add_action('admin_enqueue_scripts', [ &$this, 'enqueAdminCss' ]);
 
         /*
          * In case of major issues => abort here and set no more action hooks.
@@ -191,7 +191,7 @@ class Admin
 
                 $term   = get_term($id);
                 $result = $wcMfpc->getMemcached()
-                                 ->clear_keys([ get_category_link($term->term_taxonomy_id) => true, ]);
+                                 ->clearKeys([ get_category_link($term->term_taxonomy_id) => true, ]);
                 $item   = $term->name;
 
             }
@@ -312,7 +312,7 @@ class Admin
         ) {
 
             $link   = esc_url($_POST[ 'permalink' ]);
-            $result = $wcMfpc->getMemcached()->clear_keys([ $link => true ]);
+            $result = $wcMfpc->getMemcached()->clearKeys([ $link => true ]);
 
         } else {
 
@@ -351,7 +351,7 @@ class Admin
     /**
      * @return void
      */
-    public function enqueue_admin_css_js()
+    public function enqueAdminCss()
     {
         wp_register_style(Data::admin_css_handle, Data::admin_css_url, [], false, 'all');
         wp_enqueue_style(Data::admin_css_handle);

@@ -429,7 +429,7 @@ class Memcached
      *
      * @return bool
      */
-    public function clear_keys($keys)
+    public function clearKeys($keys)
     {
         if (empty($keys)) {
 

@@ -233,7 +233,7 @@ class WcMfpc
          */
         $toClear = (array) apply_filters('wc_mfpc_custom_to_clear_after', $toClear, $postId, $memcached);
 
-        return $memcached->clear_keys($toClear);
+        return $memcached->clearKeys($toClear);
     }
 
 }
