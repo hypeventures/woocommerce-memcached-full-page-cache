@@ -158,9 +158,9 @@ add_filter('wc_mfpc_custom_to_clear_before, 'cust_wc_mfpc_set_expire', 10, 3);
 
 ---
 
-### Hook: Custom ToStore
+### Hook: Custom CacheContent
 
-* `wc_mfpc_custom_to_store`
+* `wc_mfpc_custom_cache_content`
 
 This hook lets you customize the raw content of a page, before it gets stored in cache.
 
@@ -171,25 +171,53 @@ Example:
 /**
  * Function to customize the html content of any page.
  *
- * @param string $toStore  The content to be stored in cache.
+ * @param string $cacheContent  The content to be stored in cache.
  *
- * @return string $to_store
+ * @return string $cacheContent
  */
-function cust_wc_mfpc_set_to_store($toStore = '')
+function cust_wc_mfpc_set_cache_content($cacheContent = '')
 {    
     /*
      * Add generation date info, but only to HTML.
      */
-    if (stripos($buffer, '</body>')) {
+    if (stripos($cacheContent, '</body>')) {
 
-        $insertion = "\n<!-- WC-MFPC cache created date: " . date('c') . " -->\n";
-        $index     = stripos($buffer, '</body>');
-        $toStore   = substr_replace($buffer, $insertion, $index, 0);
+        $insertion    = "\n<!-- WC-MFPC cache created date: " . date('c') . " -->\n";
+        $index        = stripos($buffer, '</body>');
+        $cacheContent = substr_replace($buffer, $insertion, $index, 0);
     }
     
-    return $toStore;
+    return $cacheContent;
 }
-add_filter('wc_mfpc_custom_to_store', 'cust_wc_mfpc_set_to_store');
+add_filter('wc_mfpc_custom_cache_content', 'cust_wc_mfpc_set_cache_content');
+```
+
+---
+
+### Hook: Custom CacheMeta
+
+* `wc_mfpc_custom_cache_meta`
+
+This hook lets you customize the cache meta data of a page, before it gets stored in cache.
+
+It can be found here: [wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php)
+
+Example:
+```
+/**
+ * Function to customize the cached meta data of any page.
+ *
+ * @param array $cacheMeta  The content to be stored in cache.
+ *
+ * @return array $cacheMeta
+ */
+function cust_wc_mfpc_set_cache_meta($cacheMeta = '')
+{    
+    
+    
+    return $cacheMeta;
+}
+add_filter('wc_mfpc_custom_cache_meta', 'cust_wc_mfpc_set_cache_meta');
 ```
 
 * ` `
