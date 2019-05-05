@@ -204,10 +204,11 @@ class Admin
 
             } else {
 
-                $term   = get_term($id);
-                $result = $wcMfpc->getMemcached()
-                                 ->clearKeys([ get_category_link($term->term_taxonomy_id) => true, ]);
-                $item   = $term->name;
+                $term      = get_term($id);
+                $item      = $term->name;
+                $permalink = get_category_link($term->term_taxonomy_id);
+                $result    = $wcMfpc->getMemcached()
+                                    ->clearLinks([ $permalink => true, ]);
 
             }
 
@@ -227,7 +228,7 @@ class Admin
         return $redirectTo;
     }
 
-    /**
+    /**ł
      * Adds the "Cache control" meta box to "Post", "Page" & "Product" edit screens.
      *
      * @return void
@@ -326,8 +327,9 @@ class Admin
             && isset($_POST[ 'permalink' ])
         ) {
 
-            $link   = esc_url($_POST[ 'permalink' ]);
-            $result = $wcMfpc->getMemcached()->clearKeys([ $link => true ]);
+            $permalink = esc_url($_POST[ 'permalink' ]);
+            $result    = $wcMfpc->getMemcached()
+                                ->clearLinks([ $permalink => true, ]);
 
         } else {
 
