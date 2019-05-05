@@ -52,22 +52,12 @@ class Config
     /**
      * @var int
      */
-    public $browsercache            = 14400;
-
-    /**
-     * @var int
-     */
-    public $browsercache_home       = 14400;
-
-    /**
-     * @var int
-     */
-    public $browsercache_taxonomy   = 14400;
-
-    /**
-     * @var int
-     */
     public $expire                  = 86400;
+
+    /**
+     * @var int
+     */
+    public $browsercache            = 14400;
 
     /**
      * @var string
@@ -319,33 +309,17 @@ class Config
     /**
      * @return int
      */
-    public function getBrowsercache()
-    {
-        return $this->browsercache;
-    }
-
-    /**
-     * @return int
-     */
-    public function getBrowsercacheHome()
-    {
-        return $this->browsercache_home;
-    }
-
-    /**
-     * @return int
-     */
-    public function getBrowsercacheTaxonomy()
-    {
-        return $this->browsercache_taxonomy;
-    }
-
-    /**
-     * @return int
-     */
     public function getExpire()
     {
         return $this->expire;
+    }
+
+    /**
+     * @return int
+     */
+    public function getBrowsercache()
+    {
+        return $this->browsercache;
     }
 
     /**
