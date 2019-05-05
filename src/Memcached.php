@@ -59,11 +59,6 @@ class Memcached
     public $status = [];
 
     /**
-     * @var array
-     */
-    public $uriMap = [];
-
-    /**
      * Memcached constructor.
      *
      * @param Config|array $config
@@ -78,39 +73,8 @@ class Memcached
         }
 
         $this->config = $config;
-        $this->setUriMap();
         $this->setServers();
         $this->init();
-
-    }
-
-    /**
-     * Sets the uriMap array according to $_SERVER contents.
-     * 
-     * @return void
-     */
-    protected function setUriMap()
-    {
-        /*
-         * Handle typical LoadBalancer scenarios like on AWS.
-         */
-        if (
-            empty($_SERVER[ 'HTTPS' ])
-            && isset($_SERVER[ 'HTTP_X_FORWARDED_PROTO' ])
-            && $_SERVER[ 'HTTP_X_FORWARDED_PROTO' ] === 'https'
-        ) {
-
-            $_SERVER[ 'HTTPS' ] = 'on';
-
-        }
-
-        $this->uriMap = [
-            '$scheme'           => ! empty($_SERVER[ 'HTTPS' ]) ? 'https' : 'http',
-            '$host'             => isset($_SERVER[ 'HTTP_HOST' ]) ? $_SERVER[ 'HTTP_HOST' ] : '',
-            '$request_uri'      => isset($_SERVER[ 'REQUEST_URI' ]) ? $_SERVER[ 'REQUEST_URI' ] : '',
-            '$remote_user'      => isset($_SERVER[ 'REMOTE_USER' ]) ? $_SERVER[ 'REMOTE_USER' ] : '',
-            '$cookie_PHPSESSID' => isset($_COOKIE[ 'PHPSESSID' ]) ? $_COOKIE[ 'PHPSESSID' ] : '',
-        ];
     }
 
     /**
@@ -253,12 +217,11 @@ class Memcached
     /**
      * Returns an array which contains 4 keys for each permalink in the array $toClear.
      *
-     * @param array $toClear [ 'permalink' => true, ]
-     * @param Config|array $config
+     * @param array $toClear  [ 'permalink' => true, ]
      *
-     * @return array
+     * @return array  [ 'dataKey' => true, 'metaKEy' => true ]
      */
-    public function getKeys($toClear, $config) {
+    public function getKeys($toClear = []) {
 
         $result = [];
 
@@ -266,48 +229,14 @@ class Memcached
 
         foreach ($toClear as $link => $dummy) {
 
-            $result[ $config[ 'prefix_data' ] . $link ]          = true;
-            $result[ $config[ 'prefix_meta' ] . $link ]          = true;
-            $result[ $config[ 'prefix_data' ] . $link . 'feed' ] = true;
-            $result[ $config[ 'prefix_meta' ] . $link . 'feed' ] = true;
+            $result[ $this->config[ 'prefix_data' ] . $link ] = true;
+            $result[ $this->config[ 'prefix_meta' ] . $link ] = true;
 
         }
 
         #error_log('getKeys $result: ' . var_export($result, true));
 
         return $result;
-    }
-
-    /**
-     * build key to make requests with
-     *
-     * @param string $prefix       prefix to add to prefix
-     * @param array  $customUrimap to override defaults
-     *
-     * @return string
-     */
-    public function key($prefix, $customUrimap = null)
-    {
-        $uriMap   = $customUrimap ?: $this->uriMap;
-        $key_base = self::mapUriMap($uriMap, $this->config[ 'key' ]);
-        $key      = $prefix . $key_base;
-
-        #error_log(sprintf('original key configuration: %s', $this->config[ 'key' ]));
-        #error_log(sprintf('setting key for: %s', $key_base));
-        #error_log(sprintf('setting key to: %s', $key));
-
-        return $key;
-    }
-
-    /**
-     * @param array  $uriMap
-     * @param string $subject
-     *
-     * @return mixed
-     */
-    public static function mapUriMap($uriMap, $subject)
-    {
-        return str_replace(array_keys($uriMap), $uriMap, $subject);
     }
 
     /**
@@ -396,30 +325,6 @@ class Memcached
     public function flush()
     {
         return $this->connection->flush();
-    }
-
-    /**
-     * @param string $uri
-     * @param mixed  $default_uriMap
-     *
-     * @return array
-     */
-    public static function parseUriMap($uri, $default_uriMap = null)
-    {
-        $uri_parts = parse_url($uri);
-        $uri_map   = [
-            '$scheme'      => $uri_parts[ 'scheme' ],
-            '$host'        => $uri_parts[ 'host' ],
-            '$request_uri' => $uri_parts[ 'path' ],
-        ];
-
-        if (is_array($default_uriMap)) {
-
-            $uri_map = array_merge($default_uriMap, $uri_map);
-
-        }
-
-        return $uri_map;
     }
 
     /**
