@@ -81,6 +81,8 @@ if (
      * @param bool   $skip                  Default: false - return TRUE for skipping
      * @param array  $wc_mfpc_config_array  Array with config from advanced-cache.php
      * @param string $wc_mfpc_uri           HTTP-HOST string
+     *
+     * @return bool $skip
      */
     (bool) apply_filters('wc_mfpc_custom_skip_load_from_cache', $skip = false, $wc_mfpc_config_array, $wc_mfpc_uri)
 ) {
@@ -454,7 +456,7 @@ function wc_mfpc_output_buffer_callback($content = '')
      */
 	if (
         /**
-         * Filter to skip caching entirely.
+         * Filter to skip storing data in cache entirely.
          * This allows 3rd parties to skip caching in custom scenarios.
          *
          * @param bool $skip       Set TRUE to skip caching.
@@ -499,12 +501,6 @@ function wc_mfpc_output_buffer_callback($content = '')
 
 		}
 
-        if (! empty($config[ 'browsercache_home' ])) {
-
-            $cacheMeta[ 'expire' ] = time() + $config[ 'browsercache_home' ];
-
-		}
-
 		error_log( 'Getting latest post for for home & feed');
 
 		/*
@@ -532,12 +528,6 @@ function wc_mfpc_output_buffer_callback($content = '')
 	} elseif ($wp_query->is_archive()) {
 
         $cacheMeta[ 'type' ] = 'archive';
-
-		if (! empty($config[ 'browsercache_taxonomy' ])) {
-
-            $cacheMeta[ 'expire' ] = time() + $config[ 'browsercache_taxonomy' ];
-
-		}
 
 		if (! empty($wp_query->tax_query)) {
 
@@ -568,12 +558,6 @@ function wc_mfpc_output_buffer_callback($content = '')
 	} elseif ($wp_query->is_single() || $wp_query->is_page()) {
 
         $cacheMeta[ 'type' ] = 'single';
-
-        if (! empty($config[ 'browsercache' ])) {
-
-            $cacheMeta[ 'expire' ] = time() + $config[ 'browsercache' ];
-
-		}
 
 		global $post;
 
@@ -618,6 +602,12 @@ function wc_mfpc_output_buffer_callback($content = '')
 
 			return $content;
 		}
+
+        if (! empty($config[ 'browsercache' ])) {
+
+            $cacheMeta[ 'expire' ] = time() + $config[ 'browsercache' ];
+
+        }
 
 	}
 
