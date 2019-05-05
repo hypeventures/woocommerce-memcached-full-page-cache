@@ -158,7 +158,7 @@ class WcMfpc
      */
     public function clearMemcached($postId = null)
     {
-        $memcached = &$this->getMemcached();
+        $memcached = $this->getMemcached();
 
         if (! $memcached->isAlive()) {
 
