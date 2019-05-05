@@ -242,7 +242,7 @@ add_filter('wc_mfpc_custom_cache_meta', 'cust_wc_mfpc_set_cache_meta');
 
 ...
 
-Example:
+Example #1:
 ```
 /**
  * Function to customize whether a page is processed by wp-ffpc at all.
@@ -269,6 +269,14 @@ function cust_wc_mfpc_set_skip_load_from_cache($skip = false, $config = [], $uri
 }
 add_filter('wc_mfpc_custom_skip_load_from_cache', 'cust_wc_mfpc_set_skip_load_from_cache')
 ```
+Example #2:
+ ```
+if (! empty($_COOKIE[ 'SUPER_SPECIAL_COOKIE' ]) {
+    
+    add_filter('wc_mfpc_custom_skip_load_from_cache', '__return_true');
+
+}
+ ```
 
 ### Hook: Custom SkipCaching
 
