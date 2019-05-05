@@ -156,7 +156,7 @@ class AdminView
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/solid.css" integrity="sha384-QokYePQSOwpBDuhlHOsX0ymF6R/vLk/UQVz3WHa6wygxI5oGTmDTv8wahFOSspdm" crossorigin="anonymous">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css" integrity="sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq" crossorigin="anonymous">
         <div class="wrap wc-mfpc-wrap">
-          <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="icon github">
+          <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="wc-mfpc-icon wc-mfpc-github">
             Visit the plugin repository on GitHub
           </a>
           <h1>WooCommerce Memcached Full Page Cache</h1>
@@ -199,11 +199,16 @@ class AdminView
 
           <?php $this->renderActionButtons('reset'); ?>
 
+          <p style="background: #fff; padding: 1rem;">
+            <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache/issues" target="_blank">
+              Issues? Open an issue on GitHub.
+            </a>
+            <br>
+            <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank">
+              You want to customize this? Have a look at the example in the README.
+            </a>
+          </p>
         </div>
-        <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="wc-mfpc-icon wc-mfpc-github">
-          Visit the plugin repository on GitHub
-        </a>
-        <p>&nbsp;</p>
         <?php
 
         $post = $postOriginal;
