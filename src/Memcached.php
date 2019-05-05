@@ -210,27 +210,40 @@ class Memcached
 
         }
 
-        /* memcached is now alive */
         $this->alive = true;
     }
 
     /**
-     * Returns an array which contains 4 keys for each permalink in the array $toClear.
+     * Get the cache key for a given permalink and data type.
      *
-     * @param array $toClear  [ 'permalink' => true, ]
+     * @param string $permalink  The permalink of the page in question.
+     * @param string $type       The cache data type. Either 'data' or 'meta'. Default: 'data'
+     *
+     * @return string  The key for the given data type.
+     */
+    public function getKey($permalink = '', $type = 'data')
+    {
+        return $this->config[ 'prefix_' . $type ] . $permalink;
+    }
+
+    /**
+     * Returns an array which contains the cache keys for each permalink in the parameter array.
+     *
+     * @param array $permalinks  [ 'permalink' => true, ]
      *
      * @return array  [ 'dataKey' => true, 'metaKEy' => true ]
      */
-    public function getKeys($toClear = []) {
+    public function getKeys($permalinks = [])
+    {
 
         $result = [];
 
         #error_log('getKeys $toClear: ' . var_export($toClear, true));
 
-        foreach ($toClear as $link => $dummy) {
+        foreach ($permalinks as $permalink => $dummy) {
 
-            $result[ $this->config[ 'prefix_data' ] . $link ] = true;
-            $result[ $this->config[ 'prefix_meta' ] . $link ] = true;
+            $result[ $this->getKey($permalink, 'data') ] = true;
+            $result[ $this->getKey($permalink, 'data') ] = true;
 
         }
 
@@ -328,28 +341,21 @@ class Memcached
     }
 
     /**
-     * unset entries by key
+     * Deletes cache entries for a given array of permalinks.
      *
-     * @param array $keys
+     * @param array $permalinks  [ 'permalink' => true, ]
      *
      * @return bool
      */
-    public function clearKeys($keys)
+    public function clearKeys($permalinks = [])
     {
-        if (empty($keys)) {
+        if (empty($permalinks)) {
 
             return false;
         }
 
-        $keys   = $this->getKeys($keys, $this->config);
+        $keys   = $this->getKeys($permalinks);
         $result = false;
-
-        /* make an array if only one string is present, easier processing */
-        if (! is_array($keys)) {
-
-            $keys = [ $keys => true ];
-
-        }
 
         foreach ($keys as $key => $dummy) {
 
@@ -357,16 +363,13 @@ class Memcached
 
             if ($kresult === false) {
 
-                $code = $this->connection->getResultCode();
-
-                error_log(sprintf('unable to delete entry: %s', $key));
-                error_log(sprintf('Memcached error code: %s', $code));
+                error_log('unable to delete entry: ' . $key);
 
             } else {
 
                 $result = true;
 
-                error_log(sprintf('entry deleted: %s', $key));
+                error_log('entry deleted: ' . $key);
 
             }
 
