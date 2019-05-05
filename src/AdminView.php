@@ -67,7 +67,7 @@ class AdminView
                   data-nonce="<?php echo wp_create_nonce(Data::cache_control_action); ?>"
                   data-permalink="<?php echo $permalink; ?>"
           >
-            <span class="error-msg">
+            <span class="wc-mfpc-error-msg">
               Clear Cache for <?php echo ucfirst($type) . ': ' . $identifier; ?>
             </span>
           </button>
@@ -110,7 +110,7 @@ class AdminView
 
                   alert(data);
                   button.hide();
-                  status.html('<b class="error-msg">Not cached</b>');
+                  status.html('<b class="wc-mfpc-error-msg">Not cached</b>');
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -155,7 +155,7 @@ class AdminView
         ?>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/solid.css" integrity="sha384-QokYePQSOwpBDuhlHOsX0ymF6R/vLk/UQVz3WHa6wygxI5oGTmDTv8wahFOSspdm" crossorigin="anonymous">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css" integrity="sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq" crossorigin="anonymous">
-        <div class="wrap">
+        <div class="wrap wc-mfpc-wrap">
           <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="icon github">
             Visit the plugin repository on GitHub
           </a>
@@ -163,7 +163,7 @@ class AdminView
 
           <?php $this->renderMessages()->renderActionButtons('flush'); ?>
 
-          <form autocomplete="off" method="post" action="#" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin">
+          <form autocomplete="off" method="post" action="#" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin wc-mfpc-admin">
 
             <?php wp_nonce_field('wc-mfpc'); ?>
 
@@ -200,7 +200,7 @@ class AdminView
           <?php $this->renderActionButtons('reset'); ?>
 
         </div>
-        <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="icon github">
+        <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="wc-mfpc-icon wc-mfpc-github">
           Visit the plugin repository on GitHub
         </a>
         <p>&nbsp;</p>
@@ -327,7 +327,7 @@ class AdminView
 
         if (empty ($servers) || ! is_array($servers)) {
 
-            return $message . '<b class="error-msg">WARNING: Could not establish ANY connection. Please review "Memcached Connection Settings"!</b>';
+            return $message . '<b class="wc-mfpc-error-msg">WARNING: Could not establish ANY connection. Please review "Memcached Connection Settings"!</b>';
         }
 
         foreach ($servers as $server_string => $status) {
@@ -336,15 +336,15 @@ class AdminView
 
             if ($status == 0) {
 
-                $message .= '<span class="error-msg">Down</span><br>';
+                $message .= '<span class="wc-mfpc-error-msg">Down</span><br>';
 
             } elseif ($status == 1) {
 
-                $message .= '<span class="ok-msg">Up & running</span><br>';
+                $message .= '<span class="wc-mfpc-ok-msg">Up & running</span><br>';
 
             } else {
 
-                $message .= '<span class="error-msg">Unknown, please try re-saving settings!</span><br>';
+                $message .= '<span class="wc-mfpc-error-msg">Unknown, please try re-saving settings!</span><br>';
 
             }
 
@@ -363,7 +363,7 @@ class AdminView
     private function renderActionButtons($button = 'flush')
     {
         ?>
-        <form method="post" action="#" id="<?php echo Data::plugin_constant ?>-commands" class="plugin-admin">
+        <form method="post" action="#" id="<?php echo Data::plugin_constant ?>-commands" class="plugin-admin wc-mfpc-admin">
           <p>
             <?php
             wp_nonce_field('wc-mfpc');
@@ -371,12 +371,12 @@ class AdminView
             if ($button === 'flush') {
 
                 $this->renderSubmit('Flush Cache', 'secondary', Data::button_flush, false, 'trash-alt', 'color: #f33; margin: 1rem 1rem 1rem 0;');
-                echo '<span class="error-msg">Flushes Memcached. All entries in the cache are deleted, <b>including the ones that were set by other processes.</b></span>';
+                echo '<span class="wc-mfpc-error-msg">Flushes Memcached. All entries in the cache are deleted, <b>including the ones that were set by other processes.</b></span>';
 
             } else {
 
                 $this->renderSubmit('Reset Settings', 'secondary', Data::button_delete, false, 'undo-alt', 'color: #f33; margin: 1rem 1rem 1rem 0;');
-                echo '<span class="error-msg"><b>Resets ALL settings on this page to DEFAULT.</b></span>';
+                echo '<span class="wc-mfpc-error-msg"><b>Resets ALL settings on this page to DEFAULT.</b></span>';
 
             }
             ?>
@@ -426,14 +426,14 @@ class AdminView
             'id'          => 'authuser',
             'label'       => 'Username',
             'class'       => 'short',
-            'description' => 'Username for authentication with Memcached <span class="error-msg">(Only if SASL is enabled)</span>',
+            'description' => 'Username for authentication with Memcached <span class="wc-mfpc-error-msg">(Only if SASL is enabled)</span>',
             'value'       => $wcMfpcConfig->getAuthuser(),
         ]);
         woocommerce_wp_text_input([
             'id'          => 'authpass',
             'label'       => 'Password',
             'class'       => 'short',
-            'description' => 'Username for authentication with Memcached <span class="error-msg">(Only if SASL is enabled)</span>',
+            'description' => 'Username for authentication with Memcached <span class="wc-mfpc-error-msg">(Only if SASL is enabled)</span>',
             'value'       => $wcMfpcConfig->getAuthpass(),
         ]);
     }
@@ -565,7 +565,7 @@ class AdminView
             'value'       => $wcMfpcConfig->getNocacheUrl(),
         ]);
         ?>
-        <div class="error-msg" style="padding-bottom: 1rem;">
+        <div class="wc-mfpc-error-msg" style="padding-bottom: 1rem;">
           <h3>INFO:</h3>
           Dynamic WooCommerce pages are ignored by default via RegEx on the URL. <b>Pattern:</b> <i><?php echo $wcMfpcConfig->getNocacheWoocommerceUrl(); ?></i><br>
           <small>(This will be updated to your used urls dynamically after saving the config.)</small>

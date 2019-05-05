@@ -278,13 +278,13 @@ class Admin
     {
         global $wcMfpc, $wcMfpcConfig;
 
-        $statusMessage = '<b class="error-msg">Not cached</b>';
+        $statusMessage = '<b class="wc-mfpc-error-msg">Not cached</b>';
         $display       = 'none';
         $key           = $wcMfpcConfig->prefix_data . $permalink;
 
         if (! empty($wcMfpc->getMemcached()->get($key))) {
 
-            $statusMessage = '<b class="ok-msg">Cached</b>';
+            $statusMessage = '<b class="wc-mfpc-ok-msg">Cached</b>';
             $display       = 'block';
 
         }
