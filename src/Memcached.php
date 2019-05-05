@@ -256,16 +256,12 @@ class Memcached
 
         $result = [];
 
-        #error_log('buildKeys $toClear: ' . var_export($toClear, true));
-
         foreach ($permalinks as $permalink => $dummy) {
 
             $result[ $this->buildKey($permalink, 'data') ] = true;
             $result[ $this->buildKey($permalink, 'meta') ] = true;
 
         }
-
-        #error_log('buildKeys $result: ' . var_export($result, true));
 
         return $result;
     }

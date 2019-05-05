@@ -222,10 +222,9 @@ error_log("Trying to fetch entries");
  * Try to get data & meta keys for current page
  */
 $wc_mfpc_values      = [];
-$wc_mfpc_cache_types = [ 'data', 'meta', ];
 $wc_mfpc_permalink   = $wc_mfpc_memcached->buildUrl();
 
-foreach ($wc_mfpc_cache_types as $type) {
+foreach ([ 'data', 'meta', ] as $type) {
 
     $key   = $wc_mfpc_memcached->buildKey($wc_mfpc_permalink, $type);
     $value = $wc_mfpc_memcached->get($key);
@@ -247,11 +246,13 @@ foreach ($wc_mfpc_cache_types as $type) {
     }
 
     $wc_mfpc_values[ $type ] = $value;
+
+    /*
+     * ToDo: Remove! Testing only.
+     */
     error_log("Got value for $type : $key");
 
 }
-
-unset($wc_mfpc_cache_types);
 
 /*
  * Serve cache 404 status
@@ -262,6 +263,7 @@ if (isset($wc_mfpc_values[ 'meta' ][ 'status' ]) && $wc_mfpc_values[ 'meta' ][ '
      * ToDo: Remove! Testing only.
      */
     error_log("Serving 404");
+
     header("HTTP/1.1 404 Not Found");
 
     /*
