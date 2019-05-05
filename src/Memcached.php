@@ -470,11 +470,57 @@ class Memcached
     }
 
     /**
-     * Sets the status of each server in an array
-     *
-     * @todo Test if changing of the server list is really necessary. It might increase Memcached server requests.
+     * Sets the status of each server in an array.
+     * This will create a new \Memcached object and add a single server for each server in the actual connection in
+     * order to test it independently.
      *
      * @return bool|array $this->status  Array of configured servers with aliveness value
+     */
+    public function getStatusArray()
+    {
+        if (! $this->isAlive()) {
+
+            return false;
+        }
+
+        $servers = $this->connection->getServerList();
+
+        if (empty($servers)) {
+
+            return $this->status = [];
+        }
+
+        if (count($servers) === 1) {
+
+            return $this->status = $this->connection->set('wc-mfpc', time());
+        }
+
+        foreach ($servers as $server) {
+
+            $serverId                  = $server[ 'host' ] . self::port_separator . $server[ 'port' ];
+            $this->status[ $serverId ] = 0;
+
+            $memcached = new \Memcached();
+            $memcached->addServer($server[ 'host' ], $server[ 'port' ]);
+
+            if ($memcached->set('wc-mfpc', time())) {
+
+                $this->status[ $serverId ] = 1;
+
+            }
+
+            unset($memcached);
+
+        }
+
+        return $this->status;
+    }
+
+    /**
+     * Returns the connection status.
+     * This returns the \Memcached object result when setting a test key.
+     *
+     * @return array|bool
      */
     public function status()
     {
@@ -483,46 +529,7 @@ class Memcached
             return false;
         }
 
-        $changed = false;
-        $servers = $this->connection->getServerList();
-
-        foreach ($servers as $i => $server) {
-
-            $server_id                  = $server[ 'host' ] . self::port_separator . $server[ 'port' ];
-            $this->status[ $server_id ] = 0;
-
-            /*
-             * Instantiate a new Memcached connection for this server to test it independently.
-             */
-            $memcached = new \Memcached();
-            $memcached->addServer($server[ 'host' ], $server[ 'port' ]);
-
-            if ($memcached->set('wc-mfpc', time())) {
-
-                $this->status[ $server_id ] = 1;
-
-            } else {
-
-                unset($servers[ $i ]);
-                $changed = true;
-
-            }
-
-            unset($memcached);
-
-        }
-
-        /*
-         * If there are indeed servers which do not respond, remove them from the pool.
-         */
-        if ($changed && ! empty($servers)) {
-
-            $this->connection->resetServerList();
-            $this->connection->addServers($servers);
-
-        }
-
-        return $this->status;
+        return $this->connection->set('wc-mfpc', time());
     }
 
 }
