@@ -158,6 +158,11 @@ class WcMfpc
      */
     public function clearMemcached($postId = null)
     {
+        if (wp_is_post_autosave($postId) || wp_is_post_revision($postId)) {
+
+            return false;
+        }
+
         $memcached = $this->getMemcached();
 
         if (! $memcached->isAlive()) {
