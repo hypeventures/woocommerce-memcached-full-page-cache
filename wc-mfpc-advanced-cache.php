@@ -214,7 +214,7 @@ foreach ($wc_mfpc_keys as $internal => $key) {
     $key   = $wc_mfpc_memcached->key($key);
     $value = $wc_mfpc_memcached->get($key);
 
-    if (empty($value) {
+    if (empty($value)) {
 
         /*
          * It does not matter which is missing, we need both, if one fails, no caching
