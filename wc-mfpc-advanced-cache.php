@@ -592,16 +592,6 @@ function wc_mfpc_output_buffer_callback($content = '')
 
     if ($cacheMeta[ 'type' ] !== 'unknown') {
 
-        $nocacheKey = 'nocache_' . $cacheMeta[ 'type' ];
-
-		/*
-		 * Skip caching if prevented for this meta type by rule
-		 */
-        if (! empty($config[ $nocacheKey ])) {
-
-			return $content;
-		}
-
         if (! empty($config[ 'browsercache' ])) {
 
             $cacheMeta[ 'expire' ] = time() + $config[ 'browsercache' ];
