@@ -162,7 +162,7 @@ if (! empty($wc_mfpc_config_array[ 'nocache_cookies' ])) {
 }
 
 /*
- * no cache for excluded URL patterns
+ * No cache for excluded URL patterns
  */
 if (! empty($wc_mfpc_config_array[ 'nocache_url' ])) {
 
@@ -217,22 +217,21 @@ foreach ($wc_mfpc_keys as $internal => $key) {
     if (empty($value)) {
 
         /*
+         * ToDo: Remove! Testing only.
+         */
+        error_log("No cached data found");
+
+        /*
          * It does not matter which is missing, we need both, if one fails, no caching
          */
         wc_mfpc_start();
-        error_log("No cached data found");
 
         return;
 
-    } else {
-
-        /*
-         * store results
-         */
-        $wc_mfpc_values[ $internal ] = $value;
-        error_log('Got value for ' . $internal);
-
     }
+
+    $wc_mfpc_values[ $internal ] = $value;
+    error_log('Got value for ' . $internal);
 
 }
 
@@ -241,6 +240,9 @@ foreach ($wc_mfpc_keys as $internal => $key) {
  */
 if (isset($wc_mfpc_values[ 'meta' ][ 'status' ]) && $wc_mfpc_values[ 'meta' ][ 'status' ] === 404) {
 
+    /*
+     * ToDo: Remove! Testing only.
+     */
     error_log("Serving 404");
     header("HTTP/1.1 404 Not Found");
 
@@ -258,35 +260,35 @@ if (isset($wc_mfpc_values[ 'meta' ][ 'status' ]) && $wc_mfpc_values[ 'meta' ][ '
  */
 if (! empty($wc_mfpc_values[ 'meta' ][ 'redirect' ])) {
 
+    /*
+     * ToDo: Remove! Testing only.
+     */
     error_log("Serving redirect to {$wc_mfpc_values['meta']['redirect']}");
     header('Location: ' . $wc_mfpc_values[ 'meta' ][ 'redirect' ]);
 
-    /*
-     * Cut the connection as fast as possible
-     */
     flush();
     die();
 
 }
 
 /*
- * Page is already cached on client side (chrome likes to do this, anyway, it's quite efficient)
+ * Page is already cached on client side.
  */
 if (isset($_SERVER[ 'HTTP_IF_MODIFIED_SINCE' ]) && ! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
 
     $if_modified_since = strtotime(preg_replace('/;.*$/', '', $_SERVER[ "HTTP_IF_MODIFIED_SINCE" ]));
 
     /*
-     * check is cache is still valid
+     * Check is cache is still valid.
      */
     if ($if_modified_since >= $wc_mfpc_values[ 'meta' ][ 'lastmodified' ]) {
 
+        /*
+         * ToDo: Remove! Testing only.
+         */
         error_log("Serving 304 Not Modified");
         header("HTTP/1.0 304 Not Modified");
 
-        /*
-         * Cut the connection as fast as possible
-         */
         flush();
         die();
 
@@ -299,7 +301,7 @@ if (isset($_SERVER[ 'HTTP_IF_MODIFIED_SINCE' ]) && ! empty($wc_mfpc_values[ 'met
  */
 
 /*
- * if we reach this point it means data was found & correct, serve it
+ * Set Content-Type header.
  */
 if (! empty ($wc_mfpc_values[ 'meta' ][ 'mime' ])) {
 
@@ -308,7 +310,7 @@ if (! empty ($wc_mfpc_values[ 'meta' ][ 'mime' ])) {
 }
 
 /*
- * Set expiry date
+ * Set Cache-Control, Expire & ETag headers.
  */
 if (! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
 
@@ -330,7 +332,7 @@ if (! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
 }
 
 /*
- * If shortlinks were set
+ * Set Link header for shortlink.
  */
 if (! empty($wc_mfpc_values[ 'meta' ][ 'shortlink' ])) {
 
@@ -339,7 +341,7 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'shortlink' ])) {
 }
 
 /*
- * If last modifications were set (for posts & pages)
+ * Set Last-Modified header.
  */
 if (! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
 
@@ -348,7 +350,7 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
 }
 
 /*
- * If PingBack was set
+ * Set X-Pingback header.
  */
 if (! empty($wc_mfpc_values[ 'meta' ][ 'pingback' ]) && ! empty($wc_mfpc_config_array[ 'pingback_header' ])) {
 
@@ -357,7 +359,7 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'pingback' ]) && ! empty($wc_mfpc_config_
 }
 
 /*
- * If debugging header is should be set.
+ * Set X-Cache-Engine header.
  */
 if (! empty($wc_mfpc_config_array[ 'response_header' ])) {
 
@@ -365,8 +367,12 @@ if (! empty($wc_mfpc_config_array[ 'response_header' ])) {
 
 }
 
+/*
+ * ToDo: Remove! Testing only.
+ */
 error_log("Serving data");
-echo trim($wc_mfpc_values[ 'data' ]);
+
+echo $wc_mfpc_values[ 'data' ];
 
 flush();
 die();
