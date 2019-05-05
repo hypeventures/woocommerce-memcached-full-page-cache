@@ -154,10 +154,10 @@ class AdminView
         ?>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/solid.css" integrity="sha384-QokYePQSOwpBDuhlHOsX0ymF6R/vLk/UQVz3WHa6wygxI5oGTmDTv8wahFOSspdm" crossorigin="anonymous">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css" integrity="sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq" crossorigin="anonymous">
-        <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="icon github">
-          Visit the plugin repository on GitHub
-        </a>
         <div class="wrap">
+          <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="icon github">
+            Visit the plugin repository on GitHub
+          </a>
           <h1>WooCommerce Memcached Full Page Cache</h1>
 
           <?php $this->renderMessages()->renderActionButtons('flush'); ?>
@@ -202,6 +202,7 @@ class AdminView
         <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="icon github">
           Visit the plugin repository on GitHub
         </a>
+        <p>&nbsp;</p>
         <?php
 
         $post = $postOriginal;
