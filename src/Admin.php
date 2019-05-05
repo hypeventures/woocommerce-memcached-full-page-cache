@@ -52,6 +52,7 @@ class Admin
         add_action('admin_menu', [ &$this, 'addMenu' ], 101);
         add_action('admin_init', [ &$this, 'init' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueAdminCss' ]);
+        add_action('admin_bar_init', [ &$this, 'setAdminNoCacheCookie' ]);
 
         /*
          * In case of major issues => abort here and set no more action hooks.
@@ -79,6 +80,20 @@ class Admin
         add_filter('handle_bulk_actions-edit-post', [ &$this, 'handleBulkAction' ], 10, 3);
         add_filter('handle_bulk_actions-edit-page', [ &$this, 'handleBulkAction' ], 10, 3);
         add_filter('handle_bulk_actions-edit-product_cat', [ &$this, 'handleBulkAction' ], 10, 3);
+    }
+
+    /**
+     * Sets the no-cache cookie for admins, if not set earlier.
+     *
+     * @return void
+     */
+    public function setAdminNoCacheCookie()
+    {
+        if (empty($_COOKIE[ 'wc-mfpc-nocache' ])) {
+
+            setcookie('wc-mfpc-nocache', 1, time() + 86400);
+
+        }
     }
 
     /**
