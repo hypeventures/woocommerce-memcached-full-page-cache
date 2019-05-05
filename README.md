@@ -56,6 +56,7 @@ function cust_wc_mfpc_set_expire($expire = 0)
     ) {
     
         $expire = (int) $this->config[ 'expire_taxonomy' ];
+        
     }
     
     return $expire;
