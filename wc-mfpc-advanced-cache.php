@@ -488,8 +488,6 @@ function wc_mfpc_output_buffer_callback($content = '')
 	$config    = &$wc_mfpc_config_array;
 	$cacheMeta = [];
 
-	error_log(print_r($config, true));
-
 	if ($wp_query->is_home() || $wp_query->is_feed()) {
 
 		if ($wp_query->is_home()) {
