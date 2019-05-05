@@ -198,19 +198,23 @@ if (empty($wc_mfpc_memcached->status())) {
     return false;
 }
 
+error_log("Trying to fetch entries");
+
 /*
  * Try to get data & meta keys for current page
  */
-$wc_mfpc_keys   = [ 'meta' => $wc_mfpc_config_array[ 'prefix_meta' ], 'data' => $wc_mfpc_config_array[ 'prefix_data' ] ];
 $wc_mfpc_values = [];
-error_log("Trying to fetch entries");
+$wc_mfpc_keys   = [
+    'meta' => $wc_mfpc_config_array[ 'prefix_meta' ],
+    'data' => $wc_mfpc_config_array[ 'prefix_data' ]
+];
 
 foreach ($wc_mfpc_keys as $internal => $key) {
 
     $key   = $wc_mfpc_memcached->key($key);
     $value = $wc_mfpc_memcached->get($key);
 
-    if (empty($value)) {
+    if (empty($value) {
 
         /*
          * It does not matter which is missing, we need both, if one fails, no caching
