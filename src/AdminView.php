@@ -449,7 +449,7 @@ class AdminView
 
         woocommerce_wp_text_input([
             'id'          => 'expire',
-            'label'       => 'Expiration of Posts',
+            'label'       => 'Cache expiration',
             'type'        => 'number',
             'data_type'   => 'decimal',
             'class'       => 'short',
@@ -458,7 +458,7 @@ class AdminView
         ]);
         woocommerce_wp_text_input([
             'id'          => 'browsercache',
-            'label'       => 'Browser cache expiration of Posts',
+            'label'       => 'Browser cache expiration',
             'type'        => 'number',
             'data_type'   => 'decimal',
             'class'       => 'short',
