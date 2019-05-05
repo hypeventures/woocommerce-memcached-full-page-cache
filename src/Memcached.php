@@ -347,7 +347,7 @@ class Memcached
      *
      * @return bool
      */
-    public function clearKeys($permalinks = [])
+    public function clearLinks($permalinks = [])
     {
         if (empty($permalinks)) {
 
