@@ -310,26 +310,10 @@ if (! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
 
     $hash = md5($wc_mfpc_uri . $wc_mfpc_values[ 'meta' ][ 'expire' ]);
 
-    switch ($wc_mfpc_values[ 'meta' ][ 'type' ]) {
-
-        case 'home':
-        case 'feed':
-            $expire = $wc_mfpc_config_array[ 'browsercache_home' ];
-            break;
-        case 'archive':
-            $expire = $wc_mfpc_config_array[ 'browsercache_taxonomy' ];
-            break;
-        case 'single':
-            $expire = $wc_mfpc_config_array[ 'browsercache' ];
-            break;
-        default:
-            $expire = 0;
-
-    }
-
     header('Cache-Control: public,max-age=' . $expire . ',s-maxage=' . $expire . ',must-revalidate');
     header('Expires: ' . gmdate("D, d M Y H:i:s", $wc_mfpc_values[ 'meta' ][ 'expire' ]) . " GMT");
     header('ETag: ' . $hash);
+
     unset($expire, $hash);
 
 } else {
@@ -338,14 +322,6 @@ if (! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
      * In case there is no expiry set, expire immediately and don't serve Etag; browser cache is disabled
      */
     header('Expires: ' . gmdate("D, d M Y H:i:s", time()) . " GMT");
-
-    /*
-     * if these are set, the 304 not modified will never kick in, so these are not set.
-     * leaving here as a reminder why it should not be set
-     *
-     * header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, s-maxage=0, post-check=0, pre-check=0');
-     * header('Pragma: no-cache');
-     */
 
 }
 
