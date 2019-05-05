@@ -487,12 +487,16 @@ class Memcached
 
         if (empty($servers)) {
 
-            return $this->status = [];
+            $this->status = [];
+
+            return $this->status;
         }
 
-        if (count($servers) === 1) {
+        if (count($servers) === 1 && $this->connection->set('wc-mfpc', time())) {
 
-            return $this->status = $this->connection->set('wc-mfpc', time());
+            $this->status[ $servers[ 0 ][ 'host' ] . self::port_separator . $servers[ 0 ][ 'port' ] ] = 1;
+
+            return $this->status;
         }
 
         foreach ($servers as $server) {
