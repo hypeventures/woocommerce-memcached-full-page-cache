@@ -223,10 +223,11 @@ error_log("Trying to fetch entries");
  */
 $wc_mfpc_values      = [];
 $wc_mfpc_cache_types = [ 'data', 'meta', ];
+$wc_mfpc_permalink   = $wc_mfpc_memcached->buildUrl();
 
 foreach ($wc_mfpc_cache_types as $type) {
 
-    $key   = $wc_mfpc_memcached->buildKey($wc_mfpc_uri, $type);
+    $key   = $wc_mfpc_memcached->buildKey($wc_mfpc_permalink, $type);
     $value = $wc_mfpc_memcached->get($key);
 
     if (empty($value)) {
@@ -246,7 +247,7 @@ foreach ($wc_mfpc_cache_types as $type) {
     }
 
     $wc_mfpc_values[ $type ] = $value;
-    error_log('Got value for ' . $type);
+    error_log("Got value for $type : $key");
 
 }
 
@@ -442,13 +443,14 @@ function wc_mfpc_redirect_callback ($redirectUrl = '')
 function wc_mfpc_output_buffer_callback($content = '')
 {
     /**
+     * @var string                               $wc_mfpc_permalink
      * @var InvincibleBrands\WcMfpc\Config|array $wc_mfpc_config_array
      * @var InvincibleBrands\WcMfpc\Memcached    $wc_mfpc_memcached
      * @var string                               $wc_mfpc_redirect
      * @var WP_Query                             $wp_query
      * @var WP_Post                              $post
      */
-	global $wc_mfpc_uri, $wc_mfpc_config_array, $wc_mfpc_memcached, $wc_mfpc_redirect, $wp_query, $post;
+	global $wc_mfpc_permalink, $wc_mfpc_config_array, $wc_mfpc_memcached, $wc_mfpc_redirect, $wp_query, $post;
 
     $content = trim($content);
 
@@ -670,7 +672,7 @@ function wc_mfpc_output_buffer_callback($content = '')
 	 */
     $cacheContent = (string) apply_filters('wc_mfpc_custom_cache_content', $cacheContent);
 
-    $keyData = $wc_mfpc_memcached->buildKey($wc_mfpc_uri);
+    $keyData = $wc_mfpc_memcached->buildKey($wc_mfpc_permalink);
     $wc_mfpc_memcached->set($keyData, $cacheContent);
 
 	/**
@@ -684,7 +686,7 @@ function wc_mfpc_output_buffer_callback($content = '')
 	 */
     $cacheMeta = (array) apply_filters('wc_mfpc_custom_cache_meta', $cacheMeta);
 
-    $keyMeta = $wc_mfpc_memcached->buildKey($wc_mfpc_uri, 'meta');
+    $keyMeta = $wc_mfpc_memcached->buildKey($wc_mfpc_permalink, 'meta');
     $wc_mfpc_memcached->set($keyMeta, $cacheMeta);
 
     if (! empty($cacheMeta[ 'status' ]) && $cacheMeta[ 'status' ] === 404) {
