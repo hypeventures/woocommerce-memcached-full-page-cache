@@ -255,7 +255,11 @@ Example:
  */
 function cust_wc_mfpc_set_skip_load_from_cache($skip = false, $config = [], $uri = '')
 {
-    if (SOMETHING_OF_YOUR_CONCERN) {
+    /*
+     * If you do somehting like this, don't forget to add this cookie also to your 
+     * cache exclude list in nginx.
+     */
+    if (! empty($_COOKIE[ 'SUPER_SPECIAL_COOKIE' ]) {
 
         $skip = true;
 
@@ -266,7 +270,44 @@ function cust_wc_mfpc_set_skip_load_from_cache($skip = false, $config = [], $uri
 add_filter('wc_mfpc_custom_skip_load_from_cache', 'cust_wc_mfpc_set_skip_load_from_cache')
 ```
 
+### Hook: Custom SkipCaching
 
+* `wc_mfpc_custom_skip_caching`
+
+...
+
+Example #1:
+```
+/**
+ * Function to custom skip storing data in cache.
+ *
+ * @param bool $skip       Set TRUE to skip caching.
+ * @param string $content  The page content.
+ *
+ * @return bool $skip
+ */
+function cust_wc_mfpc_set_skip_caching($skip = false, $content = '')
+{
+    if (! empty(stripos($content, '<div class="skip-me-from-cache">'))) {
+
+        $skip = true;
+
+    }
+
+    return $skip;
+}
+add_filter('wc_mfpc_custom_skip_caching', 'cust_wc_mfpc_set_skip_caching')
+```
+Example #2:
+```
+/*
+ * Somewhere in your plugin / theme when rendering a special, individual & dynamic page
+ * which should never be cached.
+ */
+add_filter('wc_mfpc_custom_skip_caching', '__return_true');
+```
+
+### Hook:
 
 * ` `
 
