@@ -221,15 +221,12 @@ error_log("Trying to fetch entries");
 /*
  * Try to get data & meta keys for current page
  */
-$wc_mfpc_values = [];
-$wc_mfpc_keys   = [
-    'meta' => $wc_mfpc_config_array[ 'prefix_meta' ],
-    'data' => $wc_mfpc_config_array[ 'prefix_data' ]
-];
+$wc_mfpc_values      = [];
+$wc_mfpc_cache_types = [ 'data', 'meta', ];
 
-foreach ($wc_mfpc_keys as $internal => $key) {
+foreach ($wc_mfpc_cache_types as $type) {
 
-    $key   = $wc_mfpc_memcached->key($key);
+    $key   = $wc_mfpc_memcached->getKey($wc_mfpc_uri, $type);
     $value = $wc_mfpc_memcached->get($key);
 
     if (empty($value)) {
@@ -248,10 +245,12 @@ foreach ($wc_mfpc_keys as $internal => $key) {
 
     }
 
-    $wc_mfpc_values[ $internal ] = $value;
-    error_log('Got value for ' . $internal);
+    $wc_mfpc_values[ $type ] = $value;
+    error_log('Got value for ' . $type);
 
 }
+
+unset($wc_mfpc_cache_types);
 
 /*
  * Serve cache 404 status
@@ -449,7 +448,7 @@ function wc_mfpc_output_buffer_callback($content = '')
      * @var WP_Query                             $wp_query
      * @var WP_Post                              $post
      */
-	global $wc_mfpc_config_array, $wc_mfpc_memcached, $wc_mfpc_redirect, $wp_query, $post;
+	global $wc_mfpc_uri, $wc_mfpc_config_array, $wc_mfpc_memcached, $wc_mfpc_redirect, $wp_query, $post;
 
     $content = trim($content);
 
@@ -671,7 +670,7 @@ function wc_mfpc_output_buffer_callback($content = '')
 	 */
     $cacheContent = (string) apply_filters('wc_mfpc_custom_cache_content', $cacheContent);
 
-    $keyData = $wc_mfpc_memcached->key($config[ 'prefix_data' ]);
+    $keyData = $wc_mfpc_memcached->getKey($wc_mfpc_uri);
     $wc_mfpc_memcached->set($keyData, $cacheContent);
 
 	/**
@@ -685,7 +684,7 @@ function wc_mfpc_output_buffer_callback($content = '')
 	 */
     $cacheMeta = (array) apply_filters('wc_mfpc_custom_cache_meta', $cacheMeta);
 
-    $keyMeta = $wc_mfpc_memcached->key($config[ 'prefix_meta' ]);
+    $keyMeta = $wc_mfpc_memcached->getKey($wc_mfpc_uri, 'meta');
     $wc_mfpc_memcached->set($keyMeta, $cacheMeta);
 
     if (! empty($cacheMeta[ 'status' ]) && $cacheMeta[ 'status' ] === 404) {
