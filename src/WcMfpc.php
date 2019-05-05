@@ -151,6 +151,7 @@ class WcMfpc
      * Contains Hooks: 'wc_mfpc_custom_to_clear_before' & 'wc_mfpc_custom_to_clear_after' to customize expiration time.
      *
      * @todo Check if WcMfpc::clearMemcached() can be further simplified.
+     *       Maybe should be renamed to clearPostCache() ???
      *
      * @param int|string $postId  ID of the post to invalidate
      *
@@ -198,8 +199,6 @@ class WcMfpc
             return false;
         }
 
-        global $wcMfpcConfig;
-
         $permalink = get_permalink($postId);
 
         if (empty($permalink)) {
@@ -218,11 +217,8 @@ class WcMfpc
 
         do {
 
-            $uriMap                    = $memcached::parseUriMap($permalink, $memcached->uriMap);
-            $uriMap[ '$request_uri' ]  = $uriMap[ '$request_uri' ] . ($currentPageId ? $currentPageId . '/' : '');
-            $clearCacheKey             = $memcached::mapUriMap($uriMap, $wcMfpcConfig->getKey());
             $currentPageId             = 1 + (int) $currentPageId;
-            $toClear[ $clearCacheKey ] = true;
+            $toClear[ $permalink ] = true;
 
         } while ($numberOfPages > 1 && $currentPageId <= $numberOfPages);
 
@@ -238,7 +234,7 @@ class WcMfpc
          */
         $toClear = (array) apply_filters('wc_mfpc_custom_to_clear_after', $toClear, $postId, $memcached);
 
-        return $memcached->clearKeys($toClear);
+        return $memcached->clearLinks($toClear);
     }
 
 }
