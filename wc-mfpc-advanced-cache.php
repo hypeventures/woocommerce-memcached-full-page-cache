@@ -226,7 +226,7 @@ $wc_mfpc_cache_types = [ 'data', 'meta', ];
 
 foreach ($wc_mfpc_cache_types as $type) {
 
-    $key   = $wc_mfpc_memcached->getKey($wc_mfpc_uri, $type);
+    $key   = $wc_mfpc_memcached->buildKey($wc_mfpc_uri, $type);
     $value = $wc_mfpc_memcached->get($key);
 
     if (empty($value)) {
@@ -670,7 +670,7 @@ function wc_mfpc_output_buffer_callback($content = '')
 	 */
     $cacheContent = (string) apply_filters('wc_mfpc_custom_cache_content', $cacheContent);
 
-    $keyData = $wc_mfpc_memcached->getKey($wc_mfpc_uri);
+    $keyData = $wc_mfpc_memcached->buildKey($wc_mfpc_uri);
     $wc_mfpc_memcached->set($keyData, $cacheContent);
 
 	/**
@@ -684,7 +684,7 @@ function wc_mfpc_output_buffer_callback($content = '')
 	 */
     $cacheMeta = (array) apply_filters('wc_mfpc_custom_cache_meta', $cacheMeta);
 
-    $keyMeta = $wc_mfpc_memcached->getKey($wc_mfpc_uri, 'meta');
+    $keyMeta = $wc_mfpc_memcached->buildKey($wc_mfpc_uri, 'meta');
     $wc_mfpc_memcached->set($keyMeta, $cacheMeta);
 
     if (! empty($cacheMeta[ 'status' ]) && $cacheMeta[ 'status' ] === 404) {
