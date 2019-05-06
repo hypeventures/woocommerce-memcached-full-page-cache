@@ -38,14 +38,14 @@ final class Data
     const key_flush                    = 'flushed';
     const slug_flush                   = '&flushed=true';
     const slug_save                    = '&saved=true';
-    const slug_reset                  = '&deleted=true';
+    const slug_reset                   = '&deleted=true';
     const plugin_constant              = 'woocommerce-memcached-full-page-cache';
     const plugin_name                  = 'WC-MFPC';
     const capability                   = 'manage_options';
     const global_option                = 'wc-mfpc-global';
     const button_flush                 = 'wc-mfpc-flush';
     const button_save                  = 'wc-mfpc-save';
-    const button_reset                = 'wc-mfpc-delete';
+    const button_reset                 = 'wc-mfpc-delete';
     const plugin_settings_page         = 'wc-mfpc-settings';
     const admin_css_handle             = 'wc-mfpc-admin-css';
     const admin_css_url                = WC_MFPC_PLUGIN_URL . 'assets/admin.css';

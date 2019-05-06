@@ -120,7 +120,7 @@ class Admin
         }
 
         wp_redirect(Data::settings_link . $slug);
-        wp_die();
+        exit;
     }
 
     /**
@@ -145,7 +145,7 @@ class Admin
         }
 
         wp_redirect(Data::settings_link . $slug);
-        wp_die();
+        exit;
     }
 
     /**
@@ -170,7 +170,7 @@ class Admin
         }
 
         wp_redirect(Data::settings_link . $slug);
-        wp_die();
+        exit;
     }
 
     /**

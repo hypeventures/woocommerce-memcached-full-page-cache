@@ -178,7 +178,7 @@ class AdminView
 
           <form autocomplete="off" method="post" action="admin-post.php" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin wc-mfpc-admin">
 
-            <?php wp_nonce_field('wc-mfpc'); ?>
+            <?php wp_nonce_field(Data::button_save); ?>
             <?php do_action('wc_mfpc_settings_form_top'); ?>
 
             <fieldset id="<?php echo Data::plugin_constant ?>-servers">
@@ -635,6 +635,7 @@ class AdminView
 
         ?>
         <input type="hidden" name="action" value="<?php echo $name; ?>">
+        <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce($name); ?>">
         <button type="submit" class="button button-<?php echo $class; ?>  wc-mfpc-button"
                 name="<?php echo $name; ?>" style="<?php echo $style; ?>"
         >
