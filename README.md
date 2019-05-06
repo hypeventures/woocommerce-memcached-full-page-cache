@@ -6,9 +6,11 @@ __CREDITS:__ This plugin is based on [WP-FFPC](https://github.com/petermolnar/wp
 by [Peter Molnar](https://github.com/petermolnar).
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![PHP v7.x](./assets/badge-php7.svg)](https://php.net)
-[![WordPress v4.9+ / v5.x](./assets/badge-wp.svg)](https://wordpress.org)
 [![WooCommerce v3.5+](./assets/badge-wc.svg)](https://wordpress.org)
+[![WordPress v4.9+](./assets/badge-wp4.svg)](https://wordpress.org/news/category/releases/)
+[![WordPress v5.x+](./assets/badge-wp5.svg)](https://wordpress.org)
+[![PHP v7.x](./assets/badge-php7.svg)](https://php.net)
+[![PHP Memcached](./assets/badge-memcached.svg)](https://www.php.net/manual/de/book.memcached.php)
 
 ## Installation
 
