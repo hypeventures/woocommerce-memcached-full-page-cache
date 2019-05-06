@@ -151,7 +151,6 @@ class WcMfpc
      * Contains Hooks: 'wc_mfpc_custom_to_clear_before' & 'wc_mfpc_custom_to_clear_after' to customize expiration time.
      *
      * @todo Check if WcMfpc::clearPostCache() can be further simplified.
-     *       Maybe should be renamed to clearPostCache() ???
      *
      * @param int|string $postId  ID of the post to invalidate
      *
