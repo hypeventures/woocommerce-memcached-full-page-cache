@@ -1,16 +1,16 @@
 # WooCommerce Memcached Full Page Cache
 
-WooCommerce full page cache plugin using Memcached.
-
-__CREDITS:__ This plugin is the spiritual successor of [WP-FFPC](https://github.com/petermolnar/wp-ffpc) 
-by [Peter Molnar](https://github.com/petermolnar).
-
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![WooCommerce v3.5+](./assets/badge-wc.svg)](https://wordpress.org)
 [![WordPress v4.9+](./assets/badge-wp4.svg)](https://wordpress.org/news/category/releases/)
 [![WordPress v5.x+](./assets/badge-wp5.svg)](https://wordpress.org)
 [![PHP v7.x](./assets/badge-php7.svg)](https://php.net)
 [![PHP Memcached](./assets/badge-memcached.svg)](https://www.php.net/manual/de/book.memcached.php)
+
+WooCommerce full page cache plugin using Memcached.
+
+__CREDITS:__ This plugin is the spiritual successor of [WP-FFPC](https://github.com/petermolnar/wp-ffpc) 
+by [Peter Molnar](https://github.com/petermolnar).
 
 ## Copyright
 
@@ -90,9 +90,61 @@ __memcached_binary__
 _Enables binary connection mode (faster). However, in some cases this is not possible to use. Unchecked the plugin will
 fall back to a ASCII mode (slower)._
 
-##### ToDo: Add a descriptions for all other config fields.
+__authpass__
 
-...
+_..._
+
+__authuser__
+
+_..._
+
+__expire__
+
+_..._
+
+__browsercache__
+
+_..._
+
+__prefix_meta__
+
+_..._
+
+__prefix_data__
+
+_..._
+
+__charset__
+
+_..._
+
+__cache_loggedin__
+
+_..._
+
+__nocache_cookies__
+
+_..._
+
+__nocache_woocommerce_url__
+
+_..._
+
+__nocache_url__
+
+_..._
+
+__response_header__
+
+_..._
+
+__comments_invalidate__
+
+_..._
+
+__pingback_header__
+
+_..._
 
 ## Customization
 
@@ -133,7 +185,7 @@ You can use hooks to customize the behaviour of this plugin.
 This hook gives you control if a given uri should be processed by the advanced-cache or rather not.
 
 Example #1:
-```
+```php
 /**
  * Function to customize whether a page is processed by wp-ffpc at all.
  *
@@ -160,7 +212,7 @@ function cust_wc_mfpc_set_skip_load_from_cache($skip = false, $config = [], $uri
 add_filter('wc_mfpc_custom_skip_load_from_cache', 'cust_wc_mfpc_set_skip_load_from_cache')
 ```
 Example #2:
- ```
+ ```php
 if (! empty($_COOKIE[ 'SUPER_SPECIAL_COOKIE' ]) {
     
     add_filter('wc_mfpc_custom_skip_load_from_cache', '__return_true');
@@ -178,7 +230,7 @@ This hook gives you control if a given uri should be processed and stored in cac
 The content of the page is already known at this point and can be analysed for consideration.
 
 Example #1:
-```
+```php
 /**
  * Function to custom skip storing data in cache.
  *
@@ -200,7 +252,7 @@ function cust_wc_mfpc_set_skip_caching($skip = false, $content = '')
 add_filter('wc_mfpc_custom_skip_caching', 'cust_wc_mfpc_set_skip_caching')
 ```
 Example #2:
-```
+```php
 /*
  * Somewhere in your plugin / theme when rendering a special, individual & dynamic page
  * which should never be cached.
@@ -219,7 +271,7 @@ This hook lets you customize the raw content of a page, before it gets stored in
 It can be found here: [wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php)
 
 Example:
-```
+```php
 /**
  * Function to customize the html content of any page.
  *
@@ -255,7 +307,7 @@ This hook lets you customize the cache meta data of a page, before it gets store
 It can be found here: [wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php)
 
 Example:
-```
+```php
 /**
  * Function to customize the cached meta data array of any page.
  *
@@ -297,7 +349,7 @@ add_filter('wc_mfpc_custom_cache_meta', 'cust_wc_mfpc_set_cache_meta');
 This hook lets you customize the Memcached cache expiration time before setting the entry.
 
 Example:
-```
+```php
 /**
  * Function to customize cache expriration time in seconds.
  *
@@ -334,7 +386,7 @@ add_filter('wc_mfpc_custom_expire', 'cust_wc_mfpc_set_expire');
 ...
 
 Example:
-```
+```php
 
 ```
 
