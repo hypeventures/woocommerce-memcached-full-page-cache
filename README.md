@@ -5,6 +5,11 @@ WooCommerce full page cache plugin using Memcached.
 __CREDITS:__ This plugin is based on [WP-FFPC](https://github.com/petermolnar/wp-ffpc) 
 by [Peter Molnar](https://github.com/petermolnar).
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![PHP v7.x](./assets/badge-php7.svg)](https://php.net)
+[![WordPress v4.9+ / v5.x](./assets/badge-wp.svg)](https://wordpress.org)
+[![WooCommerce v3.5+](./assets/badge-wc.svg)](https://wordpress.org)
+
 ## Installation
 
 1. Upload contents of `woocommerce-memcached-full-page-cache.zip` (_OR clone this repository_) to the 
@@ -39,7 +44,6 @@ Defaults:
 'nocache_woocommerce_url' => '^/DYNAMIC/|^/DYNAMIC/|^/DYNAMIC/|^/wc\\-api|^/\\?wc\\-api=',
 'nocache_url'             => '^/wc\\-|^/wp\\-|addons|removed|gdsr|wp_rg|wp_session​|wc_session​',
 'response_header'         => 'yes',
-'key'                     => '$scheme://$host$request_uri',
 'comments_invalidate'     => 'yes',
 'pingback_header'         => '0',
 ```
@@ -47,6 +51,76 @@ Defaults:
 ## Customization
 
 You can use hooks to customize the behaviour of this plugin.
+
+__Filter Hooks:__
+
+_wc-mfpc-advanced-cache.php_ :
+- wc_mfpc_custom_skip_load_from_cache
+- wc_mfpc_custom_skip_caching
+- wc_mfpc_custom_cache_content
+- wc_mfpc_custom_cache_meta
+        
+_Memcached::class_ :
+- wc_mfpc_custom_build_url
+- wc_mfpc_custom_build_key
+- wc_mfpc_custom_build_keys
+- wc_mfpc_custom_expire
+        
+_Admin::class_ :
+- wc_mfpc_custom_advanced_cache_config
+
+__Action Hooks:__
+
+_AdminView::class_ :
+- wc_mfpc_settings_form_top
+- wc_mfpc_settings_form_bottom
+- wc_mfpc_settings_form_memcached_connection
+- wc_mfpc_settings_form_cache
+- wc_mfpc_settings_form_exception
+- wc_mfpc_settings_form_debug
+
+
+### Hook: Custom SkipLoadFromCache
+
+* `wc_mfpc_custom_skip_load_from_cache`
+
+...
+
+Example #1:
+```
+/**
+ * Function to customize whether a page is processed by wp-ffpc at all.
+ *
+ * @param bool   $skip    Default: false - return TRUE for skipping
+ * @param array  $config  Array with config from advanced-cache.php
+ * @param string $uri     Requested URL string
+ *
+ * @return bool $skip
+ */
+function cust_wc_mfpc_set_skip_load_from_cache($skip = false, $config = [], $uri = '')
+{
+    /*
+     * If you do somehting like this, don't forget to add this cookie also to your 
+     * cache exclude list in nginx.
+     */
+    if (! empty($_COOKIE[ 'SUPER_SPECIAL_COOKIE' ]) {
+
+        $skip = true;
+
+    }
+    
+    return $skip
+}
+add_filter('wc_mfpc_custom_skip_load_from_cache', 'cust_wc_mfpc_set_skip_load_from_cache')
+```
+Example #2:
+ ```
+if (! empty($_COOKIE[ 'SUPER_SPECIAL_COOKIE' ]) {
+    
+    add_filter('wc_mfpc_custom_skip_load_from_cache', '__return_true');
+
+}
+ ```
 
 ### Hook: Custom Expire
 
@@ -255,48 +329,6 @@ function cust_wc_mfpc_set_cache_meta($cacheMeta = '')
 }
 add_filter('wc_mfpc_custom_cache_meta', 'cust_wc_mfpc_set_cache_meta');
 ```
-
-### Hook: Custom SkipLoadFromCache
-
-* `wc_mfpc_custom_skip_load_from_cache`
-
-...
-
-Example #1:
-```
-/**
- * Function to customize whether a page is processed by wp-ffpc at all.
- *
- * @param bool   $skip    Default: false - return TRUE for skipping
- * @param array  $config  Array with config from advanced-cache.php
- * @param string $uri     Requested URL string
- *
- * @return bool $skip
- */
-function cust_wc_mfpc_set_skip_load_from_cache($skip = false, $config = [], $uri = '')
-{
-    /*
-     * If you do somehting like this, don't forget to add this cookie also to your 
-     * cache exclude list in nginx.
-     */
-    if (! empty($_COOKIE[ 'SUPER_SPECIAL_COOKIE' ]) {
-
-        $skip = true;
-
-    }
-    
-    return $skip
-}
-add_filter('wc_mfpc_custom_skip_load_from_cache', 'cust_wc_mfpc_set_skip_load_from_cache')
-```
-Example #2:
- ```
-if (! empty($_COOKIE[ 'SUPER_SPECIAL_COOKIE' ]) {
-    
-    add_filter('wc_mfpc_custom_skip_load_from_cache', '__return_true');
-
-}
- ```
 
 ### Hook: Custom SkipCaching
 
