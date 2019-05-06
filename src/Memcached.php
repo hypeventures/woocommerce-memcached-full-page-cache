@@ -251,7 +251,18 @@ class Memcached
      */
     public function buildKey($permalink = '', $type = 'data')
     {
-        return $this->config[ 'prefix_' . $type ] . $permalink;
+        $key = $this->config[ 'prefix_' . $type ] . $permalink;
+
+        /**
+         * Hook to customize each cache key directly.
+         *
+         * @param string $key        Cache key string that was set by default.
+         * @param string $permalink  Permalink of the cache object in question.
+         * @param string $type       Cache key type to build the prefix.
+         *
+         * @return string $url
+         */
+        return (string) apply_filters('wc_mfpc_custom_build_key', $key, $permalink, $type);
     }
 
     /**
@@ -263,7 +274,6 @@ class Memcached
      */
     public function buildKeys($permalinks = [])
     {
-
         $result = [];
 
         foreach ($permalinks as $permalink => $dummy) {
