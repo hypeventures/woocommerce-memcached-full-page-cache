@@ -12,6 +12,13 @@ by [Peter Molnar](https://github.com/petermolnar).
 [![PHP v7.x](./assets/badge-php7.svg)](https://php.net)
 [![PHP Memcached](./assets/badge-memcached.svg)](https://www.php.net/manual/de/book.memcached.php)
 
+## Table of contents
+
+- [Installation](#installation)
+- [Settings](#settings)
+- [Customization](#customization)
+  - [Filter Hooks](#filter-hooks)
+
 ## Installation
 
 1. Upload contents of `woocommerce-memcached-full-page-cache.zip` (_OR clone this repository_) to the 
@@ -54,19 +61,19 @@ Defaults:
 
 You can use hooks to customize the behaviour of this plugin.
 
-__Filter Hooks:__
+### Filter Hooks:
 
 _wc-mfpc-advanced-cache.php_ :
-- wc_mfpc_custom_skip_load_from_cache
-- wc_mfpc_custom_skip_caching
-- wc_mfpc_custom_cache_content
-- wc_mfpc_custom_cache_meta
+- [wc_mfpc_custom_skip_load_from_cache](#hook-custom-skiploadfromcache)
+- [wc_mfpc_custom_skip_caching](#hook-custom-skipcaching)
+- [wc_mfpc_custom_cache_content](#hook-custom-cachecontent)
+- [wc_mfpc_custom_cache_meta](#hook-custom-cachemeta)
         
 _Memcached::class_ :
 - wc_mfpc_custom_build_url
 - wc_mfpc_custom_build_key
 - wc_mfpc_custom_build_keys
-- wc_mfpc_custom_expire
+- [wc_mfpc_custom_expire](#hook-custom-expire)
         
 _Admin::class_ :
 - wc_mfpc_custom_advanced_cache_config
@@ -82,11 +89,11 @@ _AdminView::class_ :
 - wc_mfpc_settings_form_debug
 
 
-### Hook: Custom SkipLoadFromCache
+#### Hook: Custom SkipLoadFromCache
 
 * `wc_mfpc_custom_skip_load_from_cache`
 
-...
+This hook gives you control if a given uri should be processed by the advanced-cache or rather not.
 
 Example #1:
 ```
@@ -95,7 +102,7 @@ Example #1:
  *
  * @param bool   $skip    Default: false - return TRUE for skipping
  * @param array  $config  Array with config from advanced-cache.php
- * @param string $uri     Requested URL string
+ * @param string $uri     Requested URI string
  *
  * @return bool $skip
  */
@@ -124,137 +131,49 @@ if (! empty($_COOKIE[ 'SUPER_SPECIAL_COOKIE' ]) {
 }
  ```
 
-### Hook: Custom Expire
+---
 
-* `wc_mfpc_custom_expire`
+#### Hook: Custom SkipCaching
 
-This hook lets you customize the Expire time of the response header.
+* `wc_mfpc_custom_skip_caching`
 
-Example:
+This hook gives you control if a given uri should be processed and stored in cache or rather not.
+The content of the page is already known at this point and can be analysed for consideration.
+
+Example #1:
 ```
 /**
- * Function to customize expriration header.
+ * Function to custom skip storing data in cache.
  *
- * @param int $expire
+ * @param bool $skip       Set TRUE to skip caching.
+ * @param string $content  The page content.
  *
- * @return int
+ * @return bool $skip
  */
-function cust_wc_mfpc_set_expire($expire = 0)
+function cust_wc_mfpc_set_skip_caching($skip = false, $content = '')
 {
-    if ($this->config[ 'expire_home' ] !== '' && (is_home() || is_feed())) {
-    
-        $expire = (int) $this->config[ 'expire_home' ];
-    
-    } elseif (
-              $this->config[ 'expire_taxonomy' ] !== '' 
-              && (is_tax() || is_category() || is_tag() || is_archive())
-    ) {
-    
-        $expire = (int) $this->config[ 'expire_taxonomy' ];
-        
+    if (! empty(stripos($content, '<div class="skip-me-from-cache">'))) {
+
+        $skip = true;
+
     }
-    
-    return $expire;
+
+    return $skip;
 }
-add_filter('wc_mfpc_custom_expire', 'cust_wc_mfpc_set_expire');
+add_filter('wc_mfpc_custom_skip_caching', 'cust_wc_mfpc_set_skip_caching')
+```
+Example #2:
+```
+/*
+ * Somewhere in your plugin / theme when rendering a special, individual & dynamic page
+ * which should never be cached.
+ */
+add_filter('wc_mfpc_custom_skip_caching', '__return_true');
 ```
 
 ---
 
-### Hooks: Custom ToClear
-
-* `wc_mfpc_custom_to_clear_before`
-* `wc_mfpc_custom_to_clear_after`
-
-These hooks let you customize handling of a "Clear/Delete from Memcached" event.
-
-__Note:__  
-`wc_mfpc_custom_to_clear_before` can return bool false to prevent any further processing and abort default clearing of
-the cache. This is not the case for `wc_mfpc_custom_to_clear_after`!
-
-Examples:
-```
-/**
- * Function to customize array of permalinks $toClear.
- *
- * @see InvincibleBrands\WcMfpc\WcMfpc::clearMemcached()
- *
- * @param array      $toClear  Array of keys which should be cleared afterwards.
- * @param string|int $postId   Id of the post in question IF it is a post. Needs to be checked!
- * @param InvincibleBrands\WcMfpc\Memcached $memcached  
- *   Instance of this Memcached class with active server connection.
- *
- * @return array $toClear
- */
-function cust_wc_mfpc_set_to_clear($toClear = [], $postId = '', $memcached = null)
-{
-    /*
-     * Replace $something with the condition of your choice to trigger flushing
-     */
-    if ($something) {
-    
-        $memcached->flush();
-    
-        return false;
-    }
-    
-    /*
-     * If you want to flush also the taxonomies whlie cearling a post from cache, the following will do.
-     */
-    $taxonomies = get_taxonomies([
-        'public' => true,
-    ], 'objects');
-  
-    if (empty($taxonomies)) {
-  
-        return $toClear;
-    }
-  
-    foreach ($taxonomies as $taxonomy) {
-  
-        $terms = get_terms([
-            'taxonomy'     => $taxonomy->name,
-            'hide_empty'   => true,
-            'fields'       => 'all',
-            'hierarchical' => false,
-        ]);
-  
-        if (empty($terms)) {
-  
-            continue;
-  
-        }
-  
-        foreach ($terms as $term) {
-  
-            if (empty($term->count)) {
-  
-                continue;
-  
-            }
-  
-            $link             = get_term_link($term->slug, $taxonomy->name);
-            $toClear[ $link ] = true;
-  
-            /*
-             * Remove the taxonomy name from the link, lots of plugins remove this for SEO, it's better
-             * to include them than leave them out. In worst case, some 404 pages are cached as well.
-             */
-            $link             = str_replace('/' . $taxonomy->rewrite[ 'slug' ], '', $link);
-            $toClear[ $link ] = true;
-  
-        }
-  
-    }
-    
-    return $toClear;
-}
-add_filter('wc_mfpc_custom_to_clear_before, 'cust_wc_mfpc_set_expire', 10, 3);
-```
-
----
-
-### Hook: Custom CacheContent
+#### Hook: Custom CacheContent
 
 * `wc_mfpc_custom_cache_content`
 
@@ -290,7 +209,7 @@ add_filter('wc_mfpc_custom_cache_content', 'cust_wc_mfpc_set_cache_content');
 
 ---
 
-### Hook: Custom CacheMeta
+#### Hook: Custom CacheMeta
 
 * `wc_mfpc_custom_cache_meta`
 
@@ -332,44 +251,46 @@ function cust_wc_mfpc_set_cache_meta($cacheMeta = '')
 add_filter('wc_mfpc_custom_cache_meta', 'cust_wc_mfpc_set_cache_meta');
 ```
 
-### Hook: Custom SkipCaching
+---
 
-* `wc_mfpc_custom_skip_caching`
+#### Hook: Custom Expire
 
-...
+* `wc_mfpc_custom_expire`
 
-Example #1:
+This hook lets you customize the Memcached cache expiration time before setting the entry.
+
+Example:
 ```
 /**
- * Function to custom skip storing data in cache.
+ * Function to customize cache expriration time in seconds.
  *
- * @param bool $skip       Set TRUE to skip caching.
- * @param string $content  The page content.
+ * @param int $expire  Lifetime of the cache entry in seconds.
  *
- * @return bool $skip
+ * @return int
  */
-function cust_wc_mfpc_set_skip_caching($skip = false, $content = '')
+function cust_wc_mfpc_set_expire($expire = 0)
 {
-    if (! empty(stripos($content, '<div class="skip-me-from-cache">'))) {
-
-        $skip = true;
-
+    if ($this->config[ 'expire_home' ] !== '' && (is_home() || is_feed())) {
+    
+        $expire = (int) $this->config[ 'expire_home' ];
+    
+    } elseif (
+              $this->config[ 'expire_taxonomy' ] !== '' 
+              && (is_tax() || is_category() || is_tag() || is_archive())
+    ) {
+    
+        $expire = (int) $this->config[ 'expire_taxonomy' ];
+        
     }
-
-    return $skip;
+    
+    return $expire;
 }
-add_filter('wc_mfpc_custom_skip_caching', 'cust_wc_mfpc_set_skip_caching')
-```
-Example #2:
-```
-/*
- * Somewhere in your plugin / theme when rendering a special, individual & dynamic page
- * which should never be cached.
- */
-add_filter('wc_mfpc_custom_skip_caching', '__return_true');
+add_filter('wc_mfpc_custom_expire', 'cust_wc_mfpc_set_expire');
 ```
 
-### Hook:
+---
+
+#### Hook:
 
 * ` `
 
