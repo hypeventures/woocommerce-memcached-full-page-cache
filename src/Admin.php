@@ -31,11 +31,6 @@ class Admin
 {
 
     /**
-     * @var int
-     */
-    private $status = 0;
-
-    /**
      * Initializes the Hooks necessary for the admin settings pages.
      *
      * @return void
@@ -113,9 +108,7 @@ class Admin
 
             $this->saveConfig();
             $this->deployAdvancedCache();
-
-            $this->status = 1;
-            $slug         = Data::slug_save;
+            $slug = Data::slug_save;
 
         }
 
@@ -138,9 +131,7 @@ class Admin
 
             $wcMfpc->getMemcached()
                    ->flush();
-
-            $this->status = 3;
-            $slug         = Data::slug_flush;
+            $slug = Data::slug_flush;
 
         }
 
@@ -163,9 +154,7 @@ class Admin
 
             $wcMfpcConfig->delete();
             $this->deployAdvancedCache();
-
-            $this->status = 2;
-            $slug         = Data::slug_reset;
+            $slug = Data::slug_reset;
 
         }
 
@@ -555,7 +544,6 @@ class Admin
             return false;
         }
 
-        /* if no active site left no need for advanced cache :( */
         if (empty($wcMfpcConfig->getGlobal())) {
 
             error_log('Generating advanced-cache.php failed: Global config is empty');
@@ -564,7 +552,6 @@ class Admin
             return false;
         }
 
-        /* add the required includes and generate the needed code */
         $string[] = '<?php';
         $string[] = '/*';
         $string[] = 'Plugin Name: WooCommerce Memcached Full Page Cache (Drop-In: advanced-cache.php)';
@@ -598,16 +585,6 @@ class Admin
         array_unshift($links, $settings_link);
 
         return $links;
-    }
-
-    /**
-     * Returns the status level indicator of the Memcached connection.
-     *
-     * @return int $status
-     */
-    public function getStatus()
-    {
-        return $this->status;
     }
 
 }

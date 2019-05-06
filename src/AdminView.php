@@ -246,7 +246,7 @@ class AdminView
         /*
          * if options were saved
          */
-        if (isset($_GET[ Data::key_save ]) && $_GET[ Data::key_save ] == 'true' || $wcMfpcAdmin->getStatus() == 1) {
+        if (isset($_GET[ Data::key_save ]) && $_GET[ Data::key_save ] === 'true') {
 
             Alert::alert('<strong>Settings saved.</strong>');
 
@@ -255,7 +255,7 @@ class AdminView
         /*
          * if options were deleted
          */
-        if (isset($_GET[ Data::key_delete ]) && $_GET[ Data::key_delete ] == 'true' || $wcMfpcAdmin->getStatus() == 2) {
+        if (isset($_GET[ Data::key_delete ]) && $_GET[ Data::key_delete ] === 'true') {
 
             Alert::alert('<strong>Plugin options deleted. </strong>');
 
@@ -264,7 +264,7 @@ class AdminView
         /*
          * if flushed
          */
-        if (isset($_GET[ Data::key_flush ]) && $_GET[ Data::key_flush ] == 'true' || $wcMfpcAdmin->getStatus() == 3) {
+        if (isset($_GET[ Data::key_flush ]) && $_GET[ Data::key_flush ] === 'true') {
 
             Alert::alert('<strong>Cache flushed.</strong>');
 
