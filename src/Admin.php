@@ -67,7 +67,8 @@ class Admin
          */
         add_action('add_meta_boxes', [ &$this, 'addCacheControlMetaBox' ], 2);
         add_action('product_cat_edit_form_fields', [ &$this, 'showCategoryBox' ]);
-        add_action('wp_ajax_' . Data::cache_control_action, [ &$this, 'processCacheControlAjax' ]);
+        add_action('wp_ajax_' . Data::cache_control_clear_action, [ &$this, 'processCacheControlAjax' ]);
+        add_action('wp_ajax_' . Data::cache_control_refresh_action, [ &$this, 'processCacheControlAjax' ]);
 
         /*
          * Add hooks necessary for Bulk deletion of cache entries.
@@ -319,19 +320,40 @@ class Admin
 
         header('Content-Type: application/json');
 
+        if (empty($_POST[ 'action' ]) || empty($_POST[ 'nonce' ]) || ! isset($_POST[ 'permalink' ])){
+
+            wp_die(json_encode('ERROR: Bad request!'), '', [ 'response' => 400 ]);
+
+        }
+
+        $valid     = false;
+        $permalink = esc_url($_POST[ 'permalink' ]);
+
         if (
-            ! empty($_POST[ 'action' ])
-            && $_POST[ 'action' ] === Data::cache_control_action
-            && ! empty($_POST[ 'nonce' ])
-            && wp_verify_nonce($_POST[ 'nonce' ], Data::cache_control_action)
-            && isset($_POST[ 'permalink' ])
+            $_POST[ 'action' ] === Data::cache_control_clear_action
+            && wp_verify_nonce($_POST[ 'nonce' ], Data::cache_control_clear_action)
         ) {
 
-            $permalink = esc_url($_POST[ 'permalink' ]);
-            $result    = $wcMfpc->getMemcached()
+            $valid  = true;
+            $result = $wcMfpc->getMemcached()
                                 ->clearLinks([ $permalink => true, ]);
 
-        } else {
+        } elseif (
+                  $_POST[ 'action' ] === Data::cache_control_refresh_action
+                  && wp_verify_nonce($_POST[ 'nonce' ], Data::cache_control_refresh_action)
+        ) {
+
+            $valid  = true;
+            $key    = $wcMfpc->getMemcached()
+                             ->buildKey($permalink);
+            $result = $wcMfpc->getMemcached()
+                             ->get($key);
+
+            wp_die(json_encode((bool) $result));
+
+        }
+
+        if (! $valid) {
 
             wp_die(json_encode('ERROR: Bad request!'), '', [ 'response' => 400 ]);
 
