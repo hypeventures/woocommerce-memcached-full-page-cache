@@ -168,8 +168,6 @@ class AdminView
         $post->ID     = null;
 
         ?>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/solid.css" integrity="sha384-QokYePQSOwpBDuhlHOsX0ymF6R/vLk/UQVz3WHa6wygxI5oGTmDTv8wahFOSspdm" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/fontawesome.css" integrity="sha384-vd1e11sR28tEK9YANUtpIOdjGW14pS87bUBuOIoBILVWLFnS+MCX9T6MMf0VdPGq" crossorigin="anonymous">
         <div class="wrap wc-mfpc-wrap">
           <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="wc-mfpc-icon wc-mfpc-github">
             Visit the plugin repository on GitHub
@@ -300,7 +298,7 @@ class AdminView
         }
 
         /*
-         * look for acache file
+         * Check if advanced-cache.php file exists.
          */
         if (! file_exists(Data::acache)) {
 
@@ -392,12 +390,25 @@ class AdminView
 
             if ($button === 'flush') {
 
-                $this->renderSubmit('Flush Cache', 'secondary', Data::button_flush, false, 'trash-alt', 'color: #f33; margin: 1rem 1rem 1rem 0;');
+                $this->renderSubmit(
+                  'Flush Cache',
+                  'secondary',
+                  Data::button_flush,
+                  false, 'trash',
+                  'color: #f33; margin: 1rem 1rem 1rem 0;'
+                );
                 echo '<span class="wc-mfpc-error-msg">Flushes Memcached. All entries in the cache are deleted, <b>including the ones that were set by other processes.</b></span>';
 
             } else {
 
-                $this->renderSubmit('Reset Settings', 'secondary', Data::button_delete, false, 'undo-alt', 'color: #f33; margin: 1rem 1rem 1rem 0;');
+                $this->renderSubmit(
+                  'Reset Settings',
+                  'secondary',
+                  Data::button_delete,
+                  false,
+                  'image-rotate',
+                  'color: #f33; margin: 1rem 1rem 1rem 0;'
+                );
                 echo '<span class="wc-mfpc-error-msg"><b>Resets ALL settings on this page to DEFAULT.</b></span>';
 
             }
@@ -614,7 +625,7 @@ class AdminView
      *
      * @return void
      */
-    private function renderSubmit($text = 'Save changes', $class = 'primary', $name = Data::button_save, $wrap = true, $icon = 'save', $style = '')
+    private function renderSubmit($text = 'Save changes', $class = 'primary', $name = Data::button_save, $wrap = true, $icon = 'lock', $style = '')
     {
         if ($wrap) {
 
@@ -623,10 +634,10 @@ class AdminView
         }
 
         ?>
-        <button type="submit" class="button button-<?php echo $class; ?>"
+        <button type="submit" class="button button-<?php echo $class; ?>  wc-mfpc-button"
                 name="<?php echo $name; ?>" style="<?php echo $style; ?>"
         >
-          <i class="fa fa-<?php echo $icon; ?>"></i>
+          <span class="dashicons dashicons-<?php echo $icon; ?>"></span>
           <?php echo $text; ?>
         </button>
         <?php

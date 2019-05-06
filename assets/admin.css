@@ -99,6 +99,11 @@
   right: 0;
 }
 
+.wc-mfpc-button .dashicons {
+  margin-top: 0.45rem;
+  font-size: 100% !important;
+}
+
 #wc-mfpc-metabox-post .inside > div,
 #wc-mfpc-metabox-page .inside > div,
 #wc-mfpc-metabox-product .inside > div {
