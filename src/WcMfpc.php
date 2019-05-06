@@ -73,20 +73,20 @@ class WcMfpc
          */
         if (! empty($wcMfpcConfig->isCommentsInvalidate())) {
 
-            add_action('comment_post', [ &$this, 'clearMemcached' ], 0);
-            add_action('edit_comment', [ &$this, 'clearMemcached' ], 0);
-            add_action('trashed_comment', [ &$this, 'clearMemcached' ], 0);
-            add_action('pingback_post', [ &$this, 'clearMemcached' ], 0);
-            add_action('trackback_post', [ &$this, 'clearMemcached' ], 0);
-            add_action('wp_insert_comment', [ &$this, 'clearMemcached' ], 0);
+            add_action('comment_post', [ &$this, 'clearPostCache' ], 0);
+            add_action('edit_comment', [ &$this, 'clearPostCache' ], 0);
+            add_action('trashed_comment', [ &$this, 'clearPostCache' ], 0);
+            add_action('pingback_post', [ &$this, 'clearPostCache' ], 0);
+            add_action('trackback_post', [ &$this, 'clearPostCache' ], 0);
+            add_action('wp_insert_comment', [ &$this, 'clearPostCache' ], 0);
 
         }
 
         /*
          * invalidation on some other occasions as well
          */
-        add_action('switch_theme', [ &$this, 'clearMemcached' ], 0);
-        add_action('deleted_post', [ &$this, 'clearMemcached' ], 0);
+        add_action('switch_theme', [ &$this, 'clearPostCache' ], 0);
+        add_action('deleted_post', [ &$this, 'clearPostCache' ], 0);
 
         /*
          * add filter for catching canonical redirects
@@ -150,14 +150,14 @@ class WcMfpc
      * Handles clearing of posts and taxonomies.
      * Contains Hooks: 'wc_mfpc_custom_to_clear_before' & 'wc_mfpc_custom_to_clear_after' to customize expiration time.
      *
-     * @todo Check if WcMfpc::clearMemcached() can be further simplified.
+     * @todo Check if WcMfpc::clearPostCache() can be further simplified.
      *       Maybe should be renamed to clearPostCache() ???
      *
      * @param int|string $postId  ID of the post to invalidate
      *
      * @return bool
      */
-    public function clearMemcached($postId = null)
+    public function clearPostCache($postId = null)
     {
         if (wp_is_post_autosave($postId) || wp_is_post_revision($postId)) {
 

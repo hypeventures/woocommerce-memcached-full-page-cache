@@ -199,7 +199,7 @@ class Admin
 
             if ($action === 'clearCache') {
 
-                $result = $wcMfpc->clearMemcached($id);
+                $result = $wcMfpc->clearPostCache($id);
                 $item   = $id;
 
             } else {
