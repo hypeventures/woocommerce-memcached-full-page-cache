@@ -51,7 +51,9 @@ class Admin
         add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'addSettingsLink' ]);
         add_action('admin_menu', [ &$this, 'addMenu' ], 101);
         add_action('admin_init', [ &$this, 'init' ]);
-        add_action('admin_post_' . Data::button_save);
+        add_action('admin_post_' . Data::button_save, [ &$this, 'processSave' ]);
+        add_action('admin_post_' . Data::button_flush, [ &$this, 'processFlush' ]);
+        add_action('admin_post_' . Data::button_delete, [ &$this, 'processReset' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueAdminCss' ]);
         add_action('admin_bar_init', [ &$this, 'setAdminNoCacheCookie' ]);
 
@@ -82,6 +84,94 @@ class Admin
         add_filter('handle_bulk_actions-edit-post', [ &$this, 'handleBulkAction' ], 10, 3);
         add_filter('handle_bulk_actions-edit-page', [ &$this, 'handleBulkAction' ], 10, 3);
         add_filter('handle_bulk_actions-edit-product_cat', [ &$this, 'handleBulkAction' ], 10, 3);
+    }
+
+    /**
+     * Verifies the validity of a request if action string provided.
+     *
+     * @param string $action
+     *
+     * @return bool
+     */
+    protected function validateRequest($action = '')
+    {
+        return ! empty($_POST[ '_wpnonce' ])
+               && wp_verify_nonce($_POST[ '_wpnonce' ], $action)
+               && ! empty($_POST[ '_wp_http_referer' ])
+               && check_admin_referer($action);
+    }
+
+    /**
+     * Processes Admin settings page SAVE action.
+     *
+     * @return void
+     */
+    public function processSave()
+    {
+        $slug = '';
+
+        if ($this->validateRequest(Data::button_save)) {
+
+            $this->saveConfig();
+            $this->deployAdvancedCache();
+
+            $this->status = 1;
+            $slug         = Data::slug_save;
+
+        }
+
+        wp_redirect(Data::settings_link . $slug);
+        wp_die();
+    }
+
+    /**
+     * Processes Admin settings page SAVE action.
+     *
+     * @return void
+     */
+    public function processFlush()
+    {
+        $slug = '';
+
+        if ($this->validateRequest(Data::button_flush)) {
+
+            global $wcMfpc;
+
+            $wcMfpc->getMemcached()
+                   ->flush();
+
+            $this->status = 3;
+            $slug         = Data::slug_flush;
+
+        }
+
+        wp_redirect(Data::settings_link . $slug);
+        wp_die();
+    }
+
+    /**
+     * Processes Admin settings page SAVE action.
+     *
+     * @return void
+     */
+    public function processReset()
+    {
+        $slug = '';
+
+        if ($this->validateRequest(Data::button_delete)) {
+
+            global $wcMfpcConfig;
+
+            $wcMfpcConfig->delete();
+            $this->deployAdvancedCache();
+
+            $this->status = 2;
+            $slug         = Data::slug_delete;
+
+        }
+
+        wp_redirect(Data::settings_link . $slug);
+        wp_die();
     }
 
     /**
