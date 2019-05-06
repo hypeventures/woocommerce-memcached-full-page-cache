@@ -172,25 +172,6 @@ class WcMfpc
 
         $toClear   = [];
 
-        /**
-         * Filter to enable customization of array $toClear.
-         * Allows 3rd party Developers to change the array of keys which should be cleared afterwards.
-         *
-         * @param array      $toClear    Array of keys which should be cleared afterwards.
-         * @param string|int $postId     Id of the post in question IF it is a post. Needs to be checked!
-         * @param Memcached  $memcached  Instance of this Memcached class with active server connection.
-         *
-         * @return array $toClear  You can return bool false to abort processing directly after this.
-         */
-        $toClear = (array) apply_filters('wc_mfpc_custom_to_clear_before', $toClear, $postId, $memcached);
-
-        if ($toClear === false) {
-
-            error_log("Filter 'wc_mfpc_custom_to_clear_before' returned false, aborting " . __FILE__ . ' line: ' . __LINE__);
-
-            return false;
-        }
-
         if (empty($postId)) {
 
             #error_log('not clearing unidentified post', LOG_WARNING);
