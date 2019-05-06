@@ -174,7 +174,6 @@ class WcMfpc
             return false;
         }
 
-        $memcached  = $this->getMemcached();
         $permalinks = [];
 
         /*
@@ -191,7 +190,8 @@ class WcMfpc
 
         } while ($numberOfPages > 1 && $currentPageId <= $numberOfPages);
 
-        return $memcached->clearLinks($permalinks);
+        return $this->getMemcached()
+                    ->clearLinks($permalinks);
     }
 
 }
