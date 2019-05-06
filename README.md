@@ -2,7 +2,7 @@
 
 WooCommerce full page cache plugin using Memcached.
 
-__CREDITS:__ This plugin is based on [WP-FFPC](https://github.com/petermolnar/wp-ffpc) 
+__CREDITS:__ This plugin is the spiritual successor of [WP-FFPC](https://github.com/petermolnar/wp-ffpc) 
 by [Peter Molnar](https://github.com/petermolnar).
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -12,12 +12,38 @@ by [Peter Molnar](https://github.com/petermolnar).
 [![PHP v7.x](./assets/badge-php7.svg)](https://php.net)
 [![PHP Memcached](./assets/badge-memcached.svg)](https://www.php.net/manual/de/book.memcached.php)
 
+## Copyright
+
+```
+WooCommerce Memcached Full Page Cache - FPC specialized for WooCommerece via PHP-Memcached.
+Copyright (C)  2019 Achim Galeski ( achim@invinciblebrands.com )
+
+Based on: WP-FFPC - A fast, memory based full page cache plugin supporting APC or memcached.
+Copyright (C)  2010-2017 Peter Molnar ( hello@petermolnar.eu )
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 3, as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA02110-1301USA
+```
+
 ## Table of contents
 
+- [Copyright](#copyright)
 - [Installation](#installation)
 - [Settings](#settings)
 - [Customization](#customization)
   - [Filter Hooks](#filter-hooks)
+  - [Action Hooks](#action-hooks)
+- [License](#license)
 
 ## Installation
 
@@ -27,8 +53,6 @@ by [Peter Molnar](https://github.com/petermolnar).
 3. Activate the plugin in WordPress
 4. Check the settings in `WooCommerce` => `Full Page Cache` menu in your Wordpress admin backend.
 5. __(!) Save the settings (!)__ to generate `/wp-content/advanced-cache.php` and activate caching.
-
-...
 
 ## Settings
 __Settings link:__ yourdomain.xyz/wp-admin/admin.php?page=wc-mfpc-settings
@@ -57,30 +81,43 @@ Defaults:
 'pingback_header'         => '0',
 ```
 
+__hosts__ 
+
+_Memcached server list Ip:Port,Ip2:Port2,Ip3:Port_
+
+__memcached_binary__
+
+_Enables binary connection mode (faster). However, in some cases this is not possible to use. Unchecked the plugin will
+fall back to a ASCII mode (slower)._
+
+##### ToDo: Add a descriptions for all other config fields.
+
+...
+
 ## Customization
 
 You can use hooks to customize the behaviour of this plugin.
 
 ### Filter Hooks:
 
-_wc-mfpc-advanced-cache.php_ :
+[wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php) :
 - [wc_mfpc_custom_skip_load_from_cache](#hook-custom-skiploadfromcache)
 - [wc_mfpc_custom_skip_caching](#hook-custom-skipcaching)
 - [wc_mfpc_custom_cache_content](#hook-custom-cachecontent)
 - [wc_mfpc_custom_cache_meta](#hook-custom-cachemeta)
         
-_Memcached::class_ :
+[Memcached::class](src/Memcached.php) :
 - wc_mfpc_custom_build_url
 - wc_mfpc_custom_build_key
 - wc_mfpc_custom_build_keys
 - [wc_mfpc_custom_expire](#hook-custom-expire)
         
-_Admin::class_ :
+[Admin::class](src/Admin.php) :
 - wc_mfpc_custom_advanced_cache_config
 
-__Action Hooks:__
+### Action Hooks:
 
-_AdminView::class_ :
+[AdminView::class](src/AdminView.php) :
 - wc_mfpc_settings_form_top
 - wc_mfpc_settings_form_bottom
 - wc_mfpc_settings_form_memcached_connection
@@ -301,3 +338,12 @@ Example:
 
 ```
 
+## License
+
+GPL v3 - Please view [LICENSE](LICENSE.txt) document.
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+---
+
+[TOP](#woocommerce-memcached-full-page-cache)
