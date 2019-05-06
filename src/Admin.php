@@ -552,24 +552,35 @@ class Admin
             return false;
         }
 
-        $string[] = '<?php';
-        $string[] = '/*';
-        $string[] = 'Plugin Name: WooCommerce Memcached Full Page Cache (Drop-In: advanced-cache.php)';
-        $string[] = 'Plugin URI: https://github.com/agaleski/woocommerce-memcached-full-page-cache/';
-        $string[] = 'Description: WooCommerce full page cache plugin based on Memcached.';
-        $string[] = 'Version: 0.1';
-        $string[] = 'Author: Achim Galeski <achim@invinciblebrands.com>';
-        $string[] = 'License: GPLv3';
-        $string[] = '*/';
-        $string[] = '';
-        $string[] = 'global ' . Data::global_config_var . ';';
-        $string[] = '';
-        $string[] = Data::global_config_var . ' = ' . var_export($wcMfpcConfig->getGlobal(), true) . ';';
-        $string[] = '';
-        $string[] = "include_once ('" . Data::acache_worker . "');";
-        $string[] = '';
+        $globalConfig = $wcMfpcConfig->getGlobal();
 
-        return file_put_contents(Data::acache, join("\n", $string));
+        /**
+         * Hook to customize the Global-Config array before it is written via var_export to the advanced-cache.php file.
+         *
+         * @param array $globalConfig  Array with the config to write into the advanced-cache.php file
+         *
+         * @return array $globalConfig
+         */
+        $config = (array) apply_filters('wc_mfpc_custom_advanced_cache_config', $globalConfig);
+
+        $stringArray[] = '<?php';
+        $stringArray[] = '/*';
+        $stringArray[] = 'Plugin Name: WooCommerce Memcached Full Page Cache (Drop-In: advanced-cache.php)';
+        $stringArray[] = 'Plugin URI: https://github.com/agaleski/woocommerce-memcached-full-page-cache/';
+        $stringArray[] = 'Description: WooCommerce full page cache plugin based on Memcached.';
+        $stringArray[] = 'Version: 0.1';
+        $stringArray[] = 'Author: Achim Galeski <achim@invinciblebrands.com>';
+        $stringArray[] = 'License: GPLv3';
+        $stringArray[] = '*/';
+        $stringArray[] = '';
+        $stringArray[] = 'global ' . Data::global_config_var . ';';
+        $stringArray[] = '';
+        $stringArray[] = Data::global_config_var . ' = ' . var_export($config, true) . ';';
+        $stringArray[] = '';
+        $stringArray[] = "include_once ('" . Data::acache_worker . "');";
+        $stringArray[] = '';
+
+        return file_put_contents(Data::acache, join("\n", $stringArray));
     }
 
     /**
