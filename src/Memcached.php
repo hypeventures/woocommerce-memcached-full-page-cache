@@ -274,16 +274,24 @@ class Memcached
      */
     public function buildKeys($permalinks = [])
     {
-        $result = [];
+        $keys = [];
 
         foreach ($permalinks as $permalink => $dummy) {
 
-            $result[ $this->buildKey($permalink, 'data') ] = true;
-            $result[ $this->buildKey($permalink, 'meta') ] = true;
+            $keys[ $this->buildKey($permalink, 'data') ] = true;
+            $keys[ $this->buildKey($permalink, 'meta') ] = true;
 
         }
 
-        return $result;
+        /**
+         * Hook to customize array of cache keys.
+         *
+         * @param array  $keys        Cache keys array that was set by default.
+         * @param array  $permalinks  Permalinks array of the cache object in question.
+         *
+         * @return array $keys
+         */
+        return (array) apply_filters('wc_mfpc_custom_build_keys', $keys, $permalinks);
     }
 
     /**
