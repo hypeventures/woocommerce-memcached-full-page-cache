@@ -59,7 +59,7 @@ class Admin
         /*
          * In case of major issues => abort here and set no more action hooks.
          */
-        if (! $this->validateMandatorySettings()) {
+        if (! $this->validateEnvironment()) {
 
             return;
         }
@@ -192,7 +192,7 @@ class Admin
      *
      * @return bool
      */
-    private function validateMandatorySettings()
+    private function validateEnvironment()
     {
         $valid  = true;
         $domain = parse_url(get_option('siteurl'), PHP_URL_HOST);
