@@ -176,7 +176,7 @@ class AdminView
 
           <?php $this->renderMessages()->renderActionButtons('flush'); ?>
 
-          <form autocomplete="off" method="post" action="#" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin wc-mfpc-admin">
+          <form autocomplete="off" method="post" action="admin-post.php" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin wc-mfpc-admin">
 
             <?php wp_nonce_field('wc-mfpc'); ?>
             <?php do_action('wc_mfpc_settings_form_top'); ?>
@@ -383,7 +383,7 @@ class AdminView
     private function renderActionButtons($button = 'flush')
     {
         ?>
-        <form method="post" action="#" id="<?php echo Data::plugin_constant ?>-commands" class="plugin-admin wc-mfpc-admin">
+        <form method="post" action="admin-post.php" id="<?php echo Data::plugin_constant ?>-commands" class="plugin-admin wc-mfpc-admin">
           <p>
             <?php
             wp_nonce_field('wc-mfpc');
@@ -634,6 +634,7 @@ class AdminView
         }
 
         ?>
+        <input type="hidden" name="action" value="<?php echo $name; ?>">
         <button type="submit" class="button button-<?php echo $class; ?>  wc-mfpc-button"
                 name="<?php echo $name; ?>" style="<?php echo $style; ?>"
         >
