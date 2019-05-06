@@ -44,11 +44,6 @@ class Memcached
     public $alive = false;
 
     /**
-     * @var Config|array
-     */
-    protected $config = [];
-
-    /**
      * @var array
      */
     public $servers = [];
@@ -57,6 +52,11 @@ class Memcached
      * @var array
      */
     public $status = [];
+
+    /**
+     * @var Config|array
+     */
+    protected $config = [];
 
     /**
      * Memcached constructor.
@@ -242,59 +242,6 @@ class Memcached
     }
 
     /**
-     * Get the cache key for a given permalink and data type.
-     *
-     * @param string $permalink  The permalink of the page in question.
-     * @param string $type       The cache data type. Either 'data' or 'meta'. Default: 'data'
-     *
-     * @return string  The key for the given data type.
-     */
-    public function buildKey($permalink = '', $type = 'data')
-    {
-        $key = $this->config[ 'prefix_' . $type ] . $permalink;
-
-        /**
-         * Hook to customize each cache key directly.
-         *
-         * @param string $key        Cache key string that was set by default.
-         * @param string $permalink  Permalink of the cache object in question.
-         * @param string $type       Cache key type to build the prefix.
-         *
-         * @return string $url
-         */
-        return (string) apply_filters('wc_mfpc_custom_build_key', $key, $permalink, $type);
-    }
-
-    /**
-     * Returns an array which contains the cache keys for each permalink in the parameter array.
-     *
-     * @param array $permalinks  [ 'permalink' => true, ]
-     *
-     * @return array  [ 'dataKey' => true, 'metaKEy' => true ]
-     */
-    public function buildKeys($permalinks = [])
-    {
-        $keys = [];
-
-        foreach ($permalinks as $permalink => $dummy) {
-
-            $keys[ $this->buildKey($permalink, 'data') ] = true;
-            $keys[ $this->buildKey($permalink, 'meta') ] = true;
-
-        }
-
-        /**
-         * Hook to customize array of cache keys.
-         *
-         * @param array  $keys        Cache keys array that was set by default.
-         * @param array  $permalinks  Permalinks array of the cache object in question.
-         *
-         * @return array $keys
-         */
-        return (array) apply_filters('wc_mfpc_custom_build_keys', $keys, $permalinks);
-    }
-
-    /**
      * public get function, transparent proxy to internal function based on memcached
      *
      * @param string $key Cache key to get value for
@@ -319,23 +266,6 @@ class Memcached
         }
 
         return $result;
-    }
-
-    /**
-     * function to check memcached aliveness
-     *
-     * @return bool  True, if memcached is alive, false in case it's not
-     */
-    public function isAlive()
-    {
-        if (! $this->alive) {
-
-            error_log("Memcached is not active, exiting function " . __FUNCTION__, LOG_WARNING);
-
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -421,6 +351,59 @@ class Memcached
     }
 
     /**
+     * Returns an array which contains the cache keys for each permalink in the parameter array.
+     *
+     * @param array $permalinks  [ 'permalink' => true, ]
+     *
+     * @return array  [ 'dataKey' => true, 'metaKEy' => true ]
+     */
+    public function buildKeys($permalinks = [])
+    {
+        $keys = [];
+
+        foreach ($permalinks as $permalink => $dummy) {
+
+            $keys[ $this->buildKey($permalink, 'data') ] = true;
+            $keys[ $this->buildKey($permalink, 'meta') ] = true;
+
+        }
+
+        /**
+         * Hook to customize array of cache keys.
+         *
+         * @param array  $keys        Cache keys array that was set by default.
+         * @param array  $permalinks  Permalinks array of the cache object in question.
+         *
+         * @return array $keys
+         */
+        return (array) apply_filters('wc_mfpc_custom_build_keys', $keys, $permalinks);
+    }
+
+    /**
+     * Get the cache key for a given permalink and data type.
+     *
+     * @param string $permalink  The permalink of the page in question.
+     * @param string $type       The cache data type. Either 'data' or 'meta'. Default: 'data'
+     *
+     * @return string  The key for the given data type.
+     */
+    public function buildKey($permalink = '', $type = 'data')
+    {
+        $key = $this->config[ 'prefix_' . $type ] . $permalink;
+
+        /**
+         * Hook to customize each cache key directly.
+         *
+         * @param string $key        Cache key string that was set by default.
+         * @param string $permalink  Permalink of the cache object in question.
+         * @param string $type       Cache key type to build the prefix.
+         *
+         * @return string $url
+         */
+        return (string) apply_filters('wc_mfpc_custom_build_key', $key, $permalink, $type);
+    }
+
+    /**
      * Sets the status of each server in an array.
      * This will create a new \Memcached object and add a single server for each server in the actual connection in
      * order to test it independently.
@@ -485,6 +468,23 @@ class Memcached
         }
 
         return $this->connection->set('wc-mfpc', time());
+    }
+
+    /**
+     * function to check memcached aliveness
+     *
+     * @return bool  True, if memcached is alive, false in case it's not
+     */
+    public function isAlive()
+    {
+        if (! $this->alive) {
+
+            error_log("Memcached is not active, exiting function " . __FUNCTION__, LOG_WARNING);
+
+            return false;
+        }
+
+        return true;
     }
 
 }
