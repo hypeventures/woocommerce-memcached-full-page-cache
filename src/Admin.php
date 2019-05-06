@@ -50,7 +50,6 @@ class Admin
 
         add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'addSettingsLink' ]);
         add_action('admin_menu', [ &$this, 'addMenu' ], 101);
-        add_action('admin_init', [ &$this, 'init' ]);
         add_action('admin_post_' . Data::button_save, [ &$this, 'processSave' ]);
         add_action('admin_post_' . Data::button_flush, [ &$this, 'processFlush' ]);
         add_action('admin_post_' . Data::button_reset, [ &$this, 'processReset' ]);
@@ -479,57 +478,14 @@ class Admin
     }
 
     /**
+     * Enqueues admin.css to be added to the footer.
+     *
      * @return void
      */
     public function enqueAdminCss()
     {
         wp_register_style(Data::admin_css_handle, Data::admin_css_url, [], false, 'all');
         wp_enqueue_style(Data::admin_css_handle);
-    }
-
-    /**
-     * admin init called by WordPress add_action, needs to be public
-     */
-    public function init()
-    {
-        global $wcMfpc, $wcMfpcConfig;
-
-        /*
-         * save parameter updates, if there are any
-         */
-        if (isset($_POST[ Data::button_save ]) && check_admin_referer('wc-mfpc')) {
-
-            $this->saveConfig();
-            $this->deployAdvancedCache();
-            $this->status = 1;
-            header("Location: " . Data::settings_link . Data::slug_save);
-
-        }
-
-        /*
-         * delete parameters if requested
-         */
-        if (isset($_POST[ Data::button_reset ]) && check_admin_referer('wc-mfpc')) {
-
-            $wcMfpcConfig->delete();
-            $this->deployAdvancedCache();
-            $this->status = 2;
-            header("Location: " . Data::settings_link . Data::slug_reset);
-
-        }
-
-        /*
-         * save parameter updates, if there are any
-         */
-        if (isset($_POST[ Data::button_flush ]) && check_admin_referer('wc-mfpc')) {
-
-            /* flush memcached */
-            $wcMfpc->getMemcached()
-                   ->flush();
-            $this->status = 3;
-            header("Location: " . Data::settings_link . Data::slug_flush);
-
-        }
     }
 
     /**
