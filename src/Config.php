@@ -198,7 +198,7 @@ class Config
      */
     public function load()
     {
-        $options = get_site_option(Data::global_option);
+        $options = get_site_option(Data::globalOption);
 
         $this->global = $options;
 
@@ -217,12 +217,12 @@ class Config
      */
     public function save()
     {
-        $options = get_site_option(Data::global_option, []);
+        $options = get_site_option(Data::globalOption, []);
         $options[ self::getGlobalConfigKey() ] = $this->getConfig();
 
         $this->global = $options;
 
-        return update_site_option(Data::global_option, $options);
+        return update_site_option(Data::globalOption, $options);
     }
 
     /**
@@ -232,7 +232,7 @@ class Config
      */
     public function delete()
     {
-        $options = get_site_option(Data::global_option, []);
+        $options = get_site_option(Data::globalOption, []);
 
         if (isset($options[ Config::getGlobalConfigKey() ])) {
 
@@ -242,7 +242,7 @@ class Config
 
         $this->global = $options;
 
-        return update_site_option(Data::global_option, $options);
+        return update_site_option(Data::globalOption, $options);
     }
 
     /**

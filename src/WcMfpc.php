@@ -102,7 +102,7 @@ class WcMfpc
      */
     public function pluginActivate()
     {
-        wp_redirect(admin_url() . Data::settings_link, 302);
+        wp_redirect(admin_url() . Data::settingsLink, 302);
         wp_die();
     }
 

@@ -30,8 +30,8 @@ if (! defined('ABSPATH')) { exit; }
 class Memcached
 {
 
-    const host_separator = ',';
-    const port_separator = ':';
+    const hostSeparator = ',';
+    const portSeparator = ':';
 
     /**
      * @var null|\Memcached
@@ -89,7 +89,7 @@ class Memcached
             return;
         }
 
-        $servers = explode(self::host_separator, $this->config[ 'hosts' ]);
+        $servers = explode(self::hostSeparator, $this->config[ 'hosts' ]);
 
         foreach ($servers as $server) {
 
@@ -100,7 +100,7 @@ class Memcached
 
             } else {
 
-                $separator = strpos($server, self::port_separator);
+                $separator = strpos($server, self::portSeparator);
                 $host      = substr($server, 0, $separator);
                 $port      = substr($server, $separator + 1);
 
@@ -428,14 +428,14 @@ class Memcached
 
         if (count($servers) === 1 && $this->connection->set('wc-mfpc', time())) {
 
-            $this->status[ $servers[ 0 ][ 'host' ] . self::port_separator . $servers[ 0 ][ 'port' ] ] = 1;
+            $this->status[ $servers[ 0 ][ 'host' ] . self::portSeparator . $servers[ 0 ][ 'port' ] ] = 1;
 
             return $this->status;
         }
 
         foreach ($servers as $server) {
 
-            $serverId                  = $server[ 'host' ] . self::port_separator . $server[ 'port' ];
+            $serverId                  = $server[ 'host' ] . self::portSeparator . $server[ 'port' ];
             $this->status[ $serverId ] = 0;
 
             $memcached = new \Memcached();

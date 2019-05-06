@@ -45,9 +45,9 @@ class Admin
 
         add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'addSettingsLink' ]);
         add_action('admin_menu', [ &$this, 'addMenu' ], 101);
-        add_action('admin_post_' . Data::button_save, [ &$this, 'processSave' ]);
-        add_action('admin_post_' . Data::button_flush, [ &$this, 'processFlush' ]);
-        add_action('admin_post_' . Data::button_reset, [ &$this, 'processReset' ]);
+        add_action('admin_post_' . Data::buttonSave, [ &$this, 'processSave' ]);
+        add_action('admin_post_' . Data::buttonFlush, [ &$this, 'processFlush' ]);
+        add_action('admin_post_' . Data::buttonReset, [ &$this, 'processReset' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueAdminCss' ]);
         add_action('admin_bar_init', [ &$this, 'setAdminNoCacheCookie' ]);
 
@@ -64,8 +64,8 @@ class Admin
          */
         add_action('add_meta_boxes', [ &$this, 'addCacheControlMetaBox' ], 2);
         add_action('product_cat_edit_form_fields', [ &$this, 'showCategoryBox' ]);
-        add_action('wp_ajax_' . Data::cache_control_clear_action, [ &$this, 'processCacheControlAjax' ]);
-        add_action('wp_ajax_' . Data::cache_control_refresh_action, [ &$this, 'processCacheControlAjax' ]);
+        add_action('wp_ajax_' . Data::cacheControlClearAction, [ &$this, 'processCacheControlAjax' ]);
+        add_action('wp_ajax_' . Data::cacheControlRefreshAction, [ &$this, 'processCacheControlAjax' ]);
 
         /*
          * Add hooks necessary for Bulk deletion of cache entries.
@@ -104,15 +104,15 @@ class Admin
     {
         $slug = '';
 
-        if ($this->validateRequest(Data::button_save)) {
+        if ($this->validateRequest(Data::buttonSave)) {
 
             $this->saveConfig();
             $this->deployAdvancedCache();
-            $slug = Data::slug_save;
+            $slug = Data::slugSave;
 
         }
 
-        wp_redirect(Data::settings_link . $slug);
+        wp_redirect(Data::settingsLink . $slug);
         exit;
     }
 
@@ -125,17 +125,17 @@ class Admin
     {
         $slug = '';
 
-        if ($this->validateRequest(Data::button_flush)) {
+        if ($this->validateRequest(Data::buttonFlush)) {
 
             global $wcMfpc;
 
             $wcMfpc->getMemcached()
                    ->flush();
-            $slug = Data::slug_flush;
+            $slug = Data::slugFlush;
 
         }
 
-        wp_redirect(Data::settings_link . $slug);
+        wp_redirect(Data::settingsLink . $slug);
         exit;
     }
 
@@ -148,17 +148,17 @@ class Admin
     {
         $slug = '';
 
-        if ($this->validateRequest(Data::button_reset)) {
+        if ($this->validateRequest(Data::buttonReset)) {
 
             global $wcMfpcConfig;
 
             $wcMfpcConfig->delete();
             $this->deployAdvancedCache();
-            $slug = Data::slug_reset;
+            $slug = Data::slugReset;
 
         }
 
-        wp_redirect(Data::settings_link . $slug);
+        wp_redirect(Data::settingsLink . $slug);
         exit;
     }
 
@@ -409,8 +409,8 @@ class Admin
         $permalink = esc_url($_POST[ 'permalink' ]);
 
         if (
-            $_POST[ 'action' ] === Data::cache_control_clear_action
-            && wp_verify_nonce($_POST[ 'nonce' ], Data::cache_control_clear_action)
+            $_POST[ 'action' ] === Data::cacheControlClearAction
+            && wp_verify_nonce($_POST[ 'nonce' ], Data::cacheControlClearAction)
         ) {
 
             $valid  = true;
@@ -418,8 +418,8 @@ class Admin
                                 ->clearLinks([ $permalink => true, ]);
 
         } elseif (
-                  $_POST[ 'action' ] === Data::cache_control_refresh_action
-                  && wp_verify_nonce($_POST[ 'nonce' ], Data::cache_control_refresh_action)
+                  $_POST[ 'action' ] === Data::cacheControlRefreshAction
+                  && wp_verify_nonce($_POST[ 'nonce' ], Data::cacheControlRefreshAction)
         ) {
 
             $valid  = true;
@@ -458,10 +458,10 @@ class Admin
 
         add_submenu_page(
             'woocommerce',
-            Data::plugin_name . ' options',
+            Data::pluginName . ' options',
             'Full Page Cache',
             Data::capability,
-            Data::plugin_settings_page,
+            Data::pluginSettingsPage,
             [ &$view, 'render' ]
         );
     }
@@ -473,8 +473,8 @@ class Admin
      */
     public function enqueAdminCss()
     {
-        wp_register_style(Data::admin_css_handle, Data::admin_css_url, [], false, 'all');
-        wp_enqueue_style(Data::admin_css_handle);
+        wp_register_style(Data::adminCssHandle, Data::adminCssUrl, [], false, 'all');
+        wp_enqueue_style(Data::adminCssHandle);
     }
 
     /**
@@ -537,9 +537,9 @@ class Admin
     {
         global $wcMfpcConfig;
 
-        if (! touch(Data::acache)) {
+        if (! touch(Data::advancedCache)) {
 
-            error_log('Generating advanced-cache.php failed: ' . Data::acache . ' is not writable');
+            error_log('Generating advanced-cache.php failed: ' . Data::advancedCache . ' is not writable');
 
             return false;
         }
@@ -573,14 +573,14 @@ class Admin
         $stringArray[] = 'License: GPLv3';
         $stringArray[] = '*/';
         $stringArray[] = '';
-        $stringArray[] = 'global ' . Data::global_config_var . ';';
+        $stringArray[] = 'global ' . Data::globalConfigVar . ';';
         $stringArray[] = '';
-        $stringArray[] = Data::global_config_var . ' = ' . var_export($config, true) . ';';
+        $stringArray[] = Data::globalConfigVar . ' = ' . var_export($config, true) . ';';
         $stringArray[] = '';
-        $stringArray[] = "include_once ('" . Data::acache_worker . "');";
+        $stringArray[] = "include_once ('" . Data::advancedCacheWorker . "');";
         $stringArray[] = '';
 
-        return file_put_contents(Data::acache, join("\n", $stringArray));
+        return file_put_contents(Data::advancedCache, join("\n", $stringArray));
     }
 
     /**
@@ -592,8 +592,8 @@ class Admin
      */
     public function addSettingsLink($links)
     {
-        $settings_link = '<a href="' . Data::settings_link . '">Settings</a>';
-        array_unshift($links, $settings_link);
+        $settingsLink = '<a href="' . Data::settingsLink . '">Settings</a>';
+        array_unshift($links, $settingsLink);
 
         return $links;
     }

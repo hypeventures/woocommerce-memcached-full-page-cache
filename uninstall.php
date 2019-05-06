@@ -39,6 +39,6 @@ include_once 'vendor/autoload.php';
 
 use InvincibleBrands\WcMfpc\Data;
 
-unlink(Data::acache);
+unlink(Data::advancedCache);
 
-delete_site_option(Data::global_option);
+delete_site_option(Data::globalOption);

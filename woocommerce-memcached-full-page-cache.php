@@ -39,7 +39,7 @@ use InvincibleBrands\WcMfpc\WcMfpc;
 
 define('WC_MFPC_PLUGIN_DIR', __DIR__ . '/');
 define('WC_MFPC_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WC_MFPC_PLUGIN_FILE', basename(__FILE__) . '/' . Data::plugin_constant . '.php');
+define('WC_MFPC_PLUGIN_FILE', basename(__FILE__) . '/' . Data::pluginConstant . '.php');
 
 global $wcMfpcConfig, $wcMfpc;
 

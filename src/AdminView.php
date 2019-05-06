@@ -51,8 +51,8 @@ class AdminView
           </p>
           <button id="wc-mfpc-button-clear" class="button button-secondary"
                   style="margin: 0 auto 1rem; width: 100%; height: auto; white-space: normal; display: <?php echo $display; ?>;"
-                  data-action="<?php echo Data::cache_control_clear_action; ?>"
-                  data-nonce="<?php echo wp_create_nonce(Data::cache_control_clear_action); ?>"
+                  data-action="<?php echo Data::cacheControlClearAction; ?>"
+                  data-nonce="<?php echo wp_create_nonce(Data::cacheControlClearAction); ?>"
                   data-permalink="<?php echo $permalink; ?>"
           >
             <span class="wc-mfpc-error-msg">
@@ -62,8 +62,8 @@ class AdminView
           <p>Link to Item: <a href="<?php echo $permalink; ?>" target="_blank">Permalink</a></p>
           <p>
             <button id="wc-mfpc-button-refresh" class="button button-secondary"
-                    data-action="<?php echo Data::cache_control_refresh_action; ?>"
-                    data-nonce="<?php echo wp_create_nonce(Data::cache_control_refresh_action); ?>"
+                    data-action="<?php echo Data::cacheControlRefreshAction; ?>"
+                    data-nonce="<?php echo wp_create_nonce(Data::cacheControlRefreshAction); ?>"
                     data-permalink="<?php echo $permalink; ?>"
             >
               <span class="dashicons dashicons-image-rotate" style="font-size: 100%; margin-top: 0.45rem"></span>
@@ -107,10 +107,10 @@ class AdminView
                 },
                 success: function (data, textStatus, XMLHttpRequest) {
 
-                  if (action === "<?php echo Data::cache_control_clear_action; ?>") {
+                  if (action === "<?php echo Data::cacheControlClearAction; ?>") {
                     buttonClear.hide();
                     status.html(stringError);
-                  } else if (action === "<?php echo Data::cache_control_refresh_action; ?>") {
+                  } else if (action === "<?php echo Data::cacheControlRefreshAction; ?>") {
                     if (data) {
                       buttonClear.show();
                       status.html(stringOk);
@@ -176,33 +176,33 @@ class AdminView
 
           <?php $this->renderMessages()->renderActionButtons('flush'); ?>
 
-          <form autocomplete="off" method="post" action="admin-post.php" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin wc-mfpc-admin">
+          <form autocomplete="off" method="post" action="admin-post.php" id="<?php echo Data::pluginConstant ?>-settings" class="plugin-admin wc-mfpc-admin">
 
-            <?php wp_nonce_field(Data::button_save); ?>
+            <?php wp_nonce_field(Data::buttonSave); ?>
             <?php do_action('wc_mfpc_settings_form_top'); ?>
 
-            <fieldset id="<?php echo Data::plugin_constant ?>-servers">
+            <fieldset id="<?php echo Data::pluginConstant ?>-servers">
               <legend>Memcached connection settings</legend>
               <?php $this->renderMemcachedConnectionSettings(); ?>
             </fieldset>
 
             <?php $this->renderSubmit(); ?>
 
-            <fieldset id="<?php echo Data::plugin_constant; ?>-type">
+            <fieldset id="<?php echo Data::pluginConstant; ?>-type">
                 <legend>Cache settings</legend>
                 <?php $this->renderCacheSettings(); ?>
             </fieldset>
 
             <?php $this->renderSubmit(); ?>
 
-            <fieldset id="<?php echo Data::plugin_constant ?>-exceptions">
+            <fieldset id="<?php echo Data::pluginConstant ?>-exceptions">
                 <legend>Exception settings</legend>
                 <?php $this->renderExceptionSettings(); ?>
             </fieldset>
 
             <?php $this->renderSubmit(); ?>
 
-            <fieldset id="<?php echo Data::plugin_constant; ?>-debug">
+            <fieldset id="<?php echo Data::pluginConstant; ?>-debug">
               <legend>Header settings</legend>
                 <?php $this->renderDebugSettings(); ?>
             </fieldset>
@@ -246,7 +246,7 @@ class AdminView
         /*
          * if options were saved
          */
-        if (isset($_GET[ Data::key_save ]) && $_GET[ Data::key_save ] === 'true') {
+        if (isset($_GET[ Data::keySave ]) && $_GET[ Data::keySave ] === 'true') {
 
             Alert::alert('<strong>Settings saved.</strong>');
 
@@ -255,7 +255,7 @@ class AdminView
         /*
          * if options were deleted
          */
-        if (isset($_GET[ Data::key_delete ]) && $_GET[ Data::key_delete ] === 'true') {
+        if (isset($_GET[ Data::keyRefresh ]) && $_GET[ Data::keyRefresh ] === 'true') {
 
             Alert::alert('<strong>Plugin options deleted. </strong>');
 
@@ -264,13 +264,13 @@ class AdminView
         /*
          * if flushed
          */
-        if (isset($_GET[ Data::key_flush ]) && $_GET[ Data::key_flush ] === 'true') {
+        if (isset($_GET[ Data::keyFlush ]) && $_GET[ Data::keyFlush ] === 'true') {
 
             Alert::alert('<strong>Cache flushed.</strong>');
 
         }
 
-        $settings_link = ' &raquo; <a href="' . Data::settings_link. '">WC-MFPC Settings</a>';
+        $settingsLink = ' &raquo; <a href="' . Data::settingsLink. '">WC-MFPC Settings</a>';
 
         /*
          * look for global settings array
@@ -280,19 +280,19 @@ class AdminView
             Alert::alert(sprintf(
                 'This site was reached as %s ( according to PHP HTTP_HOST ) and there are no settings present '
                 . 'for this domain in the WC-MFPC configuration yet. Please save the %s for this blog.',
-                $_SERVER[ 'HTTP_HOST' ], $settings_link
+                $_SERVER[ 'HTTP_HOST' ], $settingsLink
             ), LOG_WARNING);
 
         }
 
         /*
-         * look for writable acache file
+         * look for writable advancedCache file
          */
-        if (file_exists(Data::acache) && ! is_writable(Data::acache)) {
+        if (file_exists(Data::advancedCache) && ! is_writable(Data::advancedCache)) {
 
             Alert::alert(sprintf(
               'Advanced cache file (%s) is not writeable!<br />Please change the permissions on the file.',
-              Data::acache
+              Data::advancedCache
             ), LOG_WARNING);
 
         }
@@ -300,9 +300,9 @@ class AdminView
         /*
          * Check if advanced-cache.php file exists.
          */
-        if (! file_exists(Data::acache)) {
+        if (! file_exists(Data::advancedCache)) {
 
-            Alert::alert(sprintf('Advanced cache file is yet to be generated, please save %s', $settings_link), LOG_WARNING);
+            Alert::alert(sprintf('Advanced cache file is yet to be generated, please save %s', $settingsLink), LOG_WARNING);
 
         }
 
@@ -383,7 +383,7 @@ class AdminView
     private function renderActionButtons($button = 'flush')
     {
         ?>
-        <form method="post" action="admin-post.php" id="<?php echo Data::plugin_constant ?>-commands" class="plugin-admin wc-mfpc-admin">
+        <form method="post" action="admin-post.php" id="<?php echo Data::pluginConstant ?>-commands" class="plugin-admin wc-mfpc-admin">
           <p>
             <?php
             wp_nonce_field('wc-mfpc');
@@ -393,7 +393,7 @@ class AdminView
                 $this->renderSubmit(
                   'Flush Cache',
                   'secondary',
-                  Data::button_flush,
+                  Data::buttonFlush,
                   false, 'trash',
                   'color: #f33; margin: 1rem 1rem 1rem 0;'
                 );
@@ -404,7 +404,7 @@ class AdminView
                 $this->renderSubmit(
                   'Reset Settings',
                   'secondary',
-                  Data::button_reset,
+                  Data::buttonReset,
                   false,
                   'image-rotate',
                   'color: #f33; margin: 1rem 1rem 1rem 0;'
@@ -625,7 +625,7 @@ class AdminView
      *
      * @return void
      */
-    private function renderSubmit($text = 'Save changes', $class = 'primary', $name = Data::button_save, $wrap = true, $icon = 'lock', $style = '')
+    private function renderSubmit($text = 'Save changes', $class = 'primary', $name = Data::buttonSave, $wrap = true, $icon = 'lock', $style = '')
     {
         if ($wrap) {
 
