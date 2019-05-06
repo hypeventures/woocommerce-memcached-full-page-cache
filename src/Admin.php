@@ -51,6 +51,7 @@ class Admin
         add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'addSettingsLink' ]);
         add_action('admin_menu', [ &$this, 'addMenu' ], 101);
         add_action('admin_init', [ &$this, 'init' ]);
+        add_action('admin_post_' . Data::button_save);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueAdminCss' ]);
         add_action('admin_bar_init', [ &$this, 'setAdminNoCacheCookie' ]);
 
@@ -442,70 +443,54 @@ class Admin
     }
 
     /**
-     * used on update and to save current options to database
+     * Processes POST vars to save the new Config.
      *
-     * @param boolean $activating [optional] true on activation hook
+     * @return void
      */
-    protected function saveConfig($activating = false)
+    protected function saveConfig()
     {
-        global $wcMfpcConfig;
+        global $wcMfpc, $wcMfpcConfig;
 
-        /* only try to update defaults if it's not activation hook, $_POST is not empty and the post is ours */
-        if (! $activating && ! empty ($_POST) && isset($_POST[ Data::button_save ])) {
+        $options = Config::getDefaultConfig();
 
-            /* we'll only update those that exist in the defaults array */
-            $options = Config::getDefaultConfig();
+        foreach ($options as $key => $default) {
 
-            foreach ($options as $key => $default) {
+            if (! empty($_POST[ $key ])) {
 
-                /* $_POST element is available */
-                if (! empty($_POST[ $key ])) {
+                $update = trim($_POST[ $key ]);
 
-                    $update = trim($_POST[ $key ]);
+                /* get rid of slashes in strings, just in case */
+                if (is_string($update)) {
 
-                    /* get rid of slashes in strings, just in case */
-                    if (is_string($update)) {
-
-                        $update = stripslashes($update);
-
-                    }
-
-                    $options[ $key ] = $update;
-
-                /*
-                 * empty $_POST element: when HTML form posted, empty checkboxes a 0 input
-                 * values will not be part of the $_POST array, thus we need to check
-                 * if this is the situation by checking the types of the elements,
-                 * since a missing value means update from an integer to 0
-                 */
-                } elseif (is_bool($default) || is_int($default)) {
-
-                    $options[ $key ] = 0;
-
-                } elseif (is_array($default)) {
-
-                    $options[ $key ] = [];
+                    $update = stripslashes($update);
 
                 }
 
+                $options[ $key ] = $update;
+
+            /*
+             * empty $_POST element: when HTML form posted, empty checkboxes a 0 input
+             * values will not be part of the $_POST array, thus we need to check
+             * if this is the situation by checking the types of the elements,
+             * since a missing value means update from an integer to 0
+             */
+            } elseif (is_bool($default) || is_int($default)) {
+
+                $options[ $key ] = 0;
+
+            } elseif (is_array($default)) {
+
+                $options[ $key ] = [];
+
             }
 
-            /* update the options entity */
-            $wcMfpcConfig->setConfig($options);
-            $wcMfpcConfig->setNocacheWoocommerceUrl();
         }
 
-        /* flush the cache when new options are saved, not needed on activation */
-        if (! $activating) {
-
-            global $wcMfpc;
-
-            $wcMfpc->getMemcached()
-                   ->flush();
-
-        }
-
+        $wcMfpcConfig->setConfig($options)
+                     ->setNocacheWoocommerceUrl();
         $wcMfpcConfig->save();
+        $wcMfpc->getMemcached()
+               ->flush();
     }
 
     /**
