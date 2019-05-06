@@ -513,9 +513,21 @@ class Admin
 
         /* add the required includes and generate the needed code */
         $string[] = '<?php';
+        $string[] = '/*';
+        $string[] = 'Plugin Name: WooCommerce Memcached Full Page Cache (Drop-In: advanced-cache.php)';
+        $string[] = 'Plugin URI: https://github.com/agaleski/woocommerce-memcached-full-page-cache/';
+        $string[] = 'Description: WooCommerce full page cache plugin based on Memcached.';
+        $string[] = 'Version: 0.1';
+        $string[] = 'Author: Achim Galeski <achim@invinciblebrands.com>';
+        $string[] = 'License: GPLv3';
+        $string[] = '*/';
+        $string[] = '';
         $string[] = 'global ' . Data::global_config_var . ';';
+        $string[] = '';
         $string[] = Data::global_config_var . ' = ' . var_export($wcMfpcConfig->getGlobal(), true) . ';';
+        $string[] = '';
         $string[] = "include_once ('" . Data::acache_worker . "');";
+        $string[] = '';
 
         return file_put_contents(Data::acache, join("\n", $string));
     }
