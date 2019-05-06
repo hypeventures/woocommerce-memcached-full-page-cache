@@ -202,18 +202,6 @@ class WcMfpc
 
         } while ($numberOfPages > 1 && $currentPageId <= $numberOfPages);
 
-        /**
-         * Filter to enable customization of array $toClear.
-         * Allows 3rd party Developers to change the array of keys which should be cleared afterwards.
-         *
-         * @param array      $toClear    Array of keys which should be cleared afterwards.
-         * @param string|int $postId     Id of the post in question IF it is a post. Needs to be checked!
-         * @param Memcached  $memcached  Instance of this Memcached class with active server connection.
-         *
-         * @return array $toClear
-         */
-        $toClear = (array) apply_filters('wc_mfpc_custom_to_clear_after', $toClear, $postId, $memcached);
-
         return $memcached->clearLinks($toClear);
     }
 
