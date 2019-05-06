@@ -214,7 +214,7 @@ class Memcached
     }
 
     /**
-     * Builds and returns the current request URL which should equal our permalinks.
+     * Builds and returns the current request URL which should equal the permalinks.
      *
      * @return string
      */
@@ -228,7 +228,17 @@ class Memcached
 
         }
 
-        return $scheme . $_SERVER[ 'HTTP_HOST' ] . $_SERVER[ 'REQUEST_URI' ];
+        $url = $scheme . $_SERVER[ 'HTTP_HOST' ] . $_SERVER[ 'REQUEST_URI' ];
+
+        /**
+         * Hook to customize the page url which will be used as part of the key.
+         *
+         * @param string $url     Url string that was set by default.
+         * @param string $scheme  Either 'https://' or 'http://' depending on $_SERVER[ 'HTTPS' ].
+         *
+         * @return string $url
+         */
+        return (string) apply_filters('wc_mfpc_custom_build_url', $url, $scheme);
     }
 
     /**
