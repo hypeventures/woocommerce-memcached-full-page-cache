@@ -45,7 +45,7 @@ final class Data
     const global_option                = 'wc-mfpc-global';
     const button_flush                 = 'wc-mfpc-flush';
     const button_save                  = 'wc-mfpc-save';
-    const button_delete                = 'wc-mfpc-delete';
+    const button_reset                = 'wc-mfpc-delete';
     const plugin_settings_page         = 'wc-mfpc-settings';
     const admin_css_handle             = 'wc-mfpc-admin-css';
     const admin_css_url                = WC_MFPC_PLUGIN_URL . 'assets/admin.css';

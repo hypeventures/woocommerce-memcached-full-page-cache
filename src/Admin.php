@@ -53,7 +53,7 @@ class Admin
         add_action('admin_init', [ &$this, 'init' ]);
         add_action('admin_post_' . Data::button_save, [ &$this, 'processSave' ]);
         add_action('admin_post_' . Data::button_flush, [ &$this, 'processFlush' ]);
-        add_action('admin_post_' . Data::button_delete, [ &$this, 'processReset' ]);
+        add_action('admin_post_' . Data::button_reset, [ &$this, 'processReset' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueAdminCss' ]);
         add_action('admin_bar_init', [ &$this, 'setAdminNoCacheCookie' ]);
 
@@ -158,7 +158,7 @@ class Admin
     {
         $slug = '';
 
-        if ($this->validateRequest(Data::button_delete)) {
+        if ($this->validateRequest(Data::button_reset)) {
 
             global $wcMfpcConfig;
 
@@ -509,7 +509,7 @@ class Admin
         /*
          * delete parameters if requested
          */
-        if (isset($_POST[ Data::button_delete ]) && check_admin_referer('wc-mfpc')) {
+        if (isset($_POST[ Data::button_reset ]) && check_admin_referer('wc-mfpc')) {
 
             $wcMfpcConfig->delete();
             $this->deployAdvancedCache();

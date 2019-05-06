@@ -404,7 +404,7 @@ class AdminView
                 $this->renderSubmit(
                   'Reset Settings',
                   'secondary',
-                  Data::button_delete,
+                  Data::button_reset,
                   false,
                   'image-rotate',
                   'color: #f33; margin: 1rem 1rem 1rem 0;'
