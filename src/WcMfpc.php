@@ -197,7 +197,7 @@ class WcMfpc
 
         do {
 
-            $currentPageId             = 1 + (int) $currentPageId;
+            $currentPageId         = 1 + (int) $currentPageId;
             $toClear[ $permalink ] = true;
 
         } while ($numberOfPages > 1 && $currentPageId <= $numberOfPages);
