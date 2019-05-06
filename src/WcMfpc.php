@@ -176,9 +176,9 @@ class WcMfpc
          * Filter to enable customization of array $toClear.
          * Allows 3rd party Developers to change the array of keys which should be cleared afterwards.
          *
-         * @param array      $toClear  Array of keys which should be cleared afterwards.
-         * @param string|int $postId   Id of the post in question IF it is a post. Needs to be checked!
-         * @param Memcached  $this     Instance of this Memcached class with active server connection.
+         * @param array      $toClear    Array of keys which should be cleared afterwards.
+         * @param string|int $postId     Id of the post in question IF it is a post. Needs to be checked!
+         * @param Memcached  $memcached  Instance of this Memcached class with active server connection.
          *
          * @return array $toClear  You can return bool false to abort processing directly after this.
          */
@@ -225,9 +225,9 @@ class WcMfpc
          * Filter to enable customization of array $toClear.
          * Allows 3rd party Developers to change the array of keys which should be cleared afterwards.
          *
-         * @param array      $toClear  Array of keys which should be cleared afterwards.
-         * @param string|int $postId   Id of the post in question IF it is a post. Needs to be checked!
-         * @param Memcached  $this     Instance of this Memcached class with active server connection.
+         * @param array      $toClear    Array of keys which should be cleared afterwards.
+         * @param string|int $postId     Id of the post in question IF it is a post. Needs to be checked!
+         * @param Memcached  $memcached  Instance of this Memcached class with active server connection.
          *
          * @return array $toClear
          */
