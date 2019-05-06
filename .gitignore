@@ -1,3 +1,11 @@
 *.sublime*
 .DS_Store
 .idea/
+
+# Unit test stuff:
+
+bin/
+tests/
+.phpcs.xml.dist
+.travis.yml
+phpunit.xml.dist
