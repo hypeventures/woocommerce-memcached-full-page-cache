@@ -181,6 +181,7 @@ class AdminView
           <form autocomplete="off" method="post" action="#" id="<?php echo Data::plugin_constant ?>-settings" class="plugin-admin wc-mfpc-admin">
 
             <?php wp_nonce_field('wc-mfpc'); ?>
+            <?php do_action('wc_mfpc_settings_form_top'); ?>
 
             <fieldset id="<?php echo Data::plugin_constant ?>-servers">
               <legend>Memcached connection settings</legend>
@@ -209,6 +210,7 @@ class AdminView
             </fieldset>
 
             <?php $this->renderSubmit(); ?>
+            <?php do_action('wc_mfpc_settings_form_bottom'); ?>
 
           </form>
 
@@ -430,6 +432,8 @@ class AdminView
             'value'       => $wcMfpcConfig->isMemcachedBinary() ? 'yes' : 'no',
         ]);
 
+        do_action('wc_mfpc_settings_form_memcached_connection');
+
         /*
          * If memcached does not support or if authentication is disabled, do not show the auth input fields to avoid
          * confuseion.
@@ -523,6 +527,8 @@ class AdminView
           <b>WARNING</b>: changing this will result the previous cache to becomes invalid!
         </div>
         <?php
+
+        do_action('wc_mfpc_settings_form_cache');
     }
 
     /**
@@ -567,6 +573,8 @@ class AdminView
           <small>(This will be updated to your used urls dynamically after saving the config.)</small>
         </div>
         <?php
+
+        do_action('wc_mfpc_settings_form_exception');
     }
 
     /**
@@ -590,6 +598,8 @@ class AdminView
             'description' => 'Enable to add X-Cache-Engine HTTP header to HTTP responses.',
             'value'       => $wcMfpcConfig->isResponseHeader() ? 'yes' : 'no',
         ]);
+
+        do_action('wc_mfpc_settings_form_debug');
     }
 
     /**
