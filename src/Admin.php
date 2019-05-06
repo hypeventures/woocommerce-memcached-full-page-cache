@@ -166,7 +166,7 @@ class Admin
             $this->deployAdvancedCache();
 
             $this->status = 2;
-            $slug         = Data::slug_delete;
+            $slug         = Data::slug_reset;
 
         }
 
@@ -514,7 +514,7 @@ class Admin
             $wcMfpcConfig->delete();
             $this->deployAdvancedCache();
             $this->status = 2;
-            header("Location: " . Data::settings_link . Data::slug_delete);
+            header("Location: " . Data::settings_link . Data::slug_reset);
 
         }
 

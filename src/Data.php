@@ -38,7 +38,7 @@ final class Data
     const key_flush                    = 'flushed';
     const slug_flush                   = '&flushed=true';
     const slug_save                    = '&saved=true';
-    const slug_delete                  = '&deleted=true';
+    const slug_reset                  = '&deleted=true';
     const plugin_constant              = 'woocommerce-memcached-full-page-cache';
     const plugin_name                  = 'WC-MFPC';
     const capability                   = 'manage_options';
