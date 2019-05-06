@@ -51,8 +51,8 @@ class AdminView
           </p>
           <button id="wc-mfpc-button-clear" class="button button-secondary"
                   style="margin: 0 auto 1rem; width: 100%; height: auto; white-space: normal; display: <?php echo $display; ?>;"
-                  data-action="<?php echo Data::cache_control_action; ?>"
-                  data-nonce="<?php echo wp_create_nonce(Data::cache_control_action); ?>"
+                  data-action="<?php echo Data::cache_control_clear_action; ?>"
+                  data-nonce="<?php echo wp_create_nonce(Data::cache_control_clear_action); ?>"
                   data-permalink="<?php echo $permalink; ?>"
           >
             <span class="wc-mfpc-error-msg">
@@ -60,6 +60,16 @@ class AdminView
             </span>
           </button>
           <p>Link to Item: <a href="<?php echo $permalink; ?>" target="_blank">Permalink</a></p>
+          <p>
+            <button id="wc-mfpc-button-refresh" class="button button-secondary"
+                    data-action="<?php echo Data::cache_control_refresh_action; ?>"
+                    data-nonce="<?php echo wp_create_nonce(Data::cache_control_refresh_action); ?>"
+                    data-permalink="<?php echo $permalink; ?>"
+            >
+              <span class="dashicons dashicons-image-rotate" style="font-size: 100%; margin-top: 0.45rem"></span>
+              Refresh
+            </button>
+          </p>
           <i style="font-size: smaller">Provided by your DEV-Team</i>
         </div>
         <?php
@@ -77,35 +87,52 @@ class AdminView
         ?>
         <script>
           (function ($) {
-            let status    = $("#wc-mfpc-cache-status");
-            let button    = $("#wc-mfpc-button-clear");
-            let action    = button.attr('data-action');
-            let nonce     = button.attr('data-nonce');
-            let permalink = button.attr('data-permalink');
-
-            button.on('click', function (event) {
+            let buttonClear      = $("#wc-mfpc-button-clear");
+            let buttonRefresh    = $("#wc-mfpc-button-refresh");
+            let status           = $("#wc-mfpc-cache-status");
+            let stringOk         = '<b class="wc-mfpc-ok-msg">Cached</b>';
+            let stringError      = '<b class="wc-mfpc-error-msg">Not cached</b>';
+            let cacheControlAjax = function (event) {
               event.preventDefault();
+
+              let action = $(this).attr('data-action');
 
               $.ajax({
                 type: 'POST',
                 url: ajaxurl,
                 data: {
                   action: action,
-                  nonce:  nonce,
-                  permalink: permalink,
+                  nonce: $(this).attr('data-nonce'),
+                  permalink: $(this).attr('data-permalink'),
                 },
                 success: function (data, textStatus, XMLHttpRequest) {
 
-                  alert(data);
-                  button.hide();
-                  status.html('<b class="wc-mfpc-error-msg">Not cached</b>');
+                  if (action === "<?php echo Data::cache_control_clear_action; ?>") {
+                    buttonClear.hide();
+                    status.html(stringError);
+                  } else if (action === "<?php echo Data::cache_control_refresh_action; ?>") {
+                    if (data) {
+                      buttonClear.show();
+                      status.html(stringOk);
+                    } else {
+                      buttonClear.hide();
+                      status.html(stringError);
+                    }
+                  } else {
+                    alert(data);
+                  }
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                   alert(errorThrown);
                 }
               });
-            });
+
+            };
+
+            buttonClear.on('click', cacheControlAjax);
+            buttonRefresh.on('click', cacheControlAjax);
+
           })(jQuery);
         </script>
         <?php
