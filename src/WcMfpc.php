@@ -149,36 +149,23 @@ class WcMfpc
     /**
      * Handles clearing of posts and taxonomies.
      *
-     * @todo Check if WcMfpc::clearPostCache() can be further simplified.
-     *
      * @param int|string $postId  ID of the post to invalidate
      *
      * @return bool
      */
     public function clearPostCache($postId = null)
     {
-        if (wp_is_post_autosave($postId) || wp_is_post_revision($postId)) {
+        if (
+            empty($postId)
+            || ! $this->getMemcached()->isAlive()
+            || wp_is_post_autosave($postId)
+            || wp_is_post_revision($postId)
+        ) {
 
             return false;
         }
 
-        $memcached = $this->getMemcached();
-
-        if (! $memcached->isAlive()) {
-
-            return false;
-        }
-
-        $toClear   = [];
-
-        if (empty($postId)) {
-
-            #error_log('not clearing unidentified post', LOG_WARNING);
-
-            return false;
-        }
-
-        $permalink = get_permalink($postId);
+        $permalink  = get_permalink($postId);
 
         if (empty($permalink)) {
 
@@ -186,6 +173,9 @@ class WcMfpc
 
             return false;
         }
+
+        $memcached  = $this->getMemcached();
+        $permalinks = [];
 
         /*
          * It's possible that post/page is paginated with <!--nextpage--> as Wordpress doesn't seem to expose the
@@ -196,12 +186,12 @@ class WcMfpc
 
         do {
 
-            $currentPageId         = 1 + (int) $currentPageId;
-            $toClear[ $permalink ] = true;
+            $currentPageId            = 1 + (int) $currentPageId;
+            $permalinks[ $permalink ] = true;
 
         } while ($numberOfPages > 1 && $currentPageId <= $numberOfPages);
 
-        return $memcached->clearLinks($toClear);
+        return $memcached->clearLinks($permalinks);
     }
 
 }
