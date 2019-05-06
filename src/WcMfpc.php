@@ -169,7 +169,7 @@ class WcMfpc
 
         if (empty($permalink)) {
 
-            #error_log('Unable to determine path from Post Permalink, post ID: ' . $postId, LOG_WARNING);
+            #error_log('Unable to determine path for Post Permalink, post ID: ' . $postId, LOG_WARNING);
 
             return false;
         }

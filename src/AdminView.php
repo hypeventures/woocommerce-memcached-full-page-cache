@@ -70,7 +70,7 @@ class AdminView
               Refresh
             </button>
           </p>
-          <i style="font-size: smaller">Provided by your DEV-Team</i>
+          <i style="font-size: smaller">Provided by InvincibleBrands Development</i>
         </div>
         <?php
 
