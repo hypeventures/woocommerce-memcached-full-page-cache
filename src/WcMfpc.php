@@ -148,7 +148,6 @@ class WcMfpc
 
     /**
      * Handles clearing of posts and taxonomies.
-     * Contains Hooks: 'wc_mfpc_custom_to_clear_before' & 'wc_mfpc_custom_to_clear_after' to customize expiration time.
      *
      * @todo Check if WcMfpc::clearPostCache() can be further simplified.
      *
