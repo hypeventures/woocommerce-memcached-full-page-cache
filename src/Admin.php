@@ -44,12 +44,10 @@ class Admin
         }
 
         add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'addSettingsLink' ]);
-        add_action('admin_menu', [ &$this, 'addMenu' ], 101);
         add_action('admin_post_' . Data::buttonSave, [ &$this, 'processSave' ]);
         add_action('admin_post_' . Data::buttonFlush, [ &$this, 'processFlush' ]);
         add_action('admin_post_' . Data::buttonReset, [ &$this, 'processReset' ]);
         add_action('admin_enqueue_scripts', [ &$this, 'enqueAdminCss' ]);
-        add_action('admin_bar_init', [ &$this, 'setAdminNoCacheCookie' ]);
 
         /*
          * In case of major issues => abort here and set no more action hooks.
@@ -160,20 +158,6 @@ class Admin
 
         wp_redirect(Data::settingsLink . $slug);
         exit;
-    }
-
-    /**
-     * Sets the no-cache cookie for admins, if not set earlier.
-     *
-     * @return void
-     */
-    public function setAdminNoCacheCookie()
-    {
-        if (empty($_COOKIE[ 'wc-mfpc-nocache' ])) {
-
-            setcookie('wc-mfpc-nocache', 1, time() + 86400);
-
-        }
     }
 
     /**
@@ -445,25 +429,6 @@ class Admin
         }
 
         wp_die(json_encode('SUCCESS! Cache for this item was cleared.'));
-    }
-
-    /**
-     * Adding the submenu page.
-     *
-     * @return void
-     */
-    public function addMenu()
-    {
-        $view = new AdminView();
-
-        add_submenu_page(
-            'woocommerce',
-            Data::pluginName . ' options',
-            'Full Page Cache',
-            Data::capability,
-            Data::pluginSettingsPage,
-            [ &$view, 'render' ]
-        );
     }
 
     /**
