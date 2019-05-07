@@ -31,61 +31,13 @@ class Admin
 {
 
     /**
-     * Initializes the Hooks necessary for the admin settings pages.
-     *
-     * @return void
-     */
-    public function setHooks()
-    {
-        if (is_multisite()) {
-
-            add_filter("network_admin_plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'addSettingsLink' ]);
-
-        }
-
-        add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ &$this, 'addSettingsLink' ]);
-        add_action('admin_post_' . Data::buttonSave, [ &$this, 'processSave' ]);
-        add_action('admin_post_' . Data::buttonFlush, [ &$this, 'processFlush' ]);
-        add_action('admin_post_' . Data::buttonReset, [ &$this, 'processReset' ]);
-        add_action('admin_enqueue_scripts', [ &$this, 'enqueAdminCss' ]);
-
-        /*
-         * In case of major issues => abort here and set no more action hooks.
-         */
-        if (! $this->validateEnvironment()) {
-
-            return;
-        }
-
-        /*
-         * Add hooks necessary for the "Cache control" box.
-         */
-        add_action('add_meta_boxes', [ &$this, 'addCacheControlMetaBox' ], 2);
-        add_action('product_cat_edit_form_fields', [ &$this, 'showCategoryBox' ]);
-        add_action('wp_ajax_' . Data::cacheControlClearAction, [ &$this, 'processCacheControlAjax' ]);
-        add_action('wp_ajax_' . Data::cacheControlRefreshAction, [ &$this, 'processCacheControlAjax' ]);
-
-        /*
-         * Add hooks necessary for Bulk deletion of cache entries.
-         */
-        add_filter('bulk_actions-edit-product', [ &$this, 'addBulkAction' ]);
-        add_filter('bulk_actions-edit-post', [ &$this, 'addBulkAction' ]);
-        add_filter('bulk_actions-edit-page', [ &$this, 'addBulkAction' ]);
-        add_filter('bulk_actions-edit-product_cat', [ &$this, 'addBulkAction' ]);
-        add_filter('handle_bulk_actions-edit-product', [ &$this, 'handleBulkAction' ], 10, 3);
-        add_filter('handle_bulk_actions-edit-post', [ &$this, 'handleBulkAction' ], 10, 3);
-        add_filter('handle_bulk_actions-edit-page', [ &$this, 'handleBulkAction' ], 10, 3);
-        add_filter('handle_bulk_actions-edit-product_cat', [ &$this, 'handleBulkAction' ], 10, 3);
-    }
-
-    /**
      * Verifies the validity of a request if action string provided.
      *
      * @param string $action
      *
      * @return bool
      */
-    protected function validateRequest($action = '')
+    private static function validateRequest($action = '')
     {
         return ! empty($_POST[ '_wpnonce' ])
                && wp_verify_nonce($_POST[ '_wpnonce' ], $action)
@@ -98,14 +50,14 @@ class Admin
      *
      * @return void
      */
-    public function processSave()
+    public static function processSave()
     {
         $slug = '';
 
-        if ($this->validateRequest(Data::buttonSave)) {
+        if (self::validateRequest(Data::buttonSave)) {
 
-            $this->saveConfig();
-            $this->deployAdvancedCache();
+            self::saveConfig();
+            self::deployAdvancedCache();
             $slug = Data::slugSave;
 
         }
@@ -119,11 +71,11 @@ class Admin
      *
      * @return void
      */
-    public function processFlush()
+    public static function processFlush()
     {
         $slug = '';
 
-        if ($this->validateRequest(Data::buttonFlush)) {
+        if (self::validateRequest(Data::buttonFlush)) {
 
             global $wcMfpc;
 
@@ -142,16 +94,16 @@ class Admin
      *
      * @return void
      */
-    public function processReset()
+    public static function processReset()
     {
         $slug = '';
 
-        if ($this->validateRequest(Data::buttonReset)) {
+        if (self::validateRequest(Data::buttonReset)) {
 
             global $wcMfpcConfig;
 
             $wcMfpcConfig->delete();
-            $this->deployAdvancedCache();
+            self::deployAdvancedCache();
             $slug = Data::slugReset;
 
         }
@@ -165,7 +117,7 @@ class Admin
      *
      * @return bool
      */
-    private function validateEnvironment()
+    private static function validateEnvironment()
     {
         $valid  = true;
         $domain = parse_url(get_option('siteurl'), PHP_URL_HOST);
@@ -218,7 +170,7 @@ class Admin
      *
      * @return array
      */
-    public function addBulkAction($actions = [])
+    public static function addBulkAction($actions = [])
     {
         if (get_current_screen()->id !== 'edit-product_cat') {
 
@@ -248,7 +200,7 @@ class Admin
      *
      * @return array|string
      */
-    public function handleBulkAction($redirectTo = [], $action = '', $ids = [])
+    public static function handleBulkAction($redirectTo = [], $action = '', $ids = [])
     {
         if ($action !== 'clearCache' && $action !== 'clearCategoryCache') {
 
@@ -297,7 +249,7 @@ class Admin
      *
      * @return void
      */
-    public function addCacheControlMetaBox()
+    public static function addCacheControlMetaBox()
     {
         $screens = [ 'post', 'page', 'product' ];
 
@@ -320,7 +272,7 @@ class Admin
      *
      * @param null|\WP_Term $term
      */
-    public function showCategoryBox($term = null)
+    public static function showCategoryBox($term = null)
     {
         $permalink  = get_category_link($term->term_taxonomy_id);
         $type       = 'Category';
@@ -377,7 +329,7 @@ class Admin
      *
      * @return void
      */
-    public function processCacheControlAjax()
+    public static function processCacheControlAjax()
     {
         global $wcMfpc;
 
@@ -436,7 +388,7 @@ class Admin
      *
      * @return void
      */
-    public function enqueAdminCss()
+    public static function enqueAdminCss()
     {
         wp_register_style(Data::adminCssHandle, Data::adminCssUrl, [], false, 'all');
         wp_enqueue_style(Data::adminCssHandle);
@@ -447,7 +399,7 @@ class Admin
      *
      * @return void
      */
-    protected function saveConfig()
+    private static function saveConfig()
     {
         global $wcMfpc, $wcMfpcConfig;
 
@@ -498,7 +450,7 @@ class Admin
      *
      * @return bool
      */
-    private function deployAdvancedCache()
+    private static function deployAdvancedCache()
     {
         global $wcMfpcConfig;
 
@@ -555,7 +507,7 @@ class Admin
      *
      * @return array
      */
-    public function addSettingsLink($links)
+    public static function addSettingsLink($links)
     {
         $settingsLink = '<a href="' . Data::settingsLink . '">Settings</a>';
         array_unshift($links, $settingsLink);
