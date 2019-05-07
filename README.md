@@ -12,6 +12,21 @@ WooCommerce full page cache plugin using Memcached.
 __CREDITS:__ This plugin is the spiritual successor of [WP-FFPC](https://github.com/petermolnar/wp-ffpc) 
 by [Peter Molnar](https://github.com/petermolnar).
 
+
+## Table of contents
+
+- [Copyright](#copyright)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Settings](#settings)
+- [Customization](#customization)
+  - [Constants](#constants)
+  - [Globals](#globals)
+  - [Filter Hooks](#filter-hooks)
+  - [Action Hooks](#action-hooks)
+- [License](#license)
+
+
 ## Copyright
 
 ```
@@ -35,18 +50,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA02110-1301USA
 ```
 
-## Table of contents
+## License
 
-- [Copyright](#copyright)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Settings](#settings)
-- [Customization](#customization)
-  - [Constants](#constants)
-  - [Globals](#globals)
-  - [Filter Hooks](#filter-hooks)
-  - [Action Hooks](#action-hooks)
-- [License](#license)
+GPL v3 - Please view [LICENSE](LICENSE.txt) document.
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ## Requirements
 
@@ -425,11 +433,45 @@ Example:
 
 ```
 
-## License
+## Example: advanced-cache.php
 
-GPL v3 - Please view [LICENSE](LICENSE.txt) document.
+```php
+<?php
+/*
+Plugin Name: WooCommerce Memcached Full Page Cache (Drop-In: advanced-cache.php)
+Plugin URI: https://github.com/agaleski/woocommerce-memcached-full-page-cache/
+Description: WooCommerce full page cache plugin based on Memcached.
+Version: 0.1
+Author: Achim Galeski <achim@invinciblebrands.com>
+License: GPLv3
+*/
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+global $wc_mfpc_config_array;
+
+$wc_mfpc_config_array = array (
+  'naturalmojo.de.local' => 
+  array (
+    'hosts' => '127.0.0.1:11211',
+    'memcached_binary' => 'yes',
+    'authpass' => '',
+    'authuser' => '',
+    'expire' => '86400',
+    'browsercache' => '14400',
+    'prefix_meta' => 'meta-',
+    'prefix_data' => 'data-',
+    'charset' => 'utf-8',
+    'cache_loggedin' => 'yes',
+    'nocache_cookies' => '',
+    'nocache_woocommerce_url' => '^/kasse/|^/mein\\-konto/|^/warenkorb/|^/wc\\-api|^/\\?wc\\-api=',
+    'nocache_url' => '^/wc\\-|^/wp\\-|addons|removed|gdsr|wp_rg|wp_session​|wc_session​',
+    'response_header' => 'yes',
+    'comments_invalidate' => 'yes',
+    'pingback_header' => '0',
+  ),
+);
+
+include_once ('/var/www/html/wp-content/plugins/woocommerce-memcached-full-page-cache/wc-mfpc-advanced-cache.php');
+```
 
 ---
 
