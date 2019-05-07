@@ -394,7 +394,6 @@ class AdminView
         <form method="post" action="admin-post.php" id="<?php echo Data::pluginConstant ?>-commands" class="plugin-admin wc-mfpc-admin">
           <p>
             <?php
-            wp_nonce_field('wc-mfpc');
 
             if ($button === 'flush') {
 
