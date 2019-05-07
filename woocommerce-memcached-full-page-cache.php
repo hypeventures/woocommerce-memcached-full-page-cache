@@ -44,9 +44,9 @@ use InvincibleBrands\WcMfpc\AdminView;
  */
 $wcMfpcConfig = null;
 
-add_action('init', 'wc_mfpc_init_plugin');
-add_action('admin_init', 'wc_mfpc_admin_init_plugin');
-add_action('admin_menu', 'wc_mfpc_admin_init_menu', 101);
+add_action('init',           'wc_mfpc_init_plugin');
+add_action('admin_init',     'wc_mfpc_admin_init_plugin');
+add_action('admin_menu',     'wc_mfpc_admin_init_menu', 101);
 add_action('admin_bar_init', 'wc_mfpc_admin_bar_init');
 
 /**
@@ -56,16 +56,17 @@ add_action('admin_bar_init', 'wc_mfpc_admin_bar_init');
  */
 function wc_mfpc_init_plugin()
 {
-    global $wcMfpcConfig;
-
     error_log('init_plugin');
 
-    define('WC_MFPC_PLUGIN_DIR', __DIR__ . '/');
-    define('WC_MFPC_PLUGIN_URL', plugin_dir_url(__FILE__));
-    define('WC_MFPC_PLUGIN_FILE', basename(__FILE__) . '/' . Data::pluginConstant . '.php');
+    global $wcMfpcConfig;
 
     $wcMfpcConfig = new Config();
     $wcMfpcConfig->load();
+
+    define('WC_MFPC_PLUGIN_DIR',  __DIR__ . '/');
+    define('WC_MFPC_PLUGIN_URL',  plugin_dir_url(__FILE__));
+    define('WC_MFPC_PLUGIN_FILE', basename(__FILE__) . '/' . Data::pluginConstant . '.php');
+
 
     register_activation_hook(WC_MFPC_PLUGIN_FILE, [ WcMfpc::class, 'pluginActivate' ]);
     register_deactivation_hook(WC_MFPC_PLUGIN_FILE, [ WcMfpc::class, 'pluginDeactivate' ]);
