@@ -40,11 +40,6 @@ use InvincibleBrands\WcMfpc\Admin;
 use InvincibleBrands\WcMfpc\AdminView;
 
 /**
- * @var WcMfpc $wcMfpc
- */
-$wcMfpc = null;
-
-/**
  * @var Config $wcMfpcConfig
  */
 $wcMfpcConfig = null;
