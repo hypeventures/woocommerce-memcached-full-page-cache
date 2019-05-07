@@ -47,19 +47,6 @@ class WcMfpc
         register_activation_hook(WC_MFPC_PLUGIN_FILE, [ &$this, 'pluginActivate' ]);
         register_deactivation_hook(WC_MFPC_PLUGIN_FILE, [ &$this, 'pluginDeactivate' ]);
 
-        $wcMfpcConfig->load();
-
-        if (is_admin()) {
-
-            global $wcMfpcAdmin;
-
-            $wcMfpcAdmin = new Admin();
-            $wcMfpcAdmin->setHooks();
-
-            add_action('plugins_loaded', [ &$this, 'loadTextdomain' ]);
-
-        }
-
         /*
          * if WP_CACHE is not set or false - abort here and safe your time.
          */
