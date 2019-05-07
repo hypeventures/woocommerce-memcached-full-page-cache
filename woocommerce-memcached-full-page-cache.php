@@ -85,8 +85,45 @@ function wc_mfpc_admin_init_plugin()
 {
     error_log('admin_init_plugin');
 
-    $admin = new Admin();
-    $admin->setHooks();
+    if (is_multisite()) {
+
+        add_filter("network_admin_plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ Admin::class, 'addSettingsLink' ]);
+
+    }
+
+    add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ Admin::class, 'addSettingsLink' ]);
+    add_action('admin_post_' . Data::buttonSave, [ Admin::class, 'processSave' ]);
+    add_action('admin_post_' . Data::buttonFlush, [ Admin::class, 'processFlush' ]);
+    add_action('admin_post_' . Data::buttonReset, [ Admin::class, 'processReset' ]);
+    add_action('admin_enqueue_scripts', [ Admin::class, 'enqueAdminCss' ]);
+
+    /*
+     * In case of major issues => abort here and set no more action hooks.
+     */
+    if (! Admin::validateEnvironment()) {
+
+        return;
+    }
+
+    /*
+     * Add hooks necessary for the "Cache control" box.
+     */
+    add_action('add_meta_boxes', [ Admin::class, 'addCacheControlMetaBox' ], 2);
+    add_action('product_cat_edit_form_fields', [ Admin::class, 'showCategoryBox' ]);
+    add_action('wp_ajax_' . Data::cacheControlClearAction, [ Admin::class, 'processCacheControlAjax' ]);
+    add_action('wp_ajax_' . Data::cacheControlRefreshAction, [ Admin::class, 'processCacheControlAjax' ]);
+
+    /*
+     * Add hooks necessary for Bulk deletion of cache entries.
+     */
+    add_filter('bulk_actions-edit-product', [ Admin::class, 'addBulkAction' ]);
+    add_filter('bulk_actions-edit-post', [ Admin::class, 'addBulkAction' ]);
+    add_filter('bulk_actions-edit-page', [ Admin::class, 'addBulkAction' ]);
+    add_filter('bulk_actions-edit-product_cat', [ Admin::class, 'addBulkAction' ]);
+    add_filter('handle_bulk_actions-edit-product', [ Admin::class, 'handleBulkAction' ], 10, 3);
+    add_filter('handle_bulk_actions-edit-post', [ Admin::class, 'handleBulkAction' ], 10, 3);
+    add_filter('handle_bulk_actions-edit-page', [ Admin::class, 'handleBulkAction' ], 10, 3);
+    add_filter('handle_bulk_actions-edit-product_cat', [ Admin::class, 'handleBulkAction' ], 10, 3);
 }
 
 /**
