@@ -31,19 +31,108 @@ Domain Path: /languages/
 
 if (! defined('ABSPATH')) { exit; }
 
-include_once('vendor/autoload.php');
+include_once 'vendor/autoload.php';
 
 use InvincibleBrands\WcMfpc\Config;
 use InvincibleBrands\WcMfpc\Data;
 use InvincibleBrands\WcMfpc\WcMfpc;
+use InvincibleBrands\WcMfpc\Admin;
+use InvincibleBrands\WcMfpc\AdminView;
 
-define('WC_MFPC_PLUGIN_DIR', __DIR__ . '/');
-define('WC_MFPC_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('WC_MFPC_PLUGIN_FILE', basename(__FILE__) . '/' . Data::pluginConstant . '.php');
+/**
+ * @var WcMfpc $wcMfpc
+ */
+$wcMfpc = null;
 
-global $wcMfpcConfig, $wcMfpc;
+/**
+ * @var Config $wcMfpcConfig
+ */
+$wcMfpcConfig = null;
 
-$wcMfpcConfig = new Config();
-$wcMfpc       = new WcMfpc();
+add_action('init', 'wc_mfpc_init_plugin');
+add_action('admin_init', 'wc_mfpc_admin_init_plugin');
+add_action('admin_menu', 'wc_mfpc_admin_init_menu', 101);
+add_action('admin_bar_init', 'wc_mfpc_admin_bar_init');
 
-add_action('init', [ &$wcMfpc, 'init' ]);
+/**
+ * Initializes the plugin.
+ *
+ * @return void
+ */
+function wc_mfpc_init_plugin()
+{
+    global $wcMfpcConfig, $wcMfpc;
+
+    error_log('init_plugin');
+
+    define('WC_MFPC_PLUGIN_DIR', __DIR__ . '/');
+    define('WC_MFPC_PLUGIN_URL', plugin_dir_url(__FILE__));
+    define('WC_MFPC_PLUGIN_FILE', basename(__FILE__) . '/' . Data::pluginConstant . '.php');
+
+    $wcMfpcConfig = new Config();
+    $wcMfpcConfig->load();
+
+    $wcMfpc = new WcMfpc();
+    $wcMfpc->init();
+}
+
+/**
+ * Initializes the plugins admin.
+ *
+ * @return void
+ */
+function wc_mfpc_admin_init_plugin()
+{
+    error_log('admin_init_plugin');
+
+    $admin = new Admin();
+    $admin->setHooks();
+}
+
+/**
+ * Sets the no-cache cookie to avoid caching of views including the admin bar.
+ *
+ * @return void
+ */
+function wc_mfpc_admin_bar_init()
+{
+    error_log('admin_bar_init');
+
+    if (empty($_COOKIE[ 'wc-mfpc-nocache' ])) {
+
+        setcookie('wc-mfpc-nocache', 1, time() + 604800);
+
+    }
+}
+
+/**
+ * Adds the link to settings page to the WooCommerce admin menu.
+ *
+ * @return void
+ */
+function wc_mfpc_admin_init_menu()
+{
+    error_log('admin_init_menu');
+
+    add_submenu_page(
+        'woocommerce',
+        Data::pluginName . ' options',
+        'Full Page Cache',
+        Data::capability,
+        Data::pluginSettingsPage,
+        'wc_mfpc_admin_init_view'
+    );
+}
+
+/**
+ * Adds the link to settings page to the WooCommerce admin menu.
+ *
+ * @return void
+ */
+function wc_mfpc_admin_init_view()
+{
+    error_log('admin_init_render');
+
+    $adminView = new AdminView();
+    $adminView->render();
+}
