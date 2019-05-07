@@ -143,12 +143,12 @@ class AdminView
      *
      * @return void
      */
-    public function render()
+    public static function render()
     {
         /*
          * security, if somehow we're running without WordPress security functions
          */
-        if (! function_exists('current_user_can') || ! current_user_can('manage_options')) {
+        if (! function_exists('current_user_can') || ! current_user_can(Data::capability)) {
 
             wp_redirect(admin_url());
             exit;
@@ -174,7 +174,8 @@ class AdminView
           </a>
           <h1>WooCommerce Memcached Full Page Cache</h1>
 
-          <?php $this->renderMessages()->renderActionButtons('flush'); ?>
+          <?php self::renderMessages(); ?>
+          <?php self::renderActionButtons('flush'); ?>
 
           <form autocomplete="off" method="post" action="admin-post.php" id="<?php echo Data::pluginConstant ?>-settings" class="plugin-admin wc-mfpc-admin">
 
@@ -183,36 +184,36 @@ class AdminView
 
             <fieldset id="<?php echo Data::pluginConstant ?>-servers">
               <legend>Memcached connection settings</legend>
-              <?php $this->renderMemcachedConnectionSettings(); ?>
+              <?php self::renderMemcachedConnectionSettings(); ?>
             </fieldset>
 
-            <?php $this->renderSubmit(); ?>
+            <?php self::renderSubmit(); ?>
 
             <fieldset id="<?php echo Data::pluginConstant; ?>-type">
                 <legend>Cache settings</legend>
-                <?php $this->renderCacheSettings(); ?>
+                <?php self::renderCacheSettings(); ?>
             </fieldset>
 
-            <?php $this->renderSubmit(); ?>
+            <?php self::renderSubmit(); ?>
 
             <fieldset id="<?php echo Data::pluginConstant ?>-exceptions">
                 <legend>Exception settings</legend>
-                <?php $this->renderExceptionSettings(); ?>
+                <?php self::renderExceptionSettings(); ?>
             </fieldset>
 
-            <?php $this->renderSubmit(); ?>
+            <?php self::renderSubmit(); ?>
 
             <fieldset id="<?php echo Data::pluginConstant; ?>-debug">
               <legend>Header settings</legend>
-                <?php $this->renderDebugSettings(); ?>
+                <?php self::renderDebugSettings(); ?>
             </fieldset>
 
-            <?php $this->renderSubmit(); ?>
+            <?php self::renderSubmit(); ?>
             <?php do_action('wc_mfpc_settings_form_bottom'); ?>
 
           </form>
 
-          <?php $this->renderActionButtons('reset'); ?>
+          <?php self::renderActionButtons('reset'); ?>
 
           <p style="background: #fff; padding: 0.5rem 1rem; line-height: 2rem;">
             <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache/issues" target="_blank">
@@ -240,9 +241,9 @@ class AdminView
     /**
      * Renders information for administrators if conditions are met.
      *
-     * @return AdminView
+     * @return void
      */
-    private function renderMessages()
+    private static function renderMessages()
     {
         /**
          * @var Config $wcMfpcConfig
@@ -335,9 +336,7 @@ class AdminView
             );
         }
 
-        Alert::alert($this->getServersStatusAlert());
-
-        return $this;
+        Alert::alert(self::getServersStatusAlert());
     }
 
     /**
@@ -345,7 +344,7 @@ class AdminView
      *
      * @return string
      */
-    private function getServersStatusAlert()
+    private static function getServersStatusAlert()
     {
         global $wcMfpc;
 
@@ -386,9 +385,9 @@ class AdminView
      *
      * @param string $button   'flush'|'reset'
      *
-     * @return AdminView
+     * @return void
      */
-    private function renderActionButtons($button = 'flush')
+    private static function renderActionButtons($button = 'flush')
     {
         ?>
         <form method="post" action="admin-post.php" id="<?php echo Data::pluginConstant ?>-commands" class="plugin-admin wc-mfpc-admin">
@@ -397,7 +396,7 @@ class AdminView
 
             if ($button === 'flush') {
 
-                $this->renderSubmit(
+                self::renderSubmit(
                   'Flush Cache',
                   'secondary',
                   Data::buttonFlush,
@@ -408,7 +407,7 @@ class AdminView
 
             } else {
 
-                $this->renderSubmit(
+                self::renderSubmit(
                   'Reset Settings',
                   'secondary',
                   Data::buttonReset,
@@ -423,8 +422,6 @@ class AdminView
           </p>
         </form>
         <?php
-
-        return $this;
     }
 
     /**
@@ -432,7 +429,7 @@ class AdminView
      *
      * @return void
      */
-    private function renderMemcachedConnectionSettings()
+    private static function renderMemcachedConnectionSettings()
     {
         global $wcMfpcConfig;
 
@@ -485,7 +482,7 @@ class AdminView
      *
      * @return void
      */
-    private function renderCacheSettings()
+    private static function renderCacheSettings()
     {
         global $wcMfpcConfig;
 
@@ -554,7 +551,7 @@ class AdminView
      *
      * @return void
      */
-    private function renderExceptionSettings()
+    private static function renderExceptionSettings()
     {
         global $wcMfpcConfig;
 
@@ -600,7 +597,7 @@ class AdminView
      *
      * @return void
      */
-    private function renderDebugSettings()
+    private static function renderDebugSettings()
     {
         global $wcMfpcConfig;
 
@@ -632,7 +629,7 @@ class AdminView
      *
      * @return void
      */
-    private function renderSubmit($text = 'Save changes', $class = 'primary', $name = Data::buttonSave, $wrap = true, $icon = 'lock', $style = '')
+    private static function renderSubmit($text = 'Save changes', $class = 'primary', $name = Data::buttonSave, $wrap = true, $icon = 'lock', $style = '')
     {
         if ($wrap) {
 
