@@ -165,11 +165,25 @@ You can use hooks to customize the behaviour of this plugin.
 - `WC_MFPC_PLUGIN_FILE`
 
 ### Globals:
-- `$wc_mfpc_config_array` _Config array loaded via advanced-cache.php_
-- `$wc_mfpc_memcached` _Instance of Memcached::class initiated in wc-mfpc-advanced-cache.php_
-- `$wcMfpc` _Instance of main WcMfpc::class_
-- `$wcMfpcConfig` _Instance of WcMfpcConfig::class_
-- `$wcMfpcAdmin` _Instance of WcMfpcAdmin::class (IF WordPress-Admin is initialized)_
+- `$wc_mfpc_config_array`
+
+  _Config array loaded via advanced-cache.php_
+  
+- `$wc_mfpc_memcached`
+
+  _Instance of Memcached::class initiated in wc-mfpc-advanced-cache.php_
+  
+- `$wcMfpc`
+
+  _Instance of main WcMfpc::class_
+  
+- `$wcMfpcConfig`
+
+  _Instance of WcMfpcConfig::class_
+  
+- `$wcMfpcAdmin`
+
+  _Instance of WcMfpcAdmin::class (IF WordPress-Admin is initialized)_
 
 ### Filter Hooks:
 
