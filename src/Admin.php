@@ -77,10 +77,8 @@ class Admin
 
         if (self::validateRequest(Data::buttonFlush)) {
 
-            global $wcMfpc;
-
-            $wcMfpc->getMemcached()
-                   ->flush();
+            WcMfpc::getMemcached()
+                  ->flush();
             $slug = Data::slugFlush;
 
         }
@@ -207,15 +205,13 @@ class Admin
             return $redirectTo;
         }
 
-        global $wcMfpc;
-
         $processed = [];
 
         foreach ($ids as $id) {
 
             if ($action === 'clearCache') {
 
-                $result = $wcMfpc->clearPostCache($id);
+                $result = WcMfpc::clearPostCache($id);
                 $item   = $id;
 
             } else {
@@ -223,8 +219,8 @@ class Admin
                 $term      = get_term($id);
                 $item      = $term->name;
                 $permalink = get_category_link($term->term_taxonomy_id);
-                $result    = $wcMfpc->getMemcached()
-                                    ->clearLinks([ $permalink => true, ]);
+                $result    = WcMfpc::getMemcached()
+                                   ->clearLinks([ $permalink => true, ]);
 
             }
 
@@ -314,7 +310,7 @@ class Admin
         $display       = 'none';
         $key           = $wcMfpcConfig->prefix_data . $permalink;
 
-        if (! empty($wcMfpc->getMemcached()->get($key))) {
+        if (! empty(WcMfpc::getMemcached()->get($key))) {
 
             $statusMessage = '<b class="wc-mfpc-ok-msg">Cached</b>';
             $display       = 'block';
@@ -350,8 +346,8 @@ class Admin
         ) {
 
             $valid  = true;
-            $result = $wcMfpc->getMemcached()
-                                ->clearLinks([ $permalink => true, ]);
+            $result = WcMfpc::getMemcached()
+                            ->clearLinks([ $permalink => true, ]);
 
         } elseif (
                   $_POST[ 'action' ] === Data::cacheControlRefreshAction
@@ -359,10 +355,10 @@ class Admin
         ) {
 
             $valid  = true;
-            $key    = $wcMfpc->getMemcached()
-                             ->buildKey($permalink);
-            $result = $wcMfpc->getMemcached()
-                             ->get($key);
+            $key    = WcMfpc::getMemcached()
+                            ->buildKey($permalink);
+            $result = WcMfpc::getMemcached()
+                            ->get($key);
 
             wp_die(json_encode((bool) $result));
 
@@ -441,8 +437,8 @@ class Admin
         $wcMfpcConfig->setConfig($options)
                      ->setNocacheWoocommerceUrl();
         $wcMfpcConfig->save();
-        $wcMfpc->getMemcached()
-               ->flush();
+        WcMfpc::getMemcached()
+              ->flush();
     }
 
     /**

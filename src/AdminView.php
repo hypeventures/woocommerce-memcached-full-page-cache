@@ -346,10 +346,8 @@ class AdminView
      */
     private static function getServersStatusAlert()
     {
-        global $wcMfpc;
-
-        $servers = $wcMfpc->getMemcached()
-                          ->getStatusArray();
+        $servers = WcMfpc::getMemcached()
+                         ->getStatusArray();
         $message = '<b>Connection status:</b></p><p>';
 
         if (empty ($servers) || ! is_array($servers)) {

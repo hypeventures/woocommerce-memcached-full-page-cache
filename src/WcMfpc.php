@@ -33,61 +33,14 @@ class WcMfpc
     /**
      * @var null|Memcached   Contains the active Memcached-Server connection if initialized.
      */
-    public $memcached = null;
-
-    /**
-     * Initializes the plugin, sets necessary hooks and establishes the connection to Memcached.
-     *
-     * @return void
-     */
-    public function init()
-    {
-        global $wcMfpcConfig;
-
-        register_activation_hook(WC_MFPC_PLUGIN_FILE, [ &$this, 'pluginActivate' ]);
-        register_deactivation_hook(WC_MFPC_PLUGIN_FILE, [ &$this, 'pluginDeactivate' ]);
-
-        /*
-         * if WP_CACHE is not set or false - abort here and safe your time.
-         */
-        if (! defined('WP_CACHE') || empty(WP_CACHE)) {
-
-            return;
-        }
-
-        /*
-         * comments invalidation hooks
-         */
-        if (! empty($wcMfpcConfig->isCommentsInvalidate())) {
-
-            add_action('comment_post', [ &$this, 'clearPostCache' ], 0);
-            add_action('edit_comment', [ &$this, 'clearPostCache' ], 0);
-            add_action('trashed_comment', [ &$this, 'clearPostCache' ], 0);
-            add_action('pingback_post', [ &$this, 'clearPostCache' ], 0);
-            add_action('trackback_post', [ &$this, 'clearPostCache' ], 0);
-            add_action('wp_insert_comment', [ &$this, 'clearPostCache' ], 0);
-
-        }
-
-        /*
-         * invalidation on some other occasions as well
-         */
-        add_action('switch_theme', [ &$this, 'clearPostCache' ], 0);
-        add_action('deleted_post', [ &$this, 'clearPostCache' ], 0);
-
-        /*
-         * add filter for catching canonical redirects
-         */
-        add_filter('redirect_canonical', 'wc_mfpc_redirect_callback', 10, 2);
-
-    }
+    private static $memcached = null;
 
     /**
      * Activation hook function. Redirects to settings page
      *
      * @return void
      */
-    public function pluginActivate()
+    public static function pluginActivate()
     {
         wp_redirect(admin_url() . Data::settingsLink, 302);
         wp_die();
@@ -98,7 +51,7 @@ class WcMfpc
      *
      * @return void
      */
-    public function pluginDeactivate()
+    public static function pluginDeactivate()
     {
         global $wcMfpcConfig;
 
@@ -110,7 +63,7 @@ class WcMfpc
      *
      * @return void
      */
-    public function loadTextdomain()
+    public static function loadTextdomain()
     {
         load_plugin_textdomain('wc-mfpc', false, WC_MFPC_PLUGIN_DIR . 'languages/');
     }
@@ -120,17 +73,17 @@ class WcMfpc
      *
      * @return Memcached
      */
-    public function getMemcached()
+    public static function getMemcached()
     {
-        if (empty($this->memcached)) {
+        if (empty(self::$memcached)) {
 
             global $wcMfpcConfig;
 
-            $this->memcached = new Memcached($wcMfpcConfig->getConfig());
+            self::$memcached = new Memcached($wcMfpcConfig->getConfig());
 
         }
 
-        return $this->memcached;
+        return self::$memcached;
     }
 
     /**
@@ -140,11 +93,11 @@ class WcMfpc
      *
      * @return bool
      */
-    public function clearPostCache($postId = null)
+    public static function clearPostCache($postId = null)
     {
         if (
             empty($postId)
-            || ! $this->getMemcached()->isAlive()
+            || ! self::getMemcached()->isAlive()
             || wp_is_post_autosave($postId)
             || wp_is_post_revision($postId)
         ) {
@@ -177,7 +130,7 @@ class WcMfpc
 
         } while ($numberOfPages > 1 && $currentPageId <= $numberOfPages);
 
-        return $this->getMemcached()
+        return self::getMemcached()
                     ->clearLinks($permalinks);
     }
 

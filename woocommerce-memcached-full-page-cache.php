@@ -61,7 +61,7 @@ add_action('admin_bar_init', 'wc_mfpc_admin_bar_init');
  */
 function wc_mfpc_init_plugin()
 {
-    global $wcMfpcConfig, $wcMfpc;
+    global $wcMfpcConfig;
 
     error_log('init_plugin');
 
@@ -72,8 +72,41 @@ function wc_mfpc_init_plugin()
     $wcMfpcConfig = new Config();
     $wcMfpcConfig->load();
 
-    $wcMfpc = new WcMfpc();
-    $wcMfpc->init();
+    register_activation_hook(WC_MFPC_PLUGIN_FILE, [ WcMfpc::class, 'pluginActivate' ]);
+    register_deactivation_hook(WC_MFPC_PLUGIN_FILE, [ WcMfpc::class, 'pluginDeactivate' ]);
+
+    /*
+     * if WP_CACHE is not set or false - abort here and safe your time.
+     */
+    if (! defined('WP_CACHE') || empty(WP_CACHE)) {
+
+        return;
+    }
+
+    /*
+     * comments invalidation hooks
+     */
+    if (! empty($wcMfpcConfig->isCommentsInvalidate())) {
+
+        add_action('comment_post', [ WcMfpc::class, 'clearPostCache' ], 0);
+        add_action('edit_comment', [ WcMfpc::class, 'clearPostCache' ], 0);
+        add_action('trashed_comment', [ WcMfpc::class, 'clearPostCache' ], 0);
+        add_action('pingback_post', [ WcMfpc::class, 'clearPostCache' ], 0);
+        add_action('trackback_post', [ WcMfpc::class, 'clearPostCache' ], 0);
+        add_action('wp_insert_comment', [ WcMfpc::class, 'clearPostCache' ], 0);
+
+    }
+
+    /*
+     * invalidation on some other occasions as well
+     */
+    add_action('switch_theme', [ WcMfpc::class, 'clearPostCache' ], 0);
+    add_action('deleted_post', [ WcMfpc::class, 'clearPostCache' ], 0);
+
+    /*
+     * add filter for catching canonical redirects
+     */
+    add_filter('redirect_canonical', 'wc_mfpc_redirect_callback', 10, 2);
 }
 
 /**

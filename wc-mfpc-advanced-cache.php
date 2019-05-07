@@ -428,11 +428,11 @@ function wc_mfpc_start()
  */
 function wc_mfpc_redirect_callback ($redirectUrl = '')
 {
-	global $wc_mfpc_redirect;
+    global $wc_mfpc_redirect;
 
-	$wc_mfpc_redirect = $redirectUrl;
+    $wc_mfpc_redirect = $redirectUrl;
 
-	return $redirectUrl;
+    return $redirectUrl;
 }
 
 /**
