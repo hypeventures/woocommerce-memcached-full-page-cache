@@ -16,6 +16,7 @@ by [Peter Molnar](https://github.com/petermolnar).
 ## Table of contents
 
 - [Copyright](#copyright)
+- [License](#license)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Settings](#settings)
@@ -24,7 +25,7 @@ by [Peter Molnar](https://github.com/petermolnar).
   - [Globals](#globals)
   - [Filter Hooks](#filter-hooks)
   - [Action Hooks](#action-hooks)
-- [License](#license)
+- [Drop-In 'advanced-cache.php'](#example-default-advanced-cachephp)
 
 
 ## Copyright
@@ -433,7 +434,7 @@ Example:
 
 ```
 
-## Example: advanced-cache.php
+## Example: default advanced-cache.php
 
 ```php
 <?php
