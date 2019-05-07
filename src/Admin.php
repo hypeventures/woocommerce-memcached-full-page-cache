@@ -117,7 +117,7 @@ class Admin
      *
      * @return bool
      */
-    private static function validateEnvironment()
+    public static function validateEnvironment()
     {
         $valid  = true;
         $domain = parse_url(get_option('siteurl'), PHP_URL_HOST);
