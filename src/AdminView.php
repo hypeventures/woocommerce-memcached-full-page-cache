@@ -214,14 +214,22 @@ class AdminView
 
           <?php $this->renderActionButtons('reset'); ?>
 
-          <p style="background: #fff; padding: 1rem;">
+          <p style="background: #fff; padding: 0.5rem 1rem; line-height: 2rem;">
             <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache/issues" target="_blank">
               Issues? Open an issue on GitHub.
             </a>
             <br>
-            <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank">
+            <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache/blob/master/README.md" target="_blank">
               You want to customize this? Have a look at the example in the README.
             </a>
+          </p>
+          <p>
+            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-gplv3.svg">
+            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-wc.svg">
+            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-wp4.svg">
+            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-wp5.svg">
+            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-php7.svg">
+            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-memcached.svg">
           </p>
         </div>
         <?php

@@ -1,6 +1,6 @@
 # WooCommerce Memcached Full Page Cache
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![License: GPL v3](./assets/badge-gplv3.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![WooCommerce v3.5+](./assets/badge-wc.svg)](https://wordpress.org)
 [![WordPress v4.9+](./assets/badge-wp4.svg)](https://wordpress.org/news/category/releases/)
 [![WordPress v5.x+](./assets/badge-wp5.svg)](https://wordpress.org)
