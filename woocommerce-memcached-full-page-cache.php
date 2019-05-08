@@ -113,12 +113,7 @@ function wc_mfpc_admin_init_plugin()
 {
     error_log('admin_init_plugin');
 
-    if (is_multisite()) {
-
-        add_filter("network_admin_plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ Admin::class, 'addSettingsLink' ]);
-
-    }
-
+    add_filter("network_admin_plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ Admin::class, 'addSettingsLink' ]);
     add_filter("plugin_action_links_" . WC_MFPC_PLUGIN_FILE, [ Admin::class, 'addSettingsLink' ]);
     add_action('admin_post_' . Data::buttonSave, [ Admin::class, 'processSave' ]);
     add_action('admin_post_' . Data::buttonFlush, [ Admin::class, 'processFlush' ]);
