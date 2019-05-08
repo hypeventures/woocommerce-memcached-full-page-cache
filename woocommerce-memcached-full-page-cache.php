@@ -46,7 +46,6 @@ $wcMfpcConfig = null;
 
 add_action('init',           'wc_mfpc_init_plugin');
 add_action('admin_init',     'wc_mfpc_admin_init_plugin');
-add_action('admin_menu',     'wc_mfpc_admin_init_menu', 101);
 add_action('admin_bar_init', 'wc_mfpc_admin_bar_init');
 
 /**
@@ -127,6 +126,12 @@ function wc_mfpc_admin_init_plugin()
     add_action('admin_enqueue_scripts', [ Admin::class, 'enqueAdminCss' ]);
 
     /*
+     * WooCommerce settings tab
+     */
+    add_filter('woocommerce_settings_tabs_array', [ Admin::class, 'addWooCommerceSettingsTab' ], 50);
+    add_action('woocommerce_settings_tabs_full_page_cache', [ AdminView::class, 'render' ]);
+
+    /*
      * In case of major issues => abort here and set no more action hooks.
      */
     if (! Admin::validateEnvironment()) {
@@ -169,36 +174,4 @@ function wc_mfpc_admin_bar_init()
         setcookie('wc-mfpc-nocache', 1, time() + 604800);
 
     }
-}
-
-/**
- * Adds the link to settings page to the WooCommerce admin menu.
- *
- * @return void
- */
-function wc_mfpc_admin_init_menu()
-{
-    error_log('admin_init_menu');
-
-    add_submenu_page(
-        'woocommerce',
-        Data::pluginName . ' options',
-        'Full Page Cache',
-        Data::capability,
-        Data::pluginSettingsPage,
-        'wc_mfpc_admin_init_view'
-    );
-}
-
-/**
- * Adds the link to settings page to the WooCommerce admin menu.
- *
- * @return void
- */
-function wc_mfpc_admin_init_view()
-{
-    error_log('admin_init_render');
-
-    $adminView = new AdminView();
-    $adminView->render();
 }
