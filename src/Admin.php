@@ -31,6 +31,18 @@ class Admin
 {
 
     /**
+     * @param array $settingsTabs
+     *
+     * @return array
+     */
+    public static function addWooCommerceSettingsTab($settingsTabs = [])
+    {
+        $settingsTabs[ 'full_page_cache' ] =  'Full Page Cache';
+
+        return $settingsTabs;
+    }
+
+    /**
      * Verifies the validity of a request if action string provided.
      *
      * @param string $action
