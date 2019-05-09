@@ -50,6 +50,6 @@ final class Data
     const cacheControlRefreshAction = 'wc-mfpc-cache-control-refresh';
     const advancedCache             = WP_CONTENT_DIR . '/advanced-cache.php';
     const advancedCacheWorker       = WC_MFPC_PLUGIN_DIR . 'wc-mfpc-advanced-cache.php';
-    const settingsLink              = 'page=wc-settings&tab=advanced&section=full_page_cache';
+    const settingsLink              = 'admin.php?page=wc-settings&tab=advanced&section=full_page_cache';
 
 }
