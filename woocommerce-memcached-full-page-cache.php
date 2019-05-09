@@ -57,8 +57,6 @@ add_action('admin_bar_init', 'wc_mfpc_admin_bar_init');
  */
 function wc_mfpc_init_plugin()
 {
-    error_log('init_plugin');
-
     global $wcMfpcConfig;
 
     $wcMfpcConfig = new Config();
@@ -112,8 +110,6 @@ function wc_mfpc_init_plugin()
  */
 function wc_mfpc_admin_init_plugin()
 {
-    error_log('admin_init_plugin');
-
     /*
      * Plugins page
      */
@@ -130,8 +126,8 @@ function wc_mfpc_admin_init_plugin()
     /*
      * WooCommerce settings tab
      */
-    add_filter('woocommerce_settings_tabs_array', [ Admin::class, 'addWooCommerceSettingsTab' ], 50);
-    add_action('woocommerce_settings_tabs_full_page_cache', [ AdminView::class, 'render' ]);
+    add_filter('woocommerce_get_sections_advanced', [ Admin::class, 'addWooCommerceSettingsSection' ], 50);
+    add_action('woocommerce_sections_advanced', [ AdminView::class, 'render' ], 50);
     add_action('admin_enqueue_scripts', [ Admin::class, 'enqueAdminCss' ]);
 
     /*
@@ -170,8 +166,6 @@ function wc_mfpc_admin_init_plugin()
  */
 function wc_mfpc_admin_bar_init()
 {
-    error_log('admin_bar_init');
-
     if (empty($_COOKIE[ 'wc-mfpc-nocache' ])) {
 
         setcookie('wc-mfpc-nocache', 1, time() + 604800);
