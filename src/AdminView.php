@@ -171,7 +171,7 @@ class AdminView
         <h1 style="display: inline-block; margin-right: 0.5rem; margin-top: 1rem;">
           WooCommerce Memcached Full Page Cache
         </h1>
-        <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank">
+        <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="wc-mfpc-icon">
           Visit the plugin repository on GitHub
         </a>
         <hr>
