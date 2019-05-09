@@ -38,13 +38,14 @@ class AdminView
      * @param string $type       Type of the item to delete.
      * @param string $identifier Identifier of the Item to delete like Name or ID.
      * @param string $permalink  The URL of the item to delete.
+     * @param string $style      String with specific styles.
      *
      * @return void
      */
-    public static function renderCacheControl($status = '', $display = '', $type = '', $identifier = '', $permalink = '')
+    public static function renderCacheControl($status = '', $display = '', $type = '', $identifier = '', $permalink = '', $style = '')
     {
         ?>
-        <div style="background: #fff; padding: 1px 1rem; max-width: 250px; box-sizing: border-box;">
+        <div style="background: #fff; max-width: 250px; box-sizing: border-box; <?php echo $style; ?>">
           <p>
             <b>Cache status:</b>
             <span id="wc-mfpc-cache-status"><?php echo $status; ?></span>
@@ -145,14 +146,9 @@ class AdminView
      */
     public static function render()
     {
-        /*
-         * security, if somehow we're running without WordPress security functions
-         */
-        if (! function_exists('current_user_can') || ! current_user_can(Data::capability)) {
+        if (! isset($_GET[ 'section' ]) || $_GET[ 'section' ] !== 'full_page_cache') {
 
-            wp_redirect(admin_url());
-            exit;
-
+            return;
         }
 
         /*
@@ -168,71 +164,76 @@ class AdminView
         $post->ID     = null;
 
         ?>
-        <div class="wrap wc-mfpc-wrap">
-          <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="wc-mfpc-icon wc-mfpc-github">
-            Visit the plugin repository on GitHub
+        </form>
+
+        <?php self::renderMessages(); ?>
+
+        <h1 style="display: inline-block; margin-right: 0.5rem; margin-top: 1rem;">
+          WooCommerce Memcached Full Page Cache
+        </h1>
+        <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache" target="_blank" class="wc-mfpc-icon">
+          Visit the plugin repository on GitHub
+        </a>
+        <hr>
+        <p>
+          <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-gplv3.svg">
+          <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-wc.svg">
+          <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-wp4.svg">
+          <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-wp5.svg">
+          <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-php7.svg">
+          <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-memcached.svg">
+        </p>
+
+        <?php self::renderActionButtons('flush'); ?>
+
+        <form autocomplete="off" method="post" action="admin-post.php" id="<?php echo Data::pluginConstant; ?>-settings" class="plugin-admin wc-mfpc-admin">
+
+          <?php wp_nonce_field(Data::buttonSave); ?>
+          <?php do_action('wc_mfpc_settings_form_top'); ?>
+
+          <fieldset id="<?php echo Data::pluginConstant ?>-servers">
+            <legend>Memcached connection settings</legend>
+            <?php self::renderMemcachedConnectionSettings(); ?>
+          </fieldset>
+
+          <?php self::renderSubmit(); ?>
+
+          <fieldset id="<?php echo Data::pluginConstant; ?>-type">
+              <legend>Cache settings</legend>
+              <?php self::renderCacheSettings(); ?>
+          </fieldset>
+
+          <?php self::renderSubmit(); ?>
+
+          <fieldset id="<?php echo Data::pluginConstant ?>-exceptions">
+              <legend>Exception settings</legend>
+              <?php self::renderExceptionSettings(); ?>
+          </fieldset>
+
+          <?php self::renderSubmit(); ?>
+
+          <fieldset id="<?php echo Data::pluginConstant; ?>-debug">
+            <legend>Header settings</legend>
+              <?php self::renderDebugSettings(); ?>
+          </fieldset>
+
+          <?php self::renderSubmit(); ?>
+          <?php do_action('wc_mfpc_settings_form_bottom'); ?>
+
+        </form>
+
+        <?php self::renderActionButtons('reset'); ?>
+
+        <p style="background: #fff; padding: 0.5rem 1rem; line-height: 2rem;">
+          <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache/issues" target="_blank">
+            Issues? Open an issue on GitHub.
           </a>
-          <h1>WooCommerce Memcached Full Page Cache</h1>
-
-          <?php self::renderMessages(); ?>
-          <?php self::renderActionButtons('flush'); ?>
-
-          <form autocomplete="off" method="post" action="admin-post.php" id="<?php echo Data::pluginConstant ?>-settings" class="plugin-admin wc-mfpc-admin">
-
-            <?php wp_nonce_field(Data::buttonSave); ?>
-            <?php do_action('wc_mfpc_settings_form_top'); ?>
-
-            <fieldset id="<?php echo Data::pluginConstant ?>-servers">
-              <legend>Memcached connection settings</legend>
-              <?php self::renderMemcachedConnectionSettings(); ?>
-            </fieldset>
-
-            <?php self::renderSubmit(); ?>
-
-            <fieldset id="<?php echo Data::pluginConstant; ?>-type">
-                <legend>Cache settings</legend>
-                <?php self::renderCacheSettings(); ?>
-            </fieldset>
-
-            <?php self::renderSubmit(); ?>
-
-            <fieldset id="<?php echo Data::pluginConstant ?>-exceptions">
-                <legend>Exception settings</legend>
-                <?php self::renderExceptionSettings(); ?>
-            </fieldset>
-
-            <?php self::renderSubmit(); ?>
-
-            <fieldset id="<?php echo Data::pluginConstant; ?>-debug">
-              <legend>Header settings</legend>
-                <?php self::renderDebugSettings(); ?>
-            </fieldset>
-
-            <?php self::renderSubmit(); ?>
-            <?php do_action('wc_mfpc_settings_form_bottom'); ?>
-
-          </form>
-
-          <?php self::renderActionButtons('reset'); ?>
-
-          <p style="background: #fff; padding: 0.5rem 1rem; line-height: 2rem;">
-            <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache/issues" target="_blank">
-              Issues? Open an issue on GitHub.
-            </a>
-            <br>
-            <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache/blob/master/README.md" target="_blank">
-              You want to customize this? Have a look at the example in the README.
-            </a>
-          </p>
-          <p>
-            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-gplv3.svg">
-            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-wc.svg">
-            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-wp4.svg">
-            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-wp5.svg">
-            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-php7.svg">
-            <img src="<?php echo WC_MFPC_PLUGIN_URL; ?>assets/badge-memcached.svg">
-          </p>
-        </div>
+          <br>
+          <a href="https://github.com/hypeventures/woocommerce-memcached-full-page-cache/blob/master/README.md" target="_blank">
+            You want to customize this? Have a look at the example in the README.
+          </a>
+        </p>
+        <form hidden>
         <?php
 
         $post = $postOriginal;

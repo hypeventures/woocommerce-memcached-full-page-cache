@@ -31,6 +31,20 @@ class Admin
 {
 
     /**
+     * Ads "Full Page Cache" section to the WooCommerce Advanced settings tab.
+     *
+     * @param array $sections
+     *
+     * @return array
+     */
+    public static function addWooCommerceSettingsSection($sections = [])
+    {
+        $sections[ 'full_page_cache' ] =  'Full Page Cache';
+
+        return $sections;
+    }
+
+    /**
      * Verifies the validity of a request if action string provided.
      *
      * @param string $action
@@ -290,7 +304,7 @@ class Admin
         $type       = ucfirst($post->post_type);
         $identifier = $post->ID;
 
-        self::showCacheControl($permalink, $type, $identifier);
+        self::showCacheControl($permalink, $type, $identifier, true);
     }
 
     /**
@@ -299,16 +313,18 @@ class Admin
      * @param string $permalink
      * @param string $type
      * @param string $identifier
+     * @param bool   $isMetaBox
      *
      * @return void
      */
-    public static function showCacheControl($permalink = '', $type = '', $identifier = '')
+    public static function showCacheControl($permalink = '', $type = '', $identifier = '', $isMetaBox = false)
     {
-        global $wcMfpc, $wcMfpcConfig;
+        global $wcMfpcConfig;
 
         $statusMessage = '<b class="wc-mfpc-error-msg">Not cached</b>';
         $display       = 'none';
         $key           = $wcMfpcConfig->prefix_data . $permalink;
+        $style         = 'padding: 1px 1rem;';
 
         if (! empty(WcMfpc::getMemcached()->get($key))) {
 
@@ -317,7 +333,13 @@ class Admin
 
         }
 
-        AdminView::renderCacheControl($statusMessage, $display, $type, $identifier, $permalink);
+        if ($isMetaBox) {
+
+            $style = 'padding: 0;';
+
+        }
+
+        AdminView::renderCacheControl($statusMessage, $display, $type, $identifier, $permalink, $style);
     }
 
     /**
@@ -327,8 +349,6 @@ class Admin
      */
     public static function processCacheControlAjax()
     {
-        global $wcMfpc;
-
         header('Content-Type: application/json');
 
         if (empty($_POST[ 'action' ]) || empty($_POST[ 'nonce' ]) || ! isset($_POST[ 'permalink' ])){
@@ -397,7 +417,7 @@ class Admin
      */
     private static function saveConfig()
     {
-        global $wcMfpc, $wcMfpcConfig;
+        global $wcMfpcConfig;
 
         $options = Config::getDefaultConfig();
 

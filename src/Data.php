@@ -44,13 +44,12 @@ final class Data
     const buttonFlush               = 'wc-mfpc-flush';
     const buttonSave                = 'wc-mfpc-save';
     const buttonReset               = 'wc-mfpc-delete';
-    const pluginSettingsPage        = 'wc-mfpc-settings';
     const adminCssHandle            = 'wc-mfpc-admin-css';
     const adminCssUrl               = WC_MFPC_PLUGIN_URL . 'assets/admin.css';
     const cacheControlClearAction   = 'wc-mfpc-cache-control-keys';
     const cacheControlRefreshAction = 'wc-mfpc-cache-control-refresh';
     const advancedCache             = WP_CONTENT_DIR . '/advanced-cache.php';
     const advancedCacheWorker       = WC_MFPC_PLUGIN_DIR . 'wc-mfpc-advanced-cache.php';
-    const settingsLink              = 'admin.php?page=' . self::pluginSettingsPage;
+    const settingsLink              = 'admin.php?page=wc-settings&tab=advanced&section=full_page_cache';
 
 }
