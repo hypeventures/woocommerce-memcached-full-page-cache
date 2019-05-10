@@ -59,7 +59,14 @@ GPL v3 - Please view [LICENSE](LICENSE.txt) document.
 
 ## Requirements
 
-Lorem ypsum tralala
+__Requried:__
+- A server running Memcached-Server.
+- `libmemcached` on the Server that runs WordPress/WooCommerce.
+- `php-memcached` on the Server that runs WordPress/WooCommerce.
+- `PHP 7.x` any version 7 of PHP will do. I have not tested 5.6 yet.
+
+__Optional:__
+- `SASL` For authentication [SASL](https://github.com/memcached/memcached/wiki/SASLHowto) must be enabled.
 
 ## Installation
 
@@ -69,6 +76,8 @@ Lorem ypsum tralala
 3. Activate the plugin in WordPress
 4. Check the settings in `WooCommerce` => `Full Page Cache` menu in your Wordpress admin backend.
 5. __(!) Save the settings (!)__ to generate `/wp-content/advanced-cache.php` and activate caching.
+
+As a side note: [How to install Memcached](https://www.techrepublic.com/article/how-to-install-and-enable-memcached-on-ubuntu-and-centos/)
 
 ## Settings
 __Settings link:__ yourdomain.xyz/wp-admin/admin.php?page=wc-mfpc-settings
