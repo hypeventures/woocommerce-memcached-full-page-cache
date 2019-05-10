@@ -189,19 +189,12 @@ You can use hooks to customize the behaviour of this plugin.
   
 - `$wc_mfpc_memcached`
 
-  _Instance of Memcached::class initiated in wc-mfpc-advanced-cache.php_
-  
-- `$wcMfpc`
-
-  _Instance of main WcMfpc::class_
+  _Instance of [Memcached::class](Memcached.php) initiated in [wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php)_
   
 - `$wcMfpcConfig`
 
-  _Instance of WcMfpcConfig::class_
-  
-- `$wcMfpcAdmin`
-
-  _Instance of WcMfpcAdmin::class (IF WordPress-Admin is initialized)_
+  _Instance of [WcMfpcConfig::class](WcMfpcConfig.php) initiated in 
+  [woocommerce-memcached-full-page-cache.php](woocommerce-memcached-full-page-cache.php)_
 
 ### Filter Hooks:
 
