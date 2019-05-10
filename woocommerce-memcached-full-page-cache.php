@@ -168,7 +168,7 @@ function wc_mfpc_admin_bar_init()
 {
     if (empty($_COOKIE[ 'wc-mfpc-nocache' ])) {
 
-        setcookie('wc-mfpc-nocache', 1, time() + 604800);
+        setcookie('wc-mfpc-nocache', 1, time() + 604800, '/', Config::getGlobalConfigKey());
 
     }
 }
