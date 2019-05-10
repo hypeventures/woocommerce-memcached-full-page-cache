@@ -59,7 +59,14 @@ GPL v3 - Please view [LICENSE](LICENSE.txt) document.
 
 ## Requirements
 
-Lorem ypsum tralala
+__Requried:__
+- A server running Memcached-Server.
+- `libmemcached` on the Server that runs WordPress/WooCommerce.
+- `php-memcached` on the Server that runs WordPress/WooCommerce.
+- `PHP 7.x` any version 7 of PHP will do. I have not tested 5.6 yet.
+
+__Optional:__
+- `SASL` For authentication [SASL](https://github.com/memcached/memcached/wiki/SASLHowto) must be enabled.
 
 ## Installation
 
@@ -69,6 +76,8 @@ Lorem ypsum tralala
 3. Activate the plugin in WordPress
 4. Check the settings in `WooCommerce` => `Full Page Cache` menu in your Wordpress admin backend.
 5. __(!) Save the settings (!)__ to generate `/wp-content/advanced-cache.php` and activate caching.
+
+As a side note: [How to install Memcached](https://www.techrepublic.com/article/how-to-install-and-enable-memcached-on-ubuntu-and-centos/)
 
 ## Settings
 __Settings link:__ yourdomain.xyz/wp-admin/admin.php?page=wc-mfpc-settings
@@ -110,59 +119,59 @@ fall back to a ASCII mode (slower)._
 
 __authpass__
 
-_..._
+_Stores the password for authentication with all hosts in the list. (!) SASL must be enabled._
 
 __authuser__
 
-_..._
+_Stores the user for authentication with all hosts in the list. (!) SASL must be enabled._
 
 __expire__
 
-_..._
+_The expire time of the cached entries in Memcached._
 
 __browsercache__
 
-_..._
+_Used to determine modified since and when the Browser-cache of a given page should expire._
 
 __prefix_meta__
 
-_..._
+_The prefix for meta-data keys in memcached. (!) Must be different than the data prefix or entries will be overwritten._
 
 __prefix_data__
 
-_..._
+_The prefix for page content keys in memcached. (!) Must be different than the meta prefix or entries will be overwritten._
 
 __charset__
 
-_..._
+_Used to set the charset header when a page is loaded from cache._
 
 __cache_loggedin__
 
-_..._
+_Enable to load cached pages even for logged in customers/users. (!) Does NOT use cache for Admins._
 
 __nocache_cookies__
 
-_..._
+_The place to define custom cookies which should prevent caching for users with the cookies provided here._
 
 __nocache_woocommerce_url__
 
-_..._
+_Contains the regex to exclude WooCommerce API & default dynamic pages like checkout and cart. (!) Generated on save._
 
 __nocache_url__
 
-_..._
+_Enter your own regex to exclude matches from caching._
 
 __response_header__
 
-_..._
+_Enable to add the X-Cache response header if cache is loaded._
 
 __comments_invalidate__
 
-_..._
+_Enable to trigger cache clearing on comment actions._
 
 __pingback_header__
 
-_..._
+_Enable to preserve the PingBack header for cached pages._
 
 ## Customization
 
@@ -180,19 +189,12 @@ You can use hooks to customize the behaviour of this plugin.
   
 - `$wc_mfpc_memcached`
 
-  _Instance of Memcached::class initiated in wc-mfpc-advanced-cache.php_
-  
-- `$wcMfpc`
-
-  _Instance of main WcMfpc::class_
+  _Instance of [Memcached::class](Memcached.php) initiated in [wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php)_
   
 - `$wcMfpcConfig`
 
-  _Instance of WcMfpcConfig::class_
-  
-- `$wcMfpcAdmin`
-
-  _Instance of WcMfpcAdmin::class (IF WordPress-Admin is initialized)_
+  _Instance of [WcMfpcConfig::class](WcMfpcConfig.php) initiated in 
+  [woocommerce-memcached-full-page-cache.php](woocommerce-memcached-full-page-cache.php)_
 
 ### Filter Hooks:
 
