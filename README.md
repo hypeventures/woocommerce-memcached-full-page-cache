@@ -119,59 +119,59 @@ fall back to a ASCII mode (slower)._
 
 __authpass__
 
-_..._
+_Stores the password for authentication with all hosts in the list. (!) SASL must be enabled._
 
 __authuser__
 
-_..._
+_Stores the user for authentication with all hosts in the list. (!) SASL must be enabled._
 
 __expire__
 
-_..._
+_The expire time of the cached entries in Memcached._
 
 __browsercache__
 
-_..._
+_Used to determine modified since and when the Browser-cache of a given page should expire._
 
 __prefix_meta__
 
-_..._
+_The prefix for meta-data keys in memcached. (!) Must be different than the data prefix or entries will be overwritten._
 
 __prefix_data__
 
-_..._
+_The prefix for page content keys in memcached. (!) Must be different than the meta prefix or entries will be overwritten._
 
 __charset__
 
-_..._
+_Used to set the charset header when a page is loaded from cache._
 
 __cache_loggedin__
 
-_..._
+_Enable to load cached pages even for logged in customers/users. (!) Does NOT use cache for Admins._
 
 __nocache_cookies__
 
-_..._
+_The place to define custom cookies which should prevent caching for users with the cookies provided here._
 
 __nocache_woocommerce_url__
 
-_..._
+_Contains the regex to exclude WooCommerce API & default dynamic pages like checkout and cart. (!) Generated on save._
 
 __nocache_url__
 
-_..._
+_Enter your own regex to exclude matches from caching._
 
 __response_header__
 
-_..._
+_Enable to add the X-Cache response header if cache is loaded._
 
 __comments_invalidate__
 
-_..._
+_Enable to trigger cache clearing on comment actions._
 
 __pingback_header__
 
-_..._
+_Enable to preserve the PingBack header for cached pages._
 
 ## Customization
 
