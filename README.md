@@ -241,6 +241,8 @@ You can use hooks to customize the behaviour of this plugin.
 
   Lets you add your own form fields to the fieldset of the debug settings.
 
+---
+
 #### Hook: Custom SkipLoadFromCache
 
 * `wc_mfpc_custom_skip_load_from_cache`
