@@ -7,7 +7,7 @@
 [![PHP v7.x](./assets/badge-php7.svg)](https://php.net)
 [![PHP Memcached](./assets/badge-memcached.svg)](https://www.php.net/manual/de/book.memcached.php)
 
-WooCommerce full page cache plugin using Memcached.
+WooCommerce full page cache plugin using Memcached. Allows full control which Products, Categories, Pages should be cleared without flushing the cache.
 
 __CREDITS:__ This plugin is the spiritual successor of [WP-FFPC](https://github.com/petermolnar/wp-ffpc) 
 by [Peter Molnar](https://github.com/petermolnar).
@@ -81,11 +81,11 @@ __Optional:__
 As a side note: [How to install Memcached](https://www.techrepublic.com/article/how-to-install-and-enable-memcached-on-ubuntu-and-centos/)
 
 ## Settings
-__Settings link:__ yourdomain.xyz/wp-admin/admin.php?page=wc-mfpc-settings
+__Settings link:__ yourdomain.xyz/wp-admin/admin.php?page=wc-settings&tab=advanced&section=full_page_cache
 
 OR
 
-__WP Admin__ => __WooCommerce__ => Full Page Cache
+__WP Admin__ => __WooCommerce__ => __Settings__ => _Advanced_ => _Full Page Cache_
 
 Defaults:
 ```php
