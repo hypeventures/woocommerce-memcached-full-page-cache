@@ -30,7 +30,7 @@ by [Peter Molnar](https://github.com/petermolnar).
 
 ## Copyright
 
-```
+```text
 WooCommerce Memcached Full Page Cache - FPC specialized for WooCommerece via PHP-Memcached.
 Copyright (C)  2019 Achim Galeski ( achim@invinciblebrands.com )
 
@@ -189,11 +189,11 @@ You can use hooks to customize the behaviour of this plugin.
   
 - `$wc_mfpc_memcached`
 
-  _Instance of [Memcached::class](Memcached.php) initiated in [wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php)_
+  _Instance of [Memcached::class](src/Memcached.php) initiated in [wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php)_
   
 - `$wcMfpcConfig`
 
-  _Instance of [WcMfpcConfig::class](WcMfpcConfig.php) initiated in 
+  _Instance of [WcMfpcConfig::class](src/Config.php) initiated in 
   [woocommerce-memcached-full-page-cache.php](woocommerce-memcached-full-page-cache.php)_
 
 ### Filter Hooks:
@@ -205,24 +205,40 @@ You can use hooks to customize the behaviour of this plugin.
 - [wc_mfpc_custom_cache_meta](#hook-custom-cachemeta)
         
 [Memcached::class](src/Memcached.php) :
-- wc_mfpc_custom_build_url
-- wc_mfpc_custom_build_key
-- wc_mfpc_custom_build_keys
+- [wc_mfpc_custom_build_url](#hook:-custom-buildurl)
+- [wc_mfpc_custom_build_key](#hook:-custom-buildkey)
+- [wc_mfpc_custom_build_keys](#hook:-custom-buildkeys)
 - [wc_mfpc_custom_expire](#hook-custom-expire)
         
 [Admin::class](src/Admin.php) :
-- wc_mfpc_custom_advanced_cache_config
+- [wc_mfpc_custom_advanced_cache_config](#hook:-custom-advancedcacheconfig)
 
 ### Action Hooks:
 
 [AdminView::class](src/AdminView.php) :
-- wc_mfpc_settings_form_top
-- wc_mfpc_settings_form_bottom
-- wc_mfpc_settings_form_memcached_connection
-- wc_mfpc_settings_form_cache
-- wc_mfpc_settings_form_exception
-- wc_mfpc_settings_form_debug
+- `wc_mfpc_settings_form_top`
+  
+  Lets you add your own fieldset at the beginning of the admin settings form.
+  
+- `wc_mfpc_settings_form_bottom`
 
+  Lets you add your own fieldset at the end of the adming settings form.
+
+- `wc_mfpc_settings_form_memcached_connection`
+
+  Lets you add your own form fields to the fieldset of the memcached connection settings.
+
+- `wc_mfpc_settings_form_cache`
+
+  Lets you add your own form fields to the fieldset of the cache settings.
+  
+- `wc_mfpc_settings_form_exception`
+
+  Lets you add your own form fields to the fieldset of the exception settings.
+
+- `wc_mfpc_settings_form_debug`
+
+  Lets you add your own form fields to the fieldset of the debug settings.
 
 #### Hook: Custom SkipLoadFromCache
 
@@ -232,6 +248,7 @@ This hook gives you control if a given uri should be processed by the advanced-c
 
 Example #1:
 ```php
+<?php
 /**
  * Function to customize whether a page is processed by wp-ffpc at all.
  *
@@ -277,6 +294,7 @@ The content of the page is already known at this point and can be analysed for c
 
 Example #1:
 ```php
+<?php
 /**
  * Function to custom skip storing data in cache.
  *
@@ -299,6 +317,7 @@ add_filter('wc_mfpc_custom_skip_caching', 'cust_wc_mfpc_set_skip_caching')
 ```
 Example #2:
 ```php
+<?php
 /*
  * Somewhere in your plugin / theme when rendering a special, individual & dynamic page
  * which should never be cached.
@@ -318,6 +337,7 @@ It can be found here: [wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php)
 
 Example:
 ```php
+<?php
 /**
  * Function to customize the html content of any page.
  *
@@ -354,6 +374,7 @@ It can be found here: [wc-mfpc-advanced-cache.php](wc-mfpc-advanced-cache.php)
 
 Example:
 ```php
+<?php
 /**
  * Function to customize the cached meta data array of any page.
  *
@@ -361,7 +382,7 @@ Example:
  *
  * @return array $cacheMeta
  */
-function cust_wc_mfpc_set_cache_meta($cacheMeta = '')
+function cust_wc_mfpc_set_cache_meta($cacheMeta = [])
 {
     /*
      * Example:
@@ -388,6 +409,101 @@ add_filter('wc_mfpc_custom_cache_meta', 'cust_wc_mfpc_set_cache_meta');
 
 ---
 
+#### Hook: Custom BuildUrl
+
+* `wc_mfpc_custom_build_url`
+
+This hook lets you customize the Url which is used for the Memcached key of the actual viewed page.
+
+Example:
+```php
+<?php
+/**
+ * Function to customize URL used as Memcached key.
+ * 
+ * @param string $url     The URL determined by the plugins default functionality.
+ *                        Default: $url = $scheme . $_SERVER[ 'HTTP_HOST' ] . $_SERVER[ 'REQUEST_URI' ];
+ * @param string $scheme  The Scheme determined by the default functionality.
+ *                        Default: 'http://' or 'https://'.
+ *
+ * @return string $url
+ */
+function cust_wc_mfpc_set_build_url($url = '', $scheme = '')
+{
+    return $url . $_SERVER[ 'QUERY_STRING' ];
+}
+add_filter('wc_mfpc_custom_build_url', 'cust_wc_mfpc_set_build_url', 10, 2);
+```
+
+---
+
+#### Hook: Custom BuildKey
+
+* `wc_mfpc_custom_build_key`
+
+This hook lets you customize the Key which is used to store in and get values from Memcached.
+
+Example:
+```php
+<?php
+/**
+ * Function to customize the keys used in Memcached.
+ * 
+ * @param string $key        Cache key string that was set by default.
+ *                           Default: $key = $this->config[ 'prefix_' . $type ] . $permalink;
+ * @param string $permalink  Permalink of the cache object in question.
+ * @param string $type       Cache key type to build the prefix.
+ *
+ * @return string $key
+ */
+function cust_wc_mfpc_set_build_key($key = '', $permalink = '', $type = '')
+{
+    if ($type === 'aCustomType') {
+        
+        $key = 'cust-' . $permalink;
+        
+    }
+    
+    return $key;
+}
+add_filter('wc_mfpc_custom_build_key', 'cust_wc_mfpc_set_build_key', 10, 3);
+```
+
+---
+
+#### Hook: Custom BuildKeys
+
+* `wc_mfpc_custom_build_keys`
+
+This hook lets you customize an array of multiple Keys which are used to store in and get values from Memcached.
+
+Example:
+```php
+<?php
+/**
+ * Function to customize the list of keys used in Memcached.
+ * 
+ * @param array $keys        Cache keys array which was set by default.
+ *                           Default: $key = $this->config[ 'prefix_' . $type ] . $permalink;
+ * @param array $permalinks  Array of Permalinks (as aarray keys) of the cache object in question.
+ *
+ * @return array $keys
+ */
+function cust_wc_mfpc_set_build_keys($keys = [], $permalinks = [])
+{
+    foreach ($permalinks as $permalink => $dummy) {
+        
+        $keys[ $this->buildKey($permalink, 'cust') ] = true;
+        
+    }
+    
+    return $keys;
+}
+add_filter('wc_mfpc_custom_build_keys', 'cust_wc_mfpc_set_build_keys', 10, 2);
+```
+
+---
+
 #### Hook: Custom Expire
 
 * `wc_mfpc_custom_expire`
@@ -396,6 +512,7 @@ This hook lets you customize the Memcached cache expiration time before setting 
 
 Example:
 ```php
+<?php
 /**
  * Function to customize cache expriration time in seconds.
  *
@@ -425,15 +542,29 @@ add_filter('wc_mfpc_custom_expire', 'cust_wc_mfpc_set_expire');
 
 ---
 
-#### Hook:
+#### Hook: Custom AdvancedCacheConfig
 
-* ` `
+* `wc_mfpc_custom_advanced_cache_config`
 
-...
+This hook lets you customize the global config array before it gets written into the file `wp-content/advanced-cache.php`.
 
 Example:
 ```php
-
+<?php
+/**
+ * FUnction to customize the Global-Config array before it is written via var_export to the advanced-cache.php file.
+ *
+ * @param array $globalConfig  Array with the global config array including configs of all blogs.
+ *
+ * @return array $globalConfig
+ */
+function cust_wc_mfpc_set_advanced_cache_config($globalConfig = [])
+{
+    $globalConfig[ 'example_setting' ] = true;
+    
+    return $globalConfig;
+}
+add_filter('wc_mfpc_custom_advanced_cache_config', 'cust_wc_mfpc_set_advanced_cache_config');
 ```
 
 ## Example: default advanced-cache.php
