@@ -27,14 +27,14 @@
 
 if (! defined('ABSPATH')) { exit; }
 
-error_log('--------------------------------------------------------------------------------------------------');
+#error_log('--------------------------------------------------------------------------------------------------');
 
 /*
  * check for WP cache enabled
  */
 if (! defined('WP_CACHE') || WP_CACHE != true) {
 
-    error_log('WP_CACHE is not true');
+    #error_log('WP_CACHE is not true');
 
     return false;
 }
@@ -44,7 +44,7 @@ if (! defined('WP_CACHE') || WP_CACHE != true) {
  */
 if ($_SERVER[ "REQUEST_METHOD" ] === 'POST') {
 
-    error_log('POST (AJAX) requests are never cached');
+    #error_log('POST (AJAX) requests are never cached');
 
     return false;
 }
@@ -54,7 +54,7 @@ if ($_SERVER[ "REQUEST_METHOD" ] === 'POST') {
  */
 if (defined('SID') && SID != '') {
 
-    error_log('SID found, skipping cache');
+    #error_log('SID found, skipping cache');
 
     return false;
 }
@@ -65,7 +65,7 @@ if (defined('SID') && SID != '') {
  */
 if (! isset($wc_mfpc_config_array) || empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
 
-    error_log("No config found.");
+    #error_log("No config found.");
 
     return false;
 }
@@ -95,7 +95,7 @@ if (
  */
 if (stripos($wc_mfpc_uri, '?') !== false) {
 
-    error_log('Dynamic url cache is disabled ( url with "?" ), skipping');
+    #error_log('Dynamic url cache is disabled ( url with "?" ), skipping');
 
     return false;
 }
@@ -109,7 +109,7 @@ if (isset($wc_mfpc_config_array[ 'nocache_woocommerce_url' ])) {
 
     if (preg_match($pattern, $wc_mfpc_uri)) {
 
-        error_log("Cache exception based on WooCommenrce URL regex pattern matched, skipping");
+        #error_log("Cache exception based on WooCommenrce URL regex pattern matched, skipping");
 
         return false;
     }
@@ -121,7 +121,7 @@ if (isset($wc_mfpc_config_array[ 'nocache_woocommerce_url' ])) {
  */
 if (isset($_COOKIE[ 'wc-mfpc-nocache' ])) {
 
-    error_log('No cache for admin users! Skipping.');
+    #error_log('No cache for admin users! Skipping.');
 
     return false;
 }
@@ -139,7 +139,7 @@ if (empty($wc_mfpc_config_array[ 'cache_loggedin' ])) {
 
             if (strpos($cookie, $nocache_cookie) === 0) {
 
-                error_log("No cache for cookie: {$cookie}, skipping");
+                #error_log("No cache for cookie: {$cookie}, skipping");
 
                 return false;
             }
@@ -166,7 +166,7 @@ if (! empty($wc_mfpc_config_array[ 'nocache_cookies' ])) {
 
                 if (strpos($n, $nocache_cookie) === 0) {
 
-                    error_log("Cookie exception matched: {$n}, skipping");
+                    #error_log("Cookie exception matched: {$n}, skipping");
 
                     return false;
                 }
@@ -188,7 +188,7 @@ if (! empty($wc_mfpc_config_array[ 'nocache_url' ])) {
 
     if (preg_match($pattern, $wc_mfpc_uri)) {
 
-        error_log("Cache exception based on URL regex pattern matched, skipping");
+        #error_log("Cache exception based on URL regex pattern matched, skipping");
 
         return false;
     }
@@ -211,12 +211,12 @@ $wc_mfpc_memcached = new \InvincibleBrands\WcMfpc\Memcached($wc_mfpc_config_arra
  */
 if (empty($wc_mfpc_memcached->status())) {
 
-    error_log("Backend offline");
+    #error_log("Backend offline");
 
     return false;
 }
 
-error_log("Trying to fetch entries");
+#error_log("Trying to fetch entries");
 
 /*
  * Try to get data & meta keys for current page
@@ -231,10 +231,7 @@ foreach ([ 'data', 'meta', ] as $type) {
 
     if (empty($value)) {
 
-        /*
-         * ToDo: Remove! Testing only.
-         */
-        error_log("No cached data found");
+        #error_log("No cached data found");
 
         /*
          * It does not matter which is missing, we need both, if one fails, no caching
@@ -247,10 +244,7 @@ foreach ([ 'data', 'meta', ] as $type) {
 
     $wc_mfpc_values[ $type ] = $value;
 
-    /*
-     * ToDo: Remove! Testing only.
-     */
-    error_log("Got value for $type : $key");
+    #error_log("Got value for $type : $key");
 
 }
 
@@ -259,10 +253,7 @@ foreach ([ 'data', 'meta', ] as $type) {
  */
 if (isset($wc_mfpc_values[ 'meta' ][ 'status' ]) && $wc_mfpc_values[ 'meta' ][ 'status' ] === 404) {
 
-    /*
-     * ToDo: Remove! Testing only.
-     */
-    error_log("Serving 404");
+    #error_log("Serving 404");
 
     header("HTTP/1.1 404 Not Found");
 
@@ -280,10 +271,7 @@ if (isset($wc_mfpc_values[ 'meta' ][ 'status' ]) && $wc_mfpc_values[ 'meta' ][ '
  */
 if (! empty($wc_mfpc_values[ 'meta' ][ 'redirect' ])) {
 
-    /*
-     * ToDo: Remove! Testing only.
-     */
-    error_log("Serving redirect to {$wc_mfpc_values['meta']['redirect']}");
+    #error_log("Serving redirect to {$wc_mfpc_values['meta']['redirect']}");
     header('Location: ' . $wc_mfpc_values[ 'meta' ][ 'redirect' ]);
 
     flush();
@@ -303,10 +291,7 @@ if (isset($_SERVER[ 'HTTP_IF_MODIFIED_SINCE' ]) && ! empty($wc_mfpc_values[ 'met
      */
     if ($if_modified_since >= $wc_mfpc_values[ 'meta' ][ 'lastmodified' ]) {
 
-        /*
-         * ToDo: Remove! Testing only.
-         */
-        error_log("Serving 304 Not Modified");
+        #error_log("Serving 304 Not Modified");
         header("HTTP/1.0 304 Not Modified");
 
         flush();
@@ -388,10 +373,7 @@ if (! empty($wc_mfpc_config_array[ 'response_header' ])) {
 
 }
 
-/*
- * ToDo: Remove! Testing only.
- */
-error_log("Serving data");
+#error_log("Serving data");
 
 echo $wc_mfpc_values[ 'data' ];
 
@@ -483,7 +465,7 @@ function wc_mfpc_output_buffer_callback($content = '')
      */
     if (is_admin_bar_showing()) {
 
-        error_log('skipping administrator!');
+        #error_log('skipping administrator!');
         setcookie('wc-mfpc-nocache', 1, time() + 86400);
 
         return $content;
@@ -492,7 +474,8 @@ function wc_mfpc_output_buffer_callback($content = '')
 	$config    = &$wc_mfpc_config_array;
 	$cacheMeta = [];
 
-	/*if (is_product()) {
+	/* ToDo: Check if this might be useful in the future.
+	 if (is_product()) {
 
         error_log('caching product category');
         $cacheMeta[ 'type' ] = 'product';
@@ -511,7 +494,8 @@ function wc_mfpc_output_buffer_callback($content = '')
 
         error_log('caching shop');
 
-    } else*/if ($wp_query->is_home() || $wp_query->is_feed()) {
+    } else*/
+	if ($wp_query->is_home() || $wp_query->is_feed()) {
 
 		if ($wp_query->is_home()) {
 
@@ -523,7 +507,7 @@ function wc_mfpc_output_buffer_callback($content = '')
 
 		}
 
-		error_log( 'Getting latest post for for home & feed');
+		#error_log( 'Getting latest post for for home & feed');
 
 		/*
 		 * Get newest post and set last modified accordingly
@@ -553,7 +537,7 @@ function wc_mfpc_output_buffer_callback($content = '')
 
 		if (! empty($wp_query->tax_query)) {
 
-			error_log( 'Getting latest post for taxonomy: ' . json_encode($wp_query->tax_query));
+			#error_log( 'Getting latest post for taxonomy: ' . json_encode($wp_query->tax_query));
 
             $recent_post = get_posts([
                 'numberposts' => 1,
