@@ -576,7 +576,7 @@ add_filter('wc_mfpc_custom_advanced_cache_config', 'cust_wc_mfpc_set_advanced_ca
 <?php
 /*
 Plugin Name: WooCommerce Memcached Full Page Cache (Drop-In: advanced-cache.php)
-Plugin URI: https://github.com/agaleski/woocommerce-memcached-full-page-cache/
+Plugin URI: https://github.com/hypeventures/woocommerce-memcached-full-page-cache/
 Description: WooCommerce full page cache plugin based on Memcached.
 Version: 1.0
 Author: Achim Galeski <achim@invinciblebrands.com>

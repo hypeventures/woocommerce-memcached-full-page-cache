@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WooCommerce Memcached Full Page Cache
-Plugin URI: https://github.com/agaleski/woocommerce-memcached-full-page-cache
+Plugin URI: https://github.com/hypeventures/woocommerce-memcached-full-page-cache
 Description: WooCommerce full page cache plugin based on Memcached.
 Version: 1.0
 Author: Achim Galeski <achim@invinciblebrands.com>

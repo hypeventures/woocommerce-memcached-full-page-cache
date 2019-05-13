@@ -499,7 +499,7 @@ class Admin
         $stringArray[] = '<?php';
         $stringArray[] = '/*';
         $stringArray[] = 'Plugin Name: WooCommerce Memcached Full Page Cache (Drop-In: advanced-cache.php)';
-        $stringArray[] = 'Plugin URI: https://github.com/agaleski/woocommerce-memcached-full-page-cache/';
+        $stringArray[] = 'Plugin URI: https://github.com/hypeventures/woocommerce-memcached-full-page-cache/';
         $stringArray[] = 'Description: WooCommerce full page cache plugin based on Memcached.';
         $stringArray[] = 'Version: 1.0';
         $stringArray[] = 'Author: Achim Galeski <achim@invinciblebrands.com>';
