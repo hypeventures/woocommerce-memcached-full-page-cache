@@ -472,14 +472,14 @@ class Admin
 
         if (! touch(Data::advancedCache)) {
 
-            error_log('Generating advanced-cache.php failed: ' . Data::advancedCache . ' is not writable');
+            error_log('Generating advanced-cache.php failed: ' . Data::advancedCache . ' is not writable', LOG_WARNING);
 
             return false;
         }
 
         if (empty($wcMfpcConfig->getGlobal())) {
 
-            error_log('Generating advanced-cache.php failed: Global config is empty');
+            error_log('Generating advanced-cache.php failed: Global config is empty', LOG_WARNING);
             unlink(WP_CONTENT_DIR . '/advanced-cache.php');
 
             return false;
