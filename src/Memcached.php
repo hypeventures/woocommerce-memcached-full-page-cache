@@ -171,7 +171,7 @@ class Memcached
         /* check if initialization was success or not */
         if ($this->connection === null) {
 
-            error_log('Error initializing Memcached PHP extension, exiting.');
+            error_log('Error initializing Memcached PHP extension, exiting.', LOG_WARNING);
 
             return;
         }
@@ -204,7 +204,7 @@ class Memcached
             if (! @array_key_exists($server_id, $servers_alive)) {
 
                 $this->connection->addServer($server[ 'host' ], $server[ 'port' ]);
-                error_log($server_id . ' added');
+                #error_log($server_id . ' added');
 
             }
 
@@ -259,11 +259,11 @@ class Memcached
 
         $result = $this->connection->get($key);;
 
-        if (empty($result)) {
+        #if (empty($result)) {
 
-            error_log(sprintf('failed to get entry: %s', $key));
+            #error_log(sprintf('failed to get entry: %s', $key));
 
-        }
+        #}
 
         return $result;
     }
@@ -333,17 +333,17 @@ class Memcached
 
             $kresult = $this->connection->delete($key);
 
-            if ($kresult === false) {
-
-                error_log('unable to delete entry: ' . $key);
-
-            } else {
+            if ($kresult !== false) {
 
                 $result = true;
 
-                error_log('entry deleted: ' . $key);
+                #error_log('entry deleted: ' . $key);
 
-            }
+            } #else {
+
+                #error_log('unable to delete entry: ' . $key);
+
+            #}
 
         }
 
