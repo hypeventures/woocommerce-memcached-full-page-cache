@@ -26,6 +26,7 @@ by [Peter Molnar](https://github.com/petermolnar).
   - [Filter Hooks](#filter-hooks)
   - [Action Hooks](#action-hooks)
 - [Drop-In 'advanced-cache.php'](#example-default-advanced-cachephp)
+- [NGINX](#nginx)
 
 
 ## Copyright
@@ -606,6 +607,86 @@ $wc_mfpc_config_array = array (
 
 include_once ('/var/www/html/wp-content/plugins/woocommerce-memcached-full-page-cache/wc-mfpc-advanced-cache.php');
 ```
+
+---
+
+## NGINX
+
+If you are using this plugin in the default settings, it should work very well with nginx.
+
+However, a few tweaks in the nginx site config are needed to optimize page delivery and in best case bypass PHP entirely.
+
+Example:
+```text
+
+# In your location block:
+...
+try_files $uri $uri/ @memcached;
+...
+
+# New location blocks for memcached handling:
+location @memcached {
+
+        default_type text/html;
+        
+        # Create the key var to get cached page content from Memcached
+        set $memcached_key data-$scheme://$host$request_uri;
+        
+        # Create boolean var identifier if Memcached will be used or not.
+        set $memcached_request 1;
+
+        # Set the connection timeout to avoid endless loading times in case Memcached is not available.
+        memcached_connect_timeout 2s;
+
+        # If it is a post request, do not load from cache.
+        if ($request_method = POST ) {
+                set $memcached_request 0;
+        }
+
+        # If the URL is internal WordPress, do not load from cache.
+        if ( $uri ~ "/wp-" ) {
+                set $memcached_request 0;
+        }
+
+        # If args are set, do not load from cache.
+        if ( $args ) {
+                set $memcached_request 0;
+        }
+
+        # If cookie(s) set for logged in users, do not load from cache.
+        if ($http_cookie ~* "comment_author_|wordpressuser_|wp-postpass_|wordpress_logged_in_" ) {
+                set $memcached_request 0;
+        }
+
+        # If none of the conditions above where met, load page content from Memcached.
+        if ( $memcached_request = 1) {
+                # Define the Memcached Server connection.
+                memcached_pass 127.0.0.1:11211;
+                
+                # If Memcached was not reachable or the page is any error page at all, fall back to PHP.
+                error_page 404 500 502 504 = @rewrites;
+        }
+
+        # If one or more of the conditions above where met, fall back to PHP.
+        if ( $memcached_request = 0) {
+                rewrite ^ /index.php last;
+        }
+}
+
+location @rewrites {
+        add_header X-Cache-Engine "";
+        rewrite ^ /index.php last;
+}
+```
+
+__Links:__
+
+https://github.com/petermolnar/wp-ffpc/blob/master/wp-ffpc-nginx-sample.conf (english)
+
+https://centminmod.com/nginx_configure_wordpress_ffpc_plugin.html (english)
+
+https://timmehosting.de/high-performance-wordpress-mit-wp-ffpc-memcached-nginx-und-ispconfig (german)
+
 
 ---
 
