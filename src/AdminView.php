@@ -639,6 +639,7 @@ class AdminView
         ?>
         <input type="hidden" name="action" value="<?php echo $name; ?>">
         <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce($name); ?>">
+        <?php wp_referer_field(true); ?>
         <button type="submit" class="button button-<?php echo $class; ?>  wc-mfpc-button"
                 name="<?php echo $name; ?>" style="<?php echo $style; ?>"
         >
