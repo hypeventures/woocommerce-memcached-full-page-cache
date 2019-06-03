@@ -88,12 +88,12 @@ class Config
     /**
      * @var string
      */
-    public $nocache_woocommerce_url = '^/checkout/|^/my\\-account/|^/cart/|^/wc\\-api|^/\\?wc\\-api=';
+    public $nocache_woocommerce_url = 'checkout|my-account|cart|wc-|wc_';
 
     /**
      * @var string
      */
-    public $nocache_url             = '^/wc\-|^/wp\-|addons|removed|gdsr|wp_rg|wp_session​|wc_session​';
+    public $nocache_url             = 'wp-|wp_|contact|track-your-order|cart|checkout|my-account|addons|removed|gdsr|wp_rg|woo_braintreecw';
 
     /**
      * @var bool
@@ -352,12 +352,12 @@ class Config
 
         if (empty($nocache_woocommerce_url) && class_exists('WooCommerce')) {
 
-            $home                  = home_url();
-            $page_wc_checkout      = preg_quote(str_replace($home, '', wc_get_page_permalink('checkout')));
-            $page_wc_myaccount     = preg_quote(str_replace($home, '', wc_get_page_permalink('myaccount')));
-            $page_wc_cart          = preg_quote(str_replace($home, '', wc_get_page_permalink('cart')));
-            $wcapi                 = '^/wc\\-api|^/\?wc\\-api=';
-            $noCacheWooCommerceUrl = '^' . $page_wc_checkout . '|^' . $page_wc_myaccount . '|^' . $page_wc_cart . '|' . $wcapi;
+            $toReplace             = [ home_url(), '/' ];
+            $replaceWith           = [ '', '', ];
+            $pageWcCheckout        = str_replace($toReplace, $replaceWith, wc_get_page_permalink('checkout'));
+            $pageWcMyaccount       = str_replace($toReplace, $replaceWith, wc_get_page_permalink('myaccount'));
+            $pageWcCart            = str_replace($toReplace, $replaceWith, wc_get_page_permalink('cart'));
+            $noCacheWooCommerceUrl = $pageWcCheckout . '|' . $pageWcMyaccount . '|' . $pageWcCart . '|wc-|wc_';
 
             $this->nocache_woocommerce_url = $noCacheWooCommerceUrl;
 
