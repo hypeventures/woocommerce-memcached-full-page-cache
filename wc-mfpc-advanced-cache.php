@@ -281,14 +281,14 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'redirect' ])) {
 
 /*
  * Page is already cached on client side.
- */
+ * /
 if (isset($_SERVER[ 'HTTP_IF_MODIFIED_SINCE' ]) && ! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
 
     $if_modified_since = strtotime(preg_replace('/;.*$/', '', $_SERVER[ "HTTP_IF_MODIFIED_SINCE" ]));
 
     /*
-     * Check is cache is still valid.
-     */
+     * Check if cache is still valid.
+     * /
     if ($if_modified_since >= $wc_mfpc_values[ 'meta' ][ 'lastmodified' ]) {
 
         #error_log("Serving 304 Not Modified");
