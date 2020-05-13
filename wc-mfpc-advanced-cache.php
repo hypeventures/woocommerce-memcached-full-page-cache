@@ -455,6 +455,7 @@ function wc_mfpc_output_buffer_callback($content = '')
         || empty($content)
 	    || empty($wp_query)
         || (stripos($content, '</body>') === false && stripos($content, '</rss>') === false)
+        || (! empty(WC()->session) && ! empty(WC()->session->get('wc_notices', [])))
     ) {
 
 		return $content;
