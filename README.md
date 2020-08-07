@@ -771,7 +771,7 @@ location @memcached {
 
         # GDPR: Create the key var to get cached page content from Memcached
         # - uncomment the following line for GDPR cookie usage
-        #set $memcached_key data-$gdpr-https://$host$request_uri;
+        #set $memcached_key data-$gdpr-$scheme://$host$request_uri;
         
         # Create boolean var identifier if Memcached will be used or not.
         set $memcached_request 1;
