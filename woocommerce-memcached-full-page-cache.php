@@ -31,7 +31,7 @@ Domain Path: /languages/
 
 if (! defined('ABSPATH')) { exit; }
 
-include_once 'vendor/autoload.php';
+include_once __DIR__ . '/vendor/autoload.php';
 
 use \InvincibleBrands\WcMfpc\Config;
 use \InvincibleBrands\WcMfpc\Data;
