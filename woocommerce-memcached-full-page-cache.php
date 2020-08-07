@@ -33,11 +33,11 @@ if (! defined('ABSPATH')) { exit; }
 
 include_once 'vendor/autoload.php';
 
-use InvincibleBrands\WcMfpc\Config;
-use InvincibleBrands\WcMfpc\Data;
-use InvincibleBrands\WcMfpc\WcMfpc;
-use InvincibleBrands\WcMfpc\Admin;
-use InvincibleBrands\WcMfpc\AdminView;
+use \InvincibleBrands\WcMfpc\Config;
+use \InvincibleBrands\WcMfpc\Data;
+use \InvincibleBrands\WcMfpc\WcMfpc;
+use \InvincibleBrands\WcMfpc\Admin;
+use \InvincibleBrands\WcMfpc\AdminView;
 
 /**
  * Global variable containing Config::class instance.
