@@ -360,7 +360,7 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
  */
 if (! empty($wc_mfpc_values[ 'meta' ][ 'pingback' ]) && ! empty($wc_mfpc_config_array[ 'pingback_header' ])) {
 
-	header('X-Pingback: ' . $wc_mfpc_values[ 'meta' ][ 'pingback' ]);
+    header('X-Pingback: ' . $wc_mfpc_values[ 'meta' ][ 'pingback' ]);
 
 }
 
@@ -369,7 +369,7 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'pingback' ]) && ! empty($wc_mfpc_config_
  */
 if (! empty($wc_mfpc_config_array[ 'response_header' ])) {
 
-	header( 'X-Cache-Engine: WC-MFPC with Memcached via PHP');
+    header( 'X-Cache-Engine: WC-MFPC with Memcached via PHP');
 
 }
 
@@ -396,7 +396,7 @@ die();
  */
 function wc_mfpc_start()
 {
-	ob_start('wc_mfpc_output_buffer_callback');
+    ob_start('wc_mfpc_output_buffer_callback');
 }
 
 /**
@@ -434,14 +434,14 @@ function wc_mfpc_output_buffer_callback($content = '')
      * @var WP_Query                             $wp_query
      * @var WP_Post                              $post
      */
-	global $wc_mfpc_permalink, $wc_mfpc_config_array, $wc_mfpc_memcached, $wc_mfpc_redirect, $wp_query, $post;
+    global $wc_mfpc_permalink, $wc_mfpc_config_array, $wc_mfpc_memcached, $wc_mfpc_redirect, $wp_query, $post;
 
     $content = trim($content);
 
     /*
      * Skip if any of these essential conditions are met.
      */
-	if (
+    if (
         /**
          * Filter to skip storing data in cache entirely.
          * This allows 3rd parties to skip caching in custom scenarios.
@@ -453,12 +453,12 @@ function wc_mfpc_output_buffer_callback($content = '')
          */
         (bool) apply_filters('wc_mfpc_custom_skip_caching', $skip = false, $content)
         || empty($content)
-	    || empty($wp_query)
+        || empty($wp_query)
         || (stripos($content, '</body>') === false && stripos($content, '</rss>') === false)
         || (! empty(WC()->session) && ! empty(WC()->session->get('wc_notices', [])))
     ) {
 
-		return $content;
+        return $content;
     }
 
     /*
@@ -472,11 +472,11 @@ function wc_mfpc_output_buffer_callback($content = '')
         return $content;
     }
 
-	$config    = &$wc_mfpc_config_array;
-	$cacheMeta = [];
+    $config    = &$wc_mfpc_config_array;
+    $cacheMeta = [];
 
-	/* ToDo: Check if this might be useful in the future.
-	 if (is_product()) {
+    /* ToDo: Check if this might be useful in the future.
+     if (is_product()) {
 
         error_log('caching product category');
         $cacheMeta[ 'type' ] = 'product';
@@ -489,30 +489,30 @@ function wc_mfpc_output_buffer_callback($content = '')
 
     } elseif (is_product_category()) {
 
-	    error_log('caching product category');
+        error_log('caching product category');
 
     } elseif (is_shop()) {
 
         error_log('caching shop');
 
     } else*/
-	if ($wp_query->is_home() || $wp_query->is_feed()) {
+    if ($wp_query->is_home() || $wp_query->is_feed()) {
 
-		if ($wp_query->is_home()) {
+        if ($wp_query->is_home()) {
 
             $cacheMeta[ 'type' ] = 'home';
 
-		} elseif($wp_query->is_feed()) {
+        } elseif($wp_query->is_feed()) {
 
             $cacheMeta[ 'type' ] = 'feed';
 
-		}
+        }
 
-		#error_log( 'Getting latest post for for home & feed');
+        #error_log( 'Getting latest post for for home & feed');
 
-		/*
-		 * Get newest post and set last modified accordingly
-		 */
+        /*
+         * Get newest post and set last modified accordingly
+         */
         $recent_post = wp_get_recent_posts([
             'numberposts' => 1,
             'orderby'     => 'modified',
@@ -520,25 +520,25 @@ function wc_mfpc_output_buffer_callback($content = '')
             'post_status' => 'publish',
         ], OBJECT );
 
-		if (! empty($recent_post)) {
+        if (! empty($recent_post)) {
 
-			$recent_post = array_pop($recent_post);
+            $recent_post = array_pop($recent_post);
 
             if (! empty ($recent_post->post_modified_gmt)) {
 
                 $cacheMeta[ 'lastmodified' ] = strtotime($recent_post->post_modified_gmt);
 
-			}
+            }
 
-		}
+        }
 
-	} elseif ($wp_query->is_archive()) {
+    } elseif ($wp_query->is_archive()) {
 
         $cacheMeta[ 'type' ] = 'archive';
 
-		if (! empty($wp_query->tax_query)) {
+        if (! empty($wp_query->tax_query)) {
 
-			#error_log( 'Getting latest post for taxonomy: ' . json_encode($wp_query->tax_query));
+            #error_log( 'Getting latest post for taxonomy: ' . json_encode($wp_query->tax_query));
 
             $recent_post = get_posts([
                 'numberposts' => 1,
@@ -550,33 +550,33 @@ function wc_mfpc_output_buffer_callback($content = '')
 
             if (! empty($recent_post)) {
 
-				$recent_post = array_pop($recent_post);
+                $recent_post = array_pop($recent_post);
 
                 if (! empty ($recent_post->post_modified_gmt)) {
 
                     $cacheMeta[ 'lastmodified' ] = strtotime($recent_post->post_modified_gmt);
 
-				}
+                }
 
-			}
+            }
 
-		}
+        }
 
-	} elseif ($wp_query->is_single() || $wp_query->is_page()) {
+    } elseif ($wp_query->is_single() || $wp_query->is_page()) {
 
         $cacheMeta[ 'type' ] = 'single';
 
-		/*
-		 * Check if post is available. If made with archive, last listed post can make this go bad.
-		 */
-		if (! empty($post) && ! empty($post->post_modified_gmt)) {
+        /*
+         * Check if post is available. If made with archive, last listed post can make this go bad.
+         */
+        if (! empty($post) && ! empty($post->post_modified_gmt)) {
 
             $cacheMeta[ 'lastmodified' ] = strtotime($post->post_modified_gmt);
 
-			/*
-			 * get shortlink, if possible
-			 */
-			if (function_exists('wp_get_shortlink')) {
+            /*
+             * get shortlink, if possible
+             */
+            if (function_exists('wp_get_shortlink')) {
 
                 $shortlink = wp_get_shortlink();
 
@@ -588,13 +588,13 @@ function wc_mfpc_output_buffer_callback($content = '')
 
             }
 
-		}
+        }
 
-	} else {
+    } else {
 
         $cacheMeta[ 'type' ] = 'unknown';
 
-	}
+    }
 
     if ($cacheMeta[ 'type' ] !== 'unknown') {
 
@@ -604,7 +604,7 @@ function wc_mfpc_output_buffer_callback($content = '')
 
         }
 
-	}
+    }
 
     if ($wp_query->is_404()) {
 
@@ -612,9 +612,9 @@ function wc_mfpc_output_buffer_callback($content = '')
 
     }
 
-	/*
-	 * Check if redirect must be set
-	 */
+    /*
+     * Check if redirect must be set
+     */
     if ($wc_mfpc_redirect !== null) {
 
         $cacheMeta[ 'redirect' ] = $wc_mfpc_redirect;
@@ -624,53 +624,53 @@ function wc_mfpc_output_buffer_callback($content = '')
     $cacheMeta[ 'mime' ] = 'text/html;charset=';
 
     /*
-	 * Change header for Feeds to XML. Default = HTML
-	 */
+     * Change header for Feeds to XML. Default = HTML
+     */
     if ($wp_query->is_feed()) {
 
         $cacheMeta[ 'mime' ] = 'text/xml;charset=';
 
     }
 
-	/*
-	 * Add charset to complete mime-type.
-	 */
+    /*
+     * Add charset to complete mime-type.
+     */
     $cacheMeta[ 'mime' ] = $cacheMeta[ 'mime' ] . $config[ 'charset' ];
 
-	/*
-	 * Store pingback url if pingbacks are enabled
-	 */
+    /*
+     * Store pingback url if pingbacks are enabled
+     */
     if (get_option('default_ping_status') === 'open') {
 
         $cacheMeta[ 'pingback' ] = get_bloginfo('pingback_url');
 
     }
 
-	$cacheContent = $content;
+    $cacheContent = $content;
 
-	/**
-	 * Allows to edit the page content before it is stored in cache.
-	 * This hook allows 3rd parties to edit the meta data right before it is about to be stored in the cache. This
+    /**
+     * Allows to edit the page content before it is stored in cache.
+     * This hook allows 3rd parties to edit the meta data right before it is about to be stored in the cache. This
      * could be useful for alterations like minification.
-	 *
-	 * @param string $cacheContent  The content to be stored in cache.
+     *
+     * @param string $cacheContent  The content to be stored in cache.
      *
      * @return string $cacheContent
-	 */
+     */
     $cacheContent = (string) apply_filters('wc_mfpc_custom_cache_content', $cacheContent);
 
     $keyData = $wc_mfpc_memcached->buildKey($wc_mfpc_permalink);
     $wc_mfpc_memcached->set($keyData, $cacheContent);
 
-	/**
-	 * Allows to edit the meta data before it is stored in cache.
-	 * This hook allows 3rd parties to edit the page meta data right before it is about to be stored in the cache. This
+    /**
+     * Allows to edit the meta data before it is stored in cache.
+     * This hook allows 3rd parties to edit the page meta data right before it is about to be stored in the cache. This
      * could be useful for alterations like different browsercache expire times.
-	 *
-	 * @param string $cacheMeta  The meta to be stored in cache.
+     *
+     * @param string $cacheMeta  The meta to be stored in cache.
      *
      * @return string $cacheMeta
-	 */
+     */
     $cacheMeta = (array) apply_filters('wc_mfpc_custom_cache_meta', $cacheMeta);
 
     $keyMeta = $wc_mfpc_memcached->buildKey($wc_mfpc_permalink, 'meta');
@@ -686,7 +686,7 @@ function wc_mfpc_output_buffer_callback($content = '')
 
     }
 
-	return $content;
+    return $content;
 }
 
 /*
