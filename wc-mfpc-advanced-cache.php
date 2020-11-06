@@ -320,9 +320,9 @@ if (! empty ($wc_mfpc_values[ 'meta' ][ 'mime' ])) {
 if (! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
 
     $hash   = md5($wc_mfpc_uri . $wc_mfpc_values[ 'meta' ][ 'expire' ]);
-    $expire = $wc_mfpc_values[ 'meta' ][ 'expire' ];
+    $expire = $wc_mfpc_values[ 'meta' ][ 'expire' ] - time();
 
-    header('Cache-Control: public,max-age=' . $expire . ',s-maxage=' . $expire . ',must-revalidate');
+    header("Cache-Control: public,max-age=$expire,s-maxage=$expire,must-revalidate");
     header('Expires: ' . gmdate("D, d M Y H:i:s", $wc_mfpc_values[ 'meta' ][ 'expire' ]) . " GMT");
     header('ETag: ' . $hash);
 
