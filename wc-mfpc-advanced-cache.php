@@ -456,7 +456,8 @@ function wc_mfpc_output_buffer_callback($content = '')
 	    || empty($wp_query)
         || (stripos($content, '</body>') === false && stripos($content, '</rss>') === false)
         || (! empty(WC()->session) && ! empty(WC()->session->get('wc_notices', [])))
-        || stripos($content, 'woocommerce-message') !== false
+        || stripos($content, 'message-wrapper') !== false
+        || stripos($content, 'message-container') !== false
     ) {
 
 		return $content;
