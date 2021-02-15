@@ -20,6 +20,7 @@ by [Peter Molnar](https://github.com/petermolnar).
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Settings](#settings)
+- [GDPR implementation](#gdpr-implementation)
 - [Customization](#customization)
   - [Constants](#constants)
   - [Globals](#globals)
@@ -27,6 +28,7 @@ by [Peter Molnar](https://github.com/petermolnar).
   - [Action Hooks](#action-hooks)
 - [Drop-In 'advanced-cache.php'](#example-default-advanced-cachephp)
 - [NGINX](#nginx)
+- [CHANGELOG](#changelog)
 
 
 ## Copyright
@@ -79,6 +81,127 @@ __Optional:__
 5. __(!) Save the settings (!)__ to generate `/wp-content/advanced-cache.php` and activate caching.
 
 As a side note: [How to install Memcached](https://www.techrepublic.com/article/how-to-install-and-enable-memcached-on-ubuntu-and-centos/)
+
+## GDPR implementation
+
+Version 1.1.0 allows seemless full page caching of 4 different cookie setting stages:
+```php
+/**
+ * $_COOKIE[ 'wc_mfpc_gdpr_cookie_settings' ] values:
+ *   '0'  = only required Cookies allowed
+ *   '1'  = only required & advanced Cookies allowed
+ *   '10' = only required & 3rd party Cookies allowed
+ *   '11' = all Cookies allowed
+ */
+```
+The differently rendered pages *(with or without certain tracking scripts etc.)* will be cached separately.
+And the default cache keys change to `data-11-` & `meta-11-` - This will invalidate your existing cache keys from
+versions prior to 1.1.0 !
+
+The [nginx examples](#nginx) have been updated with necessary examples for a proper GDPR cache key handling.
+
+We recommend using a proper GDPR Plugin like
+[GDPR Cookie Compliance](https://wordpress.org/plugins/gdpr-cookie-compliance/) to implement GDPR handling at your
+site/shop. Based on this plugin, here an example on how to implement the cookie/tracking handling:
+
+```php
+    /*
+     * Run example_gdpr_init() at "init" but with priority 20 
+     * to run AFTER the "GDPR Cookie Compliance" plugin is initialized.
+     */
+    add_action('init', 'example_gdpr_init', 20);
+
+    /**
+     * Initializes Hooks for GDPR Cookie consent when Hook 'init' is fired.
+     *
+     * @return void
+     */
+    function example_gdpr_init()
+    {
+        if (function_exists('gdpr_cookie_is_accepted')) {
+
+            add_action('gdpr_force_reload', '__return_true'); // Optional!
+            example_gdpr_handle_cookies();
+
+        }
+    }
+
+
+    /**
+     * Handles activation/deactivation of cookies/scripts based on the users GDPR Cookie settings.
+     *
+     * @uses gdpr_cookie_is_accepted()
+     * @link https://wordpress.org/plugins/gdpr-cookie-compliance/
+     *
+     * @return void
+     */
+    function example_gdpr_handle_cookies()
+    {
+        /*
+         * Abort if handling CRON or API or CLI request.
+         */
+        if (defined('DOING_CRON') || defined('REST_REQUEST') || ! empty($_SERVER[ 'argv' ])) {
+
+            return;
+        }
+
+        $allowed = 11;
+
+        if (! gdpr_cookie_is_accepted('thirdparty')) {
+
+            $allowed = $allowed -10;
+
+            /*
+             * Disable potential "thirdparty" Tracking.
+             */
+
+        } else {
+
+            /*
+             * Enable potential "thirdparty" Tracking.
+             */
+
+        }
+
+        if (! gdpr_cookie_is_accepted('advanced')) {
+
+            $allowed = $allowed -1;
+
+            /*
+             * Disable potential "advanced" Tracking.
+             */
+
+        } else {
+
+            /*
+             * Enable potential "advanced" Tracking.
+             */
+
+        }
+
+        $allowed = (string) $allowed;
+
+        /*
+         * Create / update the cookie only if necessary.
+         */
+        if (
+            ! isset($_COOKIE[ 'wc_mfpc_gdpr_cookie_settings' ])
+            || ((string) $_COOKIE[ 'wc_mfpc_gdpr_cookie_settings' ]) !== $allowed
+        ) {
+
+            /*
+             * $allowed values:
+             *   '0'  = only required Cookies allowed
+             *   '1'  = only required & advanced Cookies allowed
+             *   '10' = only required & 3rd party Cookies allowed
+             *   '11' = all Cookies allowed
+             */
+            setCookie('wc_mfpc_gdpr_cookie_settings', $allowed, 0, '/');
+
+        }
+
+    }
+```
 
 ## Settings
 __Settings link:__ yourdomain.xyz/wp-admin/admin.php?page=wc-settings&tab=advanced&section=full_page_cache
@@ -630,9 +753,25 @@ try_files $uri $uri/ @memcached;
 location @memcached {
 
         default_type text/html;
-        
+
+        # GDPR: Read the data from the GDPR cookie
+        # - uncomment the following line for GDPR cookie usage
+        #set $gdpr $cookie_wc_mfpc_gdpr_cookie_settings;
+
+        # GDPR: If the cookie has no value yet, set it to the default value
+        # - uncomment the following lines for GDPR cookie usage
+        #if ($gdpr = '') {
+        #        set $cookie_wc_mfpc_gdpr_cookie_settings 11;
+        #        set $gdpr 11;
+        #}
+                
         # Create the key var to get cached page content from Memcached
+        # - comment out the following line for GDPR cookie usage
         set $memcached_key data-$scheme://$host$request_uri;
+
+        # GDPR: Create the key var to get cached page content from Memcached
+        # - uncomment the following line for GDPR cookie usage
+        #set $memcached_key data-$gdpr-$scheme://$host$request_uri;
         
         # Create boolean var identifier if Memcached will be used or not.
         set $memcached_request 1;
@@ -656,12 +795,24 @@ location @memcached {
         }
 
         # If cookie(s) set for logged in users, do not load from cache.
-        if ($http_cookie ~* "comment_author_|wordpressuser_|wp-postpass_|wordpress_logged_in_" ) {
+        #
+        # - Alternatively disable caching for ALL logged in users:
+        #if ($http_cookie ~* "comment_author_|wordpressuser_|wp-postpass_|wordpress_logged_in_" ) {
+        #
+        if ( $http_cookie ~* "comment_author_|wordpressuser_|wp-postpass_|wc-mfpc-nocache" ) {
                 set $memcached_request 0;
         }
 
         # If none of the conditions above where met, load page content from Memcached.
         if ( $memcached_request = 1) {
+                # Optionally add the X-Cache-Engine header
+                # - comment out to deactivate
+                add_header X-Cache-Engine "WC-MFPC via nginx";
+                
+                # Optionally add BrowserCache expire and max-age headers.
+                # - comment out to deactivate
+                expires 300s;
+                
                 # Define the Memcached Server connection.
                 memcached_pass 127.0.0.1:11211;
                 
@@ -676,7 +827,6 @@ location @memcached {
 }
 
 location @rewrites {
-        add_header X-Cache-Engine "";
         rewrite ^ /index.php last;
 }
 ```
@@ -689,6 +839,14 @@ https://centminmod.com/nginx_configure_wordpress_ffpc_plugin.html (english)
 
 https://timmehosting.de/high-performance-wordpress-mit-wp-ffpc-memcached-nginx-und-ispconfig (german)
 
+
+## CHANGELOG
+
+### Version: 1.1.0
+
+- Added general GDPR support. *ATTENTION: This update invalidates all existing cache keys! New default cache key prefixes
+  are like `data-11-` and `meta-11-` where the value `11` stands for "All cookies allowed".*
+  [More information regarding the GDPR implementation](#gdpr-implementation)
 
 ---
 

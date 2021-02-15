@@ -3,7 +3,7 @@
 Plugin Name: WooCommerce Memcached Full Page Cache
 Plugin URI: https://github.com/hypeventures/woocommerce-memcached-full-page-cache
 Description: WooCommerce full page cache plugin based on Memcached.
-Version: 1.0.1
+Version: 1.1.0
 Author: Achim Galeski <achim@invinciblebrands.com>
 Author URI: https://achim-galeski.de/
 License: GPLv3
@@ -31,13 +31,13 @@ Domain Path: /languages/
 
 if (! defined('ABSPATH')) { exit; }
 
-include_once 'vendor/autoload.php';
+include_once __DIR__ . '/vendor/autoload.php';
 
-use InvincibleBrands\WcMfpc\Config;
-use InvincibleBrands\WcMfpc\Data;
-use InvincibleBrands\WcMfpc\WcMfpc;
-use InvincibleBrands\WcMfpc\Admin;
-use InvincibleBrands\WcMfpc\AdminView;
+use \InvincibleBrands\WcMfpc\Config;
+use \InvincibleBrands\WcMfpc\Data;
+use \InvincibleBrands\WcMfpc\WcMfpc;
+use \InvincibleBrands\WcMfpc\Admin;
+use \InvincibleBrands\WcMfpc\AdminView;
 
 /**
  * Global variable containing Config::class instance.

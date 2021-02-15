@@ -355,7 +355,7 @@ class Memcached
      *
      * @param array $permalinks  [ 'permalink' => true, ]
      *
-     * @return array  [ 'dataKey' => true, 'metaKEy' => true ]
+     * @return array  [ 'dataKey' => true, 'metaKey' => true ]
      */
     public function buildKeys($permalinks = [])
     {
@@ -363,8 +363,14 @@ class Memcached
 
         foreach ($permalinks as $permalink => $dummy) {
 
-            $keys[ $this->buildKey($permalink, 'data') ] = true;
-            $keys[ $this->buildKey($permalink, 'meta') ] = true;
+            $keys[ $this->buildKey($permalink, 'data', '11') ] = true;
+            $keys[ $this->buildKey($permalink, 'meta', '11') ] = true;
+            $keys[ $this->buildKey($permalink, 'data', '10') ] = true;
+            $keys[ $this->buildKey($permalink, 'meta', '10') ] = true;
+            $keys[ $this->buildKey($permalink, 'data', '1') ]  = true;
+            $keys[ $this->buildKey($permalink, 'meta', '1') ]  = true;
+            $keys[ $this->buildKey($permalink, 'data', '0') ]  = true;
+            $keys[ $this->buildKey($permalink, 'meta', '0') ]  = true;
 
         }
 
@@ -382,14 +388,44 @@ class Memcached
     /**
      * Get the cache key for a given permalink and data type.
      *
-     * @param string $permalink  The permalink of the page in question.
-     * @param string $type       The cache data type. Either 'data' or 'meta'. Default: 'data'
+     * @param string      $permalink  The permalink of the page in question.
+     * @param string      $type       The cache data type. Either 'data' or 'meta'. Default: 'data'
+     * @param string|bool $gdpr       The GDPR cookie setting based cache type. Values:
+     *                                  '0'   = only required Cookies allowed.
+     *                                  '1'   = only required & advanced Cookies allowed.
+     *                                  '10'  = only required & 3rd party Cookies allowed.
+     *                                  '11'  = all Cookies allowed.
+     *                                  false = DEFAULT - key will be build based on
+     *                                          $_SERVER[ 'wc_mfpc_gdpr_cookie_settings' ] if available else fallback
+     *                                          to 11 - all Cookies allowed.
      *
      * @return string  The key for the given data type.
      */
-    public function buildKey($permalink = '', $type = 'data')
+    public function buildKey($permalink = '', $type = 'data', $gdpr = false)
     {
-        $key = $this->config[ 'prefix_' . $type ] . $permalink;
+        if ($gdpr === false) {
+
+            $gdpr           = '11';
+            $possibleValues = [
+                0  => '0',
+                1  => '1',
+                10 => '10',
+                11 => '11',
+            ];
+
+            if (
+                isset($_COOKIE[ 'wc_mfpc_gdpr_cookie_settings' ])
+                && isset($possibleValues[ intval($_COOKIE[ 'wc_mfpc_gdpr_cookie_settings' ]) ])
+            ) {
+
+                $gdpr = $possibleValues[ intval($_COOKIE[ 'wc_mfpc_gdpr_cookie_settings' ]) ];
+
+            }
+
+        }
+
+        $gdpr .= '-';
+        $key   = $this->config[ 'prefix_' . $type ] . $gdpr . $permalink;
 
         /**
          * Hook to customize each cache key directly.

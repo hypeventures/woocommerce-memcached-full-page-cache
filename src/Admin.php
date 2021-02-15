@@ -323,7 +323,7 @@ class Admin
 
         $statusMessage = '<b class="wc-mfpc-error-msg">Not cached</b>';
         $display       = 'none';
-        $key           = $wcMfpcConfig->prefix_data . $permalink;
+        $key           = WcMfpc::getMemcached()->buildKey($permalink, 'data', 11);
         $style         = 'padding: 1px 1rem;';
 
         if (! empty(WcMfpc::getMemcached()->get($key))) {
@@ -369,14 +369,14 @@ class Admin
             $result = WcMfpc::getMemcached()
                             ->clearLinks([ $permalink => true, ]);
 
-        } elseif (
-                  $_POST[ 'action' ] === Data::cacheControlRefreshAction
-                  && wp_verify_nonce($_POST[ 'nonce' ], Data::cacheControlRefreshAction)
+        } else if (
+            $_POST[ 'action' ] === Data::cacheControlRefreshAction
+            && wp_verify_nonce($_POST[ 'nonce' ], Data::cacheControlRefreshAction)
         ) {
 
             $valid  = true;
             $key    = WcMfpc::getMemcached()
-                            ->buildKey($permalink);
+                           ->buildKey($permalink, 'data', 11);
             $result = WcMfpc::getMemcached()
                             ->get($key);
 

@@ -369,7 +369,7 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'pingback' ]) && ! empty($wc_mfpc_config_
  */
 if (! empty($wc_mfpc_config_array[ 'response_header' ])) {
 
-	header( 'X-Cache-Engine: WC-MFPC with Memcached via PHP');
+	header( 'X-Cache-Engine: WC-MFPC via PHP');
 
 }
 
