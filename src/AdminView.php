@@ -285,7 +285,7 @@ class AdminView
         /*
          * look for global settings array
          */
-        if (isset($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
+        if (! isset($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
 
             Alert::alert(sprintf(
                 'This site was reached as %s ( according to PHP HTTP_HOST ) and there are no settings present '
