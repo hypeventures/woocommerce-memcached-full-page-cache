@@ -152,7 +152,7 @@ function wc_mfpc_check_cookies()
     return false;
 }
 
-$wc_mfpc_config_array = $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ];
+#$wc_mfpc_config_array = $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ];
 $wc_mfpc_uri          = $_SERVER[ 'REQUEST_URI' ];
 
 /*
@@ -164,7 +164,7 @@ $wc_mfpc_redirect = null;
  * Connect to Memcached via actual config.
  */
 include_once __DIR__ . '/src/Memcached.php';
-$wc_mfpc_memcached = new \InvincibleBrands\WcMfpc\Memcached($wc_mfpc_config_array);
+$wc_mfpc_memcached = new \InvincibleBrands\WcMfpc\Memcached($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ]);
 
 /*
  * Check memcached connection.
@@ -314,7 +314,7 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
 /*
  * Set X-Pingback header.
  */
-if (! empty($wc_mfpc_values[ 'meta' ][ 'pingback' ]) && ! empty($wc_mfpc_config_array[ 'pingback_header' ])) {
+if (! empty($wc_mfpc_values[ 'meta' ][ 'pingback' ]) && ! empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'pingback_header' ])) {
 
 	header('X-Pingback: ' . $wc_mfpc_values[ 'meta' ][ 'pingback' ]);
 
@@ -323,7 +323,7 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'pingback' ]) && ! empty($wc_mfpc_config_
 /*
  * Set X-Cache-Engine header.
  */
-if (! empty($wc_mfpc_config_array[ 'response_header' ])) {
+if (! empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'response_header' ])) {
 
 	header( 'X-Cache-Engine: WC-MFPC with Memcached via PHP');
 
@@ -433,7 +433,7 @@ function wc_mfpc_output_buffer_callback($content = '')
         return $content;
     }
 
-	$config    = &$wc_mfpc_config_array;
+	$config    = &$wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ];
 	$cacheMeta = [];
 
 	/* ToDo: Check if this might be useful in the future.
