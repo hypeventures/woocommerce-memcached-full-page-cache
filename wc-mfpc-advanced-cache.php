@@ -49,21 +49,21 @@ if (
     || isset($_COOKIE[ 'wc-mfpc-nocache' ])
     || empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])
     || (
-        isset($wc_mfpc_config_array[ 'nocache_woocommerce_url' ])
+        isset($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'nocache_woocommerce_url' ])
         && preg_match(
-            sprintf('#%s#', $wc_mfpc_config_array[ 'nocache_woocommerce_url' ]),
+            sprintf('#%s#', $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'nocache_woocommerce_url' ]),
             $_SERVER[ 'REQUEST_URI' ]
         )
     )
     || (
-        ! empty($wc_mfpc_config_array[ 'nocache_url' ])
+        ! empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'nocache_url' ])
         && preg_match(
-            sprintf('#%s#', $wc_mfpc_config_array[ 'nocache_url' ]),
+            sprintf('#%s#', $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'nocache_url' ]),
             $_SERVER[ 'REQUEST_URI' ]
         )
     )
-    || (empty($wc_mfpc_config_array[ 'cache_loggedin' ]) && wc_mfpc_check_login())
-    || (! empty($wc_mfpc_config_array[ 'nocache_cookies' ]) && wc_mfpc_check_cookies())
+    || (empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'cache_loggedin' ]) && wc_mfpc_check_login())
+    || (! empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'nocache_cookies' ]) && wc_mfpc_check_cookies())
     /**
      * Filter to skip loading page from cache.
      * Allows 3rd parties to implement their own conditions to skip loading a page from cache.
