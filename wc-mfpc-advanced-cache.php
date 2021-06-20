@@ -36,7 +36,8 @@ unset(
     $wc_mfpc_get[ 'utm_medium' ],
     $wc_mfpc_get[ 'utm_campaign' ],
     $wc_mfpc_get[ 'utm_term' ],
-    $wc_mfpc_get[ 'utm_content' ]
+    $wc_mfpc_get[ 'utm_content' ],
+    $wc_mfpc_get[ 'coupon-code' ]
 );
 
 if (
