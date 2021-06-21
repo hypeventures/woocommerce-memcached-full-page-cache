@@ -228,7 +228,21 @@ class Memcached
 
         }
 
-        $url = $scheme . $_SERVER[ 'HTTP_HOST' ] . $_SERVER[ 'REQUEST_URI' ];
+        $requestUri = explode('?', $_SERVER[ 'REQUEST_URI' ]);
+
+        if (! empty($requestUri)) {
+
+            $requestUri = $requestUri[ 0 ];
+
+        } else {
+
+            $requestUri = $_SERVER[ 'REQUEST_URI' ];
+
+        }
+
+        error_log($requestUri, 3, WP_CONTENT_DIR . '/debug.log');
+
+        $url = $scheme . $_SERVER[ 'HTTP_HOST' ] . $requestUri;
 
         /**
          * Hook to customize the page url which will be used as part of the key.
