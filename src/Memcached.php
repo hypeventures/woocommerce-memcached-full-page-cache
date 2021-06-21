@@ -240,8 +240,6 @@ class Memcached
 
         }
 
-        error_log($requestUri, 3, WP_CONTENT_DIR . '/debug.log');
-
         $url = $scheme . $_SERVER[ 'HTTP_HOST' ] . $requestUri;
 
         /**
