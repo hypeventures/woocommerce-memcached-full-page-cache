@@ -194,18 +194,29 @@ class Config
     /**
      * Loads options stored in the DB. Keeps defaults if loading was not successful.
      *
+     * @param bool $loadFromDatabase  Optional parameter to force loading from DB.
+     *
+     * @todo Button to optionally force loading settings from DB has to be implemented in Admin!
+     *
      * @return void
      */
-    public function load()
+    public function load($loadFromDatabase = false)
     {
-        $options = get_site_option(Data::globalOption);
+        global $wc_mfpc_config_array;
+
+        $options = $wc_mfpc_config_array;
+
+        if (empty($options) || $loadFromDatabase) {
+
+            $options = get_site_option(Data::globalOption);
+
+        }
 
         $this->global = $options;
 
         if (isset($options[ self::getGlobalConfigKey() ])) {
 
-            $options = $options[ self::getGlobalConfigKey() ];
-            $this->setConfig($options);
+            $this->setConfig($options[ self::getGlobalConfigKey() ]);
 
         }
     }
