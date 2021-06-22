@@ -22,58 +22,49 @@
  *
  * @see \InvincibleBrands\WcMfpc\Config::getConfig()
  *
- * @var \InvincibleBrands\WcMfpc\Config[]string|array $wc_mfpc_config_array
+ * @var \InvincibleBrands\WcMfpc\Config[] $wc_mfpc_config_array
  */
 
 if (! defined('ABSPATH')) { exit; }
 
 #error_log('--------------------------------------------------------------------------------------------------');
 
-/*
- * check for WP cache enabled
- */
-if (! defined('WP_CACHE') || WP_CACHE != true) {
+$wc_mfpc_get = $_GET;
 
-    #error_log('WP_CACHE is not true');
-
-    return false;
-}
-
-/*
- * no cache for post request (comments, plugins and so on)
- */
-if ($_SERVER[ "REQUEST_METHOD" ] === 'POST') {
-
-    #error_log('POST (AJAX) requests are never cached');
-
-    return false;
-}
-
-/*
- * Try to avoid enabling the cache if sessions are managed with request parameters and a session is active.
- */
-if (defined('SID') && SID != '') {
-
-    #error_log('SID found, skipping cache');
-
-    return false;
-}
-
-
-/*
- * check for config
- */
-if (! isset($wc_mfpc_config_array) || empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])) {
-
-    #error_log("No config found.");
-
-    return false;
-}
-
-$wc_mfpc_config_array = $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ];
-$wc_mfpc_uri          = $_SERVER[ 'REQUEST_URI' ];
+unset(
+    $wc_mfpc_get[ 'utm_source' ],
+    $wc_mfpc_get[ 'utm_medium' ],
+    $wc_mfpc_get[ 'utm_campaign' ],
+    $wc_mfpc_get[ 'utm_term' ],
+    $wc_mfpc_get[ 'utm_content' ],
+    $wc_mfpc_get[ 'coupon-code' ]
+);
 
 if (
+    (! empty($wc_mfpc_get) && ! wc_mfpc_check_useragent())
+    || $_SERVER[ 'REQUEST_METHOD' ] === 'POST'
+    || ! (defined('WP_CACHE') && ! empty(WP_CACHE))
+    || (defined('REST_REQUEST') && ! empty(REST_REQUEST))
+    || (defined('DOING_AJAX') && ! empty(DOING_AJAX))
+    || (defined('SID') && ! empty(SID))
+    || isset($_COOKIE[ 'wc-mfpc-nocache' ])
+    || empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ])
+    || (
+        isset($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'nocache_woocommerce_url' ])
+        && preg_match(
+            sprintf('#%s#', $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'nocache_woocommerce_url' ]),
+            $_SERVER[ 'REQUEST_URI' ]
+        )
+    )
+    || (
+        ! empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'nocache_url' ])
+        && preg_match(
+            sprintf('#%s#', $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'nocache_url' ]),
+            $_SERVER[ 'REQUEST_URI' ]
+        )
+    )
+    || (empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'cache_loggedin' ]) && wc_mfpc_check_login())
+    || (! empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'nocache_cookies' ]) && wc_mfpc_check_cookies())
     /**
      * Filter to skip loading page from cache.
      * Allows 3rd parties to implement their own conditions to skip loading a page from cache.
@@ -84,53 +75,34 @@ if (
      *
      * @return bool $skip
      */
-    (bool) apply_filters('wc_mfpc_custom_skip_load_from_cache', $skip = false, $wc_mfpc_config_array, $wc_mfpc_uri)
+    || (bool) apply_filters('wc_mfpc_custom_skip_load_from_cache', $skip = false, $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ], $_SERVER[ 'REQUEST_URI' ])
 ) {
 
-    return false;
-}
-
-/*
- * no cache for uri with query strings, things usually go bad that way
- */
-if (stripos($wc_mfpc_uri, '?') !== false) {
-
-    #error_log('Dynamic url cache is disabled ( url with "?" ), skipping');
+    header('Cache-Control: no-transform, no-cache, must-revalidate, max-age=0, s-maxage=0');
+    header('Expires: ' . gmdate("D, d M Y H:i:s", 0) . " GMT");
 
     return false;
 }
 
-/*
- * no cache for WooCommerce URL patterns
+/**
+ * Checks for search engine bots.
+ *
+ * @return bool
  */
-if (isset($wc_mfpc_config_array[ 'nocache_woocommerce_url' ])) {
+function wc_mfpc_check_useragent()
+{
+    $pattern = 'FacebookExternalHit|facebookexternalhit|Facebot|facebot|Googlebot|googlebot|bingbot';
 
-    $pattern = sprintf('#%s#', $wc_mfpc_config_array[ 'nocache_woocommerce_url' ]);
-
-    if (preg_match($pattern, $wc_mfpc_uri)) {
-
-        #error_log("Cache exception based on WooCommenrce URL regex pattern matched, skipping");
-
-        return false;
-    }
-
+    return (bool) preg_match(sprintf('#%s#', $pattern), $_SERVER[ 'HTTP_USER_AGENT' ]);
 }
 
-/*
- * NEVER cache for admins!
+/**
+ * Checks for login cookies.
+ *
+ * @return bool
  */
-if (isset($_COOKIE[ 'wc-mfpc-nocache' ])) {
-
-    #error_log('No cache for admin users! Skipping.');
-
-    return false;
-}
-
-/*
- * no cache for for logged in users
- */
-if (empty($wc_mfpc_config_array[ 'cache_loggedin' ])) {
-
+function wc_mfpc_check_login()
+{
     $nocache_cookies = [ 'comment_author_', 'wordpressuser_', 'wp-postpass_', 'wordpress_logged_in_' ];
 
     foreach ($_COOKIE as $cookie => $value) {
@@ -139,36 +111,37 @@ if (empty($wc_mfpc_config_array[ 'cache_loggedin' ])) {
 
             if (strpos($cookie, $nocache_cookie) === 0) {
 
-                #error_log("No cache for cookie: {$cookie}, skipping");
-
-                return false;
+                return true;
             }
 
         }
 
     }
 
+    return false;
 }
 
-/*
- * check for cookies that will make us not cache the content, like logged in WordPress cookie
+/**
+ * Checks for user defined cookies.
+ *
+ * @return bool
  */
-if (! empty($wc_mfpc_config_array[ 'nocache_cookies' ])) {
+function wc_mfpc_check_cookies()
+{
+    global $wc_mfpc_config_array;
 
-    $nocache_cookies = array_map('trim', explode(",", $wc_mfpc_config_array[ 'nocache_cookies' ]));
+    $nocache_cookies = array_map('trim', explode(",", $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'nocache_cookies' ]));
 
     if (! empty($nocache_cookies)) {
 
         foreach ($_COOKIE as $n => $v) {
 
-            /* check for any matches to user-added cookies to no-cache */
+            /* check for any matches of user-added cookies to no-cache */
             foreach ($nocache_cookies as $nocache_cookie) {
 
                 if (strpos($n, $nocache_cookie) === 0) {
 
-                    #error_log("Cookie exception matched: {$n}, skipping");
-
-                    return false;
+                    return true;
                 }
 
             }
@@ -177,23 +150,11 @@ if (! empty($wc_mfpc_config_array[ 'nocache_cookies' ])) {
 
     }
 
+    return false;
 }
 
-/*
- * No cache for excluded URL patterns
- */
-if (! empty($wc_mfpc_config_array[ 'nocache_url' ])) {
-
-    $pattern = sprintf('#%s#', trim($wc_mfpc_config_array[ 'nocache_url' ]));
-
-    if (preg_match($pattern, $wc_mfpc_uri)) {
-
-        #error_log("Cache exception based on URL regex pattern matched, skipping");
-
-        return false;
-    }
-
-}
+#$wc_mfpc_config_array = $wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ];
+$wc_mfpc_uri          = $_SERVER[ 'REQUEST_URI' ];
 
 /*
  * Initialize canonical redirect storage.
@@ -204,7 +165,7 @@ $wc_mfpc_redirect = null;
  * Connect to Memcached via actual config.
  */
 include_once __DIR__ . '/src/Memcached.php';
-$wc_mfpc_memcached = new \InvincibleBrands\WcMfpc\Memcached($wc_mfpc_config_array);
+$wc_mfpc_memcached = new \InvincibleBrands\WcMfpc\Memcached($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ]);
 
 /*
  * Check memcached connection.
@@ -239,7 +200,6 @@ foreach ([ 'data', 'meta', ] as $type) {
         wc_mfpc_start();
 
         return;
-
     }
 
     $wc_mfpc_values[ $type ] = $value;
@@ -280,28 +240,6 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'redirect' ])) {
 }
 
 /*
- * Page is already cached on client side.
- * /
-if (isset($_SERVER[ 'HTTP_IF_MODIFIED_SINCE' ]) && ! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
-
-    $if_modified_since = strtotime(preg_replace('/;.*$/', '', $_SERVER[ "HTTP_IF_MODIFIED_SINCE" ]));
-
-    /*
-     * Check if cache is still valid.
-     * /
-    if ($if_modified_since >= $wc_mfpc_values[ 'meta' ][ 'lastmodified' ]) {
-
-        #error_log("Serving 304 Not Modified");
-        header("HTTP/1.0 304 Not Modified");
-
-        flush();
-        die();
-
-    }
-
-}
-
-/*
  * BEGIN SERVING CACHED PAGE -------------------------------------------------------------------------------------------
  */
 
@@ -319,14 +257,33 @@ if (! empty ($wc_mfpc_values[ 'meta' ][ 'mime' ])) {
  */
 if (! empty ($wc_mfpc_values[ 'meta' ][ 'expire' ])) {
 
-    $hash   = md5($wc_mfpc_uri . $wc_mfpc_values[ 'meta' ][ 'expire' ]);
-    $expire = $wc_mfpc_values[ 'meta' ][ 'expire' ] - time();
+    $expire        = $wc_mfpc_values[ 'meta' ][ 'expire' ];
+    $browserMaxAge = 300;
+    $cdnMaxAge     = 60;
 
-    header("Cache-Control: public,max-age=$expire,s-maxage=$expire,must-revalidate");
-    header('Expires: ' . gmdate("D, d M Y H:i:s", $wc_mfpc_values[ 'meta' ][ 'expire' ]) . " GMT");
-    header('ETag: ' . $hash);
+    if (isset($wc_mfpc_values[ 'meta' ][ 'browsercache' ])) {
 
-    unset($expire, $hash);
+        $browserMaxAge = (int) $wc_mfpc_values[ 'meta' ][ 'browsercache' ];
+
+    }
+
+    if (isset($wc_mfpc_values[ 'meta' ][ 'cdncache' ])) {
+
+        $cdnMaxAge = (int) $wc_mfpc_values[ 'meta' ][ 'cdncache' ];
+
+    }
+
+    if ($expire < time()) {
+
+        $expire = time() + $browserMaxAge;
+
+    }
+
+    header('Cache-Control: public, max-age=' . $browserMaxAge . ', s-maxage=' . $cdnMaxAge . ', immutable');
+    header('Expires: ' . gmdate("D, d M Y H:i:s", $expire) . " GMT");
+    header('ETag: "' . md5($wc_mfpc_uri . $expire) . '"');
+
+    unset($expire, $browserMaxAge, $cdnMaxAge);
 
 } else {
 
@@ -358,7 +315,7 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'lastmodified' ])) {
 /*
  * Set X-Pingback header.
  */
-if (! empty($wc_mfpc_values[ 'meta' ][ 'pingback' ]) && ! empty($wc_mfpc_config_array[ 'pingback_header' ])) {
+if (! empty($wc_mfpc_values[ 'meta' ][ 'pingback' ]) && ! empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'pingback_header' ])) {
 
 	header('X-Pingback: ' . $wc_mfpc_values[ 'meta' ][ 'pingback' ]);
 
@@ -367,7 +324,7 @@ if (! empty($wc_mfpc_values[ 'meta' ][ 'pingback' ]) && ! empty($wc_mfpc_config_
 /*
  * Set X-Cache-Engine header.
  */
-if (! empty($wc_mfpc_config_array[ 'response_header' ])) {
+if (! empty($wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ][ 'response_header' ])) {
 
 	header( 'X-Cache-Engine: WC-MFPC with Memcached via PHP');
 
@@ -396,6 +353,8 @@ die();
  */
 function wc_mfpc_start()
 {
+    header('Expires: ' . gmdate("D, d M Y H:i:s", time()) . " GMT");
+    header('Cache-Control: no-transform, no-cache, must-revalidate, max-age=0, s-maxage=0');
 	ob_start('wc_mfpc_output_buffer_callback');
 }
 
@@ -456,8 +415,10 @@ function wc_mfpc_output_buffer_callback($content = '')
 	    || empty($wp_query)
         || (stripos($content, '</body>') === false && stripos($content, '</rss>') === false)
         || (! empty(WC()->session) && ! empty(WC()->session->get('wc_notices', [])))
+        || wc_mfpc_check_useragent()
         || stripos($content, ' message-wrapper"') !== false
         || stripos($content, 'class="message-container') !== false
+        || (! empty($post) && ! empty($post->post_password))
     ) {
 
 		return $content;
@@ -474,7 +435,7 @@ function wc_mfpc_output_buffer_callback($content = '')
         return $content;
     }
 
-	$config    = &$wc_mfpc_config_array;
+	$config    = &$wc_mfpc_config_array[ $_SERVER[ 'HTTP_HOST' ] ];
 	$cacheMeta = [];
 
 	/* ToDo: Check if this might be useful in the future.
@@ -602,7 +563,13 @@ function wc_mfpc_output_buffer_callback($content = '')
 
         if (! empty($config[ 'browsercache' ])) {
 
-            $cacheMeta[ 'expire' ] = time() + $config[ 'browsercache' ];
+            $cacheMeta[ 'browsercache' ] = $config[ 'browsercache' ];
+
+        }
+
+        if (! empty($config[ 'expire' ])) {
+
+            $cacheMeta[ 'expire' ] = time() + $config[ 'expire' ];
 
         }
 
