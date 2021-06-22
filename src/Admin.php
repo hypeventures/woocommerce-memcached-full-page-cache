@@ -30,6 +30,68 @@ if (! defined('ABSPATH')) { exit; }
 class Admin
 {
 
+    const FLUSH_ACTION = 'wcmfpc_flush_cache_action';
+    const FLUSH_NONCE  = 'wc_mfpc_flush_cache_nonce';
+
+    /**
+     * Adds the menu bar button to flush cache.
+     *
+     * @param \WP_Admin_Bar $adminBar
+     */
+    public static function addToMenuBar($adminBar = null)
+    {
+        if (self::isValidUser()) {
+
+            $adminBar->add_menu([
+                'id'    => 'wcmpfpc_flush',
+                'title' => 'Flush Cache (!)',
+                'href'  => '#',
+            ]);
+
+            if (is_admin()) {
+
+                add_action('admin_print_footer_scripts', [ AdminView::class, 'printMenuBarStylesAndScripts' ]);
+
+            } else {
+
+                add_action('wp_footer', [ AdminView::class, 'printMenuBarStylesAndScripts' ]);
+
+            }
+
+        }
+    }
+
+    /**
+     * Verifies if current user can see flush button in the admin bar.
+     *
+     * @return bool
+     */
+    private static function isvalidUser()
+    {
+        if (defined(MULTISITE) && ! empty(MULTISITE)) {
+
+            return is_super_admin(get_current_user_id());
+        }
+
+        return current_user_can('administrator');
+    }
+
+    /**
+     * Flushes the full page cache on ajax request via menu bar button.
+     *
+     * @return void
+     */
+    public static function flushAjaxAction()
+    {
+        check_ajax_referer(self::FLUSH_ACTION, self::FLUSH_NONCE);
+
+        WcMfpc::getMemcached()
+            ->flush();
+
+        echo 'Full page cache has been flushed!';
+        die(200);
+    }
+
     /**
      * Ads "Full Page Cache" section to the WooCommerce Advanced settings tab.
      *
