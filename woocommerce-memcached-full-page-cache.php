@@ -3,7 +3,7 @@
 Plugin Name: WooCommerce Memcached Full Page Cache
 Plugin URI: https://github.com/hypeventures/woocommerce-memcached-full-page-cache
 Description: WooCommerce full page cache plugin based on Memcached.
-Version: 1.1.9
+Version: 1.1.10
 Author: Achim Galeski <achim@invinciblebrands.com>
 Author URI: https://achim-galeski.de/
 License: GPLv3
@@ -124,16 +124,6 @@ function wc_mfpc_admin_init_plugin()
     add_action('admin_post_' . Data::buttonReset, [ Admin::class, 'processReset' ]);
 
     /*
-     * AJAX actions
-     */
-    add_action('wp_ajax_' . Admin::FLUSH_ACTION, [ Admin::class, 'flushAjaxAction' ]);
-
-    /*
-     * Admin menu bar flush button
-     */
-    add_action('admin_bar_menu', [ Admin::class, 'addToMenuBar' ], 99);
-
-    /*
      * WooCommerce settings tab
      */
     add_filter('woocommerce_get_sections_advanced', [ Admin::class, 'addWooCommerceSettingsSection' ], 50);
@@ -181,4 +171,21 @@ function wc_mfpc_admin_bar_init()
         setcookie('wc-mfpc-nocache', 1, time() + 604800, '/', Config::getGlobalConfigKey());
 
     }
+
+    global $wc_mfpc_config_array;
+
+    if (empty($wc_mfpc_config_array)) {
+
+        return;
+    }
+
+    /*
+     * AJAX actions
+     */
+    add_action('wp_ajax_' . Admin::FLUSH_ACTION, [ Admin::class, 'flushAjaxAction' ]);
+
+    /*
+     * Admin menu bar flush button
+     */
+    add_action('admin_bar_menu', [ Admin::class, 'addToMenuBar' ], 99);
 }
