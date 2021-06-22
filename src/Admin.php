@@ -48,16 +48,6 @@ class Admin
                 'href'  => '#',
             ]);
 
-            if (is_admin()) {
-
-                add_action('admin_print_footer_scripts', [ AdminView::class, 'printMenuBarStylesAndScripts' ]);
-
-            } else {
-
-                add_action('wp_footer', [ AdminView::class, 'printMenuBarStylesAndScripts' ]);
-
-            }
-
         }
     }
 
