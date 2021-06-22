@@ -3,7 +3,7 @@
 Plugin Name: WooCommerce Memcached Full Page Cache
 Plugin URI: https://github.com/hypeventures/woocommerce-memcached-full-page-cache
 Description: WooCommerce full page cache plugin based on Memcached.
-Version: 1.1.11
+Version: 1.1.12
 Author: Achim Galeski <achim@invinciblebrands.com>
 Author URI: https://achim-galeski.de/
 License: GPLv3
@@ -76,6 +76,11 @@ function wc_mfpc_init_plugin()
 
         return;
     }
+
+    /*
+     * AJAX actions
+     */
+    add_action('wp_ajax_' . Admin::FLUSH_ACTION, [ Admin::class, 'flushAjaxAction' ]);
 
     /*
      * "Comments" invalidation actions
@@ -178,11 +183,6 @@ function wc_mfpc_admin_bar_init()
 
         return;
     }
-
-    /*
-     * AJAX actions
-     */
-    add_action('wp_ajax_' . Admin::FLUSH_ACTION, [ Admin::class, 'flushAjaxAction' ]);
 
     /*
      * Admin menu bar flush button
