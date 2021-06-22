@@ -418,6 +418,7 @@ function wc_mfpc_output_buffer_callback($content = '')
         || wc_mfpc_check_useragent()
         || stripos($content, ' message-wrapper"') !== false
         || stripos($content, 'class="message-container') !== false
+        || ! empty($post->post_password)
     ) {
 
 		return $content;
