@@ -31,6 +31,38 @@ class AdminView
 {
 
     /**
+     * Prints Styles and Scripts for the admin menu bar.
+     */
+    public static function printMenuBarStylesAndScripts()
+    {
+        ?>
+        <style>
+            #wpadminbar #wp-admin-bar-wcmpfpc_flush a.ab-item {
+                color: #FF0000; !important;
+            }
+            #wpadminbar #wp-admin-bar-wcmpfpc_flush a.ab-item::before {
+                content: '\f182';
+                color: #FF0000; !important;
+            }
+        </style>
+        <script>
+            jQuery(document).on("click", '#wp-admin-bar-wcmpfpc_flush a.ab-item', function() {
+                jQuery.post(
+                  ajaxurl,
+                  {
+                      'action': '<?php echo Admin::FLUSH_ACTION; ?>',
+                      '<?php echo Admin::FLUSH_NONCE; ?>': '<?php echo wp_create_nonce(Admin::FLUSH_ACTION); ?>',
+                  },
+                  function(response) {
+                      alert(response);
+                  }
+                );
+            });
+        </script>
+        <?php
+    }
+
+    /**
      * Renders the "Cache control" box.
      *
      * @param string $status     Cache status string.
