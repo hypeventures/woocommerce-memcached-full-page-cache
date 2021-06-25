@@ -42,6 +42,8 @@ unset(
     $wc_mfpc_get[ 'sc_uid' ],
     $wc_mfpc_get[ 'sc_llid' ],
     $wc_mfpc_get[ 'sc_eh' ],
+    $wc_mfpc_get[ 'fbclid' ],
+    $wc_mfpc_get[ 'gclid' ],
     $wc_mfpc_get[ 'coupon-code' ]
 );
 
