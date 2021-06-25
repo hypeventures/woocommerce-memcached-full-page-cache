@@ -37,6 +37,11 @@ unset(
     $wc_mfpc_get[ 'utm_campaign' ],
     $wc_mfpc_get[ 'utm_term' ],
     $wc_mfpc_get[ 'utm_content' ],
+    $wc_mfpc_get[ 'sc_src' ],
+    $wc_mfpc_get[ 'sc_lid' ],
+    $wc_mfpc_get[ 'sc_uid' ],
+    $wc_mfpc_get[ 'sc_llid' ],
+    $wc_mfpc_get[ 'sc_eh' ],
     $wc_mfpc_get[ 'coupon-code' ]
 );
 
