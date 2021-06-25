@@ -418,6 +418,7 @@ function wc_mfpc_output_buffer_callback($content = '')
          * @return bool $skip
          */
         (bool) apply_filters('wc_mfpc_custom_skip_caching', $skip = false, $content)
+	|| ! empty($_GET)
         || empty($content)
 	    || empty($wp_query)
         || (stripos($content, '</body>') === false && stripos($content, '</rss>') === false)
